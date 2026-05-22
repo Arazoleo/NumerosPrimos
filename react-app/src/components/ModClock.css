@@ -22,8 +22,8 @@
 }
 @media (max-width: 960px) {
   .modclock-grid { grid-template-columns: 1fr; gap: 28px; }
-  .modclock-section { height: 220vh; }
-  .modclock-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+  .modclock-section { height: auto; }
+  .modclock-sticky { position: static; height: auto; padding: 80px 0; display: block; }
 }
 
 .modclock-text {

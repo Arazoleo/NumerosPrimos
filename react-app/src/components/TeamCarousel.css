@@ -11,6 +11,9 @@
   gap: 48px;
 }
 
+.carousel {
+  overflow-x: clip;
+}
 .carousel-stage {
   position: relative;
   height: 480px;
@@ -19,6 +22,7 @@
   user-select: none;
 }
 @media (max-width: 720px) { .carousel-stage { height: 380px; } }
+@media (max-width: 480px) { .carousel-stage { height: 340px; } }
 
 .car-card {
   position: absolute;
@@ -34,6 +38,7 @@
   will-change: transform, opacity, filter;
 }
 @media (max-width: 720px) { .car-card { width: 220px; height: 290px; } }
+@media (max-width: 480px) { .car-card { width: 190px; height: 250px; } }
 
 .car-card.active {
   box-shadow: 0 40px 100px rgba(14,14,16,0.22),
@@ -135,6 +140,16 @@
   background: rgba(14,14,16,0.12);
   overflow: hidden;
   transition: background .25s ease;
+  flex-shrink: 1;
+  min-width: 14px;
+}
+@media (max-width: 480px) {
+  .dots { gap: 6px; }
+  .dot { width: 20px; }
+  .ctrl { width: 42px; height: 42px; }
+  .carousel-controls { gap: 10px; justify-content: space-between; }
+  .info-name { font-size: clamp(28px, 9vw, 40px); }
+  .info-bio { font-size: 15px; }
 }
 .dot.on { background: rgba(14,14,16,0.20); }
 .dot:hover { background: rgba(14,14,16,0.25); }

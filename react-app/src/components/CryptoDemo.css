@@ -9,6 +9,10 @@
   box-shadow: var(--shadow-lg);
   position: relative; overflow: hidden;
 }
+@media (max-width: 540px) {
+  .crypto-demo { padding: 20px; border-radius: 18px; }
+  .crypto-line { font-size: 12.5px; }
+}
 .crypto-demo::before {
   content: ''; position: absolute; inset: -2px; z-index: -1;
   background: conic-gradient(from 0deg, var(--y-400), transparent 30%, var(--y-300) 60%, transparent 100%);
@@ -18,7 +22,7 @@
 .crypto-bar { display: flex; gap: 8px; margin-bottom: 18px; }
 .crypto-bar i { width: 12px; height: 12px; border-radius: 50%; background: #333; display: inline-block; }
 .crypto-bar i.y { background: var(--y-400); }
-.crypto-line { font-size: 14px; margin: 6px 0; min-height: 22px; }
+.crypto-line { font-size: 14px; margin: 6px 0; min-height: 22px; word-break: break-all; }
 .crypto-line .label { color: var(--y-300); }
 .crypto-line .val { color: var(--cream); }
 .crypto-line .secret { color: #ff7676; }

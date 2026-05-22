@@ -13,6 +13,10 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 18px; font-weight: 600;
 }
+@media (max-width: 540px) {
+  .marquee { padding: 16px 0; }
+  .marquee-track { font-size: 15px; }
+}
 .marquee-track .sep {
   width: 8px; height: 8px; background: var(--y-300);
   border-radius: 50%; display: inline-block;

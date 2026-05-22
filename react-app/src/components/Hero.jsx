@@ -30,7 +30,11 @@ export default function Hero() {
   const visualRef = useRef(null)
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
 
-  const floaters = useMemo(() => Array.from({ length: 28 }).map((_, i) => ({
+  const isCoarse = typeof window !== 'undefined'
+    && window.matchMedia?.('(max-width: 720px)').matches
+  const floaterCount = isCoarse ? 12 : 28
+
+  const floaters = useMemo(() => Array.from({ length: floaterCount }).map((_, i) => ({
     n: primes[Math.floor(Math.random() * primes.length)],
     left: Math.random() * 100,
     top: Math.random() * 100,
@@ -38,9 +42,10 @@ export default function Hero() {
     dur: 8 + Math.random() * 10,
     delay: -Math.random() * 10,
     opacity: 0.04 + Math.random() * 0.10,
-  })), [])
+  })), [floaterCount])
 
   const onMove = (e) => {
+    if (!visualRef.current) return
     const r = visualRef.current.getBoundingClientRect()
     setTilt({
       x: (e.clientX - r.left) / r.width - 0.5,

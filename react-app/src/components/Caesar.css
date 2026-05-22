@@ -22,8 +22,8 @@
 }
 @media (max-width: 960px) {
   .caesar-grid { grid-template-columns: 1fr; gap: 28px; }
-  .caesar-section { height: 240vh; }
-  .caesar-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+  .caesar-section { height: auto; }
+  .caesar-sticky { position: static; height: auto; padding: 80px 0; display: block; }
 }
 .caesar-text {
   max-width: 540px;
@@ -81,6 +81,11 @@
   background: var(--bone);
   border-radius: 6px;
   color: var(--ink);
+}
+@media (max-width: 380px) {
+  .caesar-row-msg .tile,
+  .letter-tile { width: 22px; height: 26px; font-size: 12px; }
+  .letter-bottom { font-size: 12px; }
 }
 .caesar-row-msg .tile.space { background: transparent; }
 

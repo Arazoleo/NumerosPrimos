@@ -6,6 +6,9 @@
   position: relative;
   overflow: hidden;
 }
+@media (max-width: 720px) {
+  .final-cta { padding: 56px 24px; border-radius: 24px; }
+}
 .final-cta::before {
   content: ''; position: absolute; inset: 0;
   background:

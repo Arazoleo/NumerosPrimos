@@ -15,10 +15,13 @@ export const members = [
     bio: 'Desenvolvedor e entusiasta de novas tecnologias' },
   { file: 'leticia', name: 'Letícia',   role: 'Membro',       prime: 19,
     bio: 'Pesquisa aritmética modular e suas conexões com criptografia.' },
-  { file: 'menina',  name: 'Convidada', role: 'Membro',       prime: 23,
-    bio: 'Contribuição especial para o projeto.' },
+  { file: 'menina',  name: 'Maria Luiza', role: 'Membro',       prime: 23,
+    bio: 'Revisora do projeto e admiradora dos números primos.' },
   { file: 'miguel',  name: 'Miguel',    role: 'Membro',       prime: 29,
-    bio: 'Estuda complexidade computacional da fatoração de inteiros.' },
+    bio: 'Um analista de dados apaixonado por matemática.' },
+  { file: 'jose', name: 'José', role: 'Membro', prime: 31, 
+    bio: 'Altamente interessado em redes de computadores e computação em nuvem.'
+  }
 ]
 
 export const primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103]

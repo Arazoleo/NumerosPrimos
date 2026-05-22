@@ -44,6 +44,10 @@
   .hero-inner { grid-template-columns: 1fr; gap: 48px; }
   .hero { padding: 130px 0 80px; }
 }
+@media (max-width: 720px) {
+  .hero { padding: 110px 0 60px; }
+  .hero-inner { gap: 36px; }
+}
 
 .eyebrow {
   display: inline-flex; align-items: center; gap: 10px;
@@ -65,7 +69,7 @@
 }
 
 .h1 {
-  font-size: clamp(44px, 6.5vw, 88px);
+  font-size: clamp(36px, 7.5vw, 88px);
   margin-top: 24px;
 }
 .h1 .yellow {
@@ -91,11 +95,26 @@
   font-size: 12.5px; color: var(--muted); margin-top: 6px;
   letter-spacing: 0.06em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace;
 }
+@media (max-width: 540px) {
+  .hero-sub { font-size: 16.5px; }
+  .hero-cta { gap: 10px; margin-top: 28px; }
+  .hero-cta .btn { padding: 14px 22px; font-size: 14.5px; flex: 1 1 auto; justify-content: center; }
+  .hero-stats { gap: 20px; margin-top: 36px; }
+  .hero-stats .stat { flex: 1 1 28%; min-width: 88px; }
+  .stat .num { font-size: 28px; }
+}
 
 .hero-visual {
   position: relative;
   aspect-ratio: 1 / 1;
   display: grid; place-items: center;
+}
+@media (max-width: 720px) {
+  .hero-visual {
+    max-width: 380px;
+    width: 86%;
+    margin: 0 auto;
+  }
 }
 .hero-card {
   position: relative;
@@ -141,6 +160,12 @@
 .orbit-primes span:nth-child(3) { bottom: 18%; left: -8%; animation-delay: 1.2s; }
 .orbit-primes span:nth-child(4) { bottom: 6%;  right: 2%; animation-delay: 1.8s; background: var(--ink); color: var(--y-300); }
 .orbit-primes span:nth-child(5) { top: 48%;  right: -2%; animation-delay: 2.4s; }
+@media (max-width: 540px) {
+  .orbit-primes span { font-size: 17px; padding: 6px 10px; }
+  .orbit-primes span:nth-child(1) { left: 2%; }
+  .orbit-primes span:nth-child(2) { right: 0%; }
+  .orbit-primes span:nth-child(3) { left: 0%; }
+}
 @keyframes bob {
   0%,100% { transform: translateY(0) rotate(-2deg); }
   50%     { transform: translateY(-12px) rotate(2deg); }

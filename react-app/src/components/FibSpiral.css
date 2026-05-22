@@ -26,8 +26,8 @@
 }
 @media (max-width: 960px) {
   .fib-grid { grid-template-columns: 1fr; gap: 28px; }
-  .fib-section { height: 240vh; }
-  .fib-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+  .fib-section { height: auto; }
+  .fib-sticky { position: static; height: auto; padding: 80px 0; display: block; }
 }
 
 .fib-text {

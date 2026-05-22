@@ -22,8 +22,8 @@
 }
 @media (max-width: 960px) {
   .ulam-grid { grid-template-columns: 1fr; gap: 28px; }
-  .ulam-section { height: 220vh; }
-  .ulam-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+  .ulam-section { height: auto; }
+  .ulam-sticky { position: static; height: auto; padding: 80px 0; display: block; }
 }
 .ulam-text {
   max-width: 520px;

@@ -103,6 +103,13 @@
   text-decoration: none;
   transition: transform .2s ease, background .2s ease, box-shadow .25s ease;
   box-shadow: var(--shadow-sm);
+  max-width: 100%;
+}
+@media (max-width: 540px) {
+  .mission-cta { display: flex; gap: 12px; padding: 14px 18px; }
+  .mission-cta-handle { font-size: 15px; word-break: break-all; }
+  .mission-section { padding: 80px 0; }
+  .mission-card { padding: 28px 22px; border-radius: 22px; }
 }
 .mission-cta:hover {
   transform: translateY(-2px);

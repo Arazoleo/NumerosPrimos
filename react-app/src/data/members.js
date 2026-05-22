@@ -12,7 +12,7 @@ export const members = [
   { file: 'enrique', name: 'Enrique',   role: 'Membro',       prime: 13,
     bio: 'Pesquisador em Cyber-segurança e Machine Learning.' },
   { file: 'flavio',  name: 'Flávio',    role: 'Membro',       prime: 17,
-    bio: 'Explora a distribuição dos primos ao longo dos inteiros.' },
+    bio: 'Desenvolvedor e entusiasta de novas tecnologias' },
   { file: 'leticia', name: 'Letícia',   role: 'Membro',       prime: 19,
     bio: 'Pesquisa aritmética modular e suas conexões com criptografia.' },
   { file: 'menina',  name: 'Convidada', role: 'Membro',       prime: 23,

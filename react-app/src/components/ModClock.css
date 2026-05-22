@@ -1,0 +1,99 @@
+.modclock-section {
+  position: relative;
+  height: 260vh;
+  background:
+    radial-gradient(700px 500px at 70% 30%, rgba(255,219,77,0.20), transparent 60%),
+    linear-gradient(180deg, var(--bone), var(--cream) 60%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.modclock-sticky {
+  position: sticky; top: 0;
+  height: 100vh;
+  display: flex; align-items: center;
+  overflow: hidden;
+}
+.modclock-grid {
+  display: grid;
+  grid-template-columns: 0.95fr 1fr;
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+}
+@media (max-width: 960px) {
+  .modclock-grid { grid-template-columns: 1fr; gap: 28px; }
+  .modclock-section { height: 220vh; }
+  .modclock-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+}
+
+.modclock-text {
+  max-width: 540px;
+  padding-left: clamp(8px, 3vw, 56px);
+  justify-self: end;
+}
+@media (max-width: 960px) {
+  .modclock-text { padding-left: 0; justify-self: stretch; max-width: 100%; }
+}
+.modclock-text .h2 { margin-top: 8px; }
+.modclock-text .section-sub { margin-top: 18px; }
+.modclock-text code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  background: var(--y-200);
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.modclock-eq {
+  margin-top: 30px;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+}
+.eq-row {
+  display: flex; align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.eq-big {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.eq-big.result { color: var(--y-300); }
+.eq-op {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  color: var(--muted);
+}
+.eq-explain {
+  margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  color: var(--y-100);
+  font-variant-numeric: tabular-nums;
+}
+.eq-explain .dim { color: rgba(250, 246, 236, 0.55); margin-left: 4px; }
+
+.modclock-viz {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 18px;
+  width: 100%;
+}
+.modclock-svg {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  filter: drop-shadow(0 30px 70px rgba(14,14,16,0.12));
+}
+.modclock-caption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

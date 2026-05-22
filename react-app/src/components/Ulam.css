@@ -1,0 +1,82 @@
+.ulam-section {
+  position: relative;
+  height: 260vh;
+  background:
+    radial-gradient(700px 500px at 80% 50%, rgba(255,219,77,0.18), transparent 60%),
+    linear-gradient(180deg, var(--bone), var(--cream) 60%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.ulam-sticky {
+  position: sticky; top: 0;
+  height: 100vh;
+  display: flex; align-items: center;
+  overflow: hidden;
+}
+.ulam-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 64px;
+  align-items: center;
+  width: 100%;
+}
+@media (max-width: 960px) {
+  .ulam-grid { grid-template-columns: 1fr; gap: 28px; }
+  .ulam-section { height: 220vh; }
+  .ulam-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+}
+.ulam-text {
+  max-width: 520px;
+  padding-left: clamp(8px, 3vw, 56px);
+  justify-self: end;
+}
+@media (max-width: 960px) {
+  .ulam-text { padding-left: 0; justify-self: stretch; max-width: 100%; }
+}
+
+.ulam-stats {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ulam-stat {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 16px;
+  transition: border-color .2s ease;
+}
+.ulam-stat.highlight { border-color: var(--y-400); background: linear-gradient(180deg, #fff, var(--y-50)); }
+.ulam-stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px; font-weight: 700;
+  line-height: 1; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.ulam-stat.highlight .ulam-stat-num { color: var(--y-600); }
+.ulam-stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--muted);
+  margin-top: 8px; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.ulam-hint {
+  margin-top: 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted);
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.ulam-viz {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%;
+}
+.ulam-viz svg {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  overflow: visible;
+}
+@media (max-width: 960px) {
+  .ulam-viz svg { max-width: 420px; }
+}

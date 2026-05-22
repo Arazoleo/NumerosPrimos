@@ -1,0 +1,91 @@
+.fib-section {
+  position: relative;
+  height: 280vh;
+  background:
+    radial-gradient(800px 500px at 80% 30%, rgba(255,219,77,0.20), transparent 60%),
+    linear-gradient(180deg, var(--cream) 0%, var(--bone) 50%, var(--cream) 100%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.fib-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.fib-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 80px;
+  align-items: center;
+  width: 100%;
+}
+@media (max-width: 960px) {
+  .fib-grid { grid-template-columns: 1fr; gap: 28px; }
+  .fib-section { height: 240vh; }
+  .fib-sticky { height: auto; min-height: 100vh; padding: 80px 0; }
+}
+
+.fib-text {
+  max-width: 500px;
+  padding-left: clamp(8px, 3vw, 56px);
+  justify-self: end;
+}
+@media (max-width: 960px) {
+  .fib-text { padding-left: 0; justify-self: stretch; max-width: 100%; }
+}
+.fib-text .h2 { margin-top: 8px; }
+.fib-text .section-sub { margin-top: 18px; }
+
+.fib-list {
+  margin-top: 28px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center;
+}
+.fib-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; height: 38px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700; font-size: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--ink);
+  will-change: transform, opacity, background;
+}
+.fib-pill.ellipsis {
+  background: transparent !important;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  letter-spacing: 2px;
+}
+
+.fib-hint {
+  margin-top: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fib-viz {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%;
+}
+.fib-viz svg {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  overflow: visible;
+}
+
+@media (max-width: 960px) {
+  .fib-viz svg { max-width: 420px; }
+}

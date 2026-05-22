@@ -1,0 +1,146 @@
+.team-section {
+  background:
+    radial-gradient(600px 400px at 50% 0%, rgba(255,219,77,0.18), transparent 70%),
+    var(--cream);
+}
+
+.carousel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 48px;
+}
+
+.carousel-stage {
+  position: relative;
+  height: 480px;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 1400px;
+  user-select: none;
+}
+@media (max-width: 720px) { .carousel-stage { height: 380px; } }
+
+.car-card {
+  position: absolute;
+  width: 280px; height: 360px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow: var(--shadow-md);
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+}
+@media (max-width: 720px) { .car-card { width: 220px; height: 290px; } }
+
+.car-card.active {
+  box-shadow: 0 40px 100px rgba(14,14,16,0.22),
+              0 0 0 4px var(--y-400),
+              0 0 80px rgba(255,204,26,0.35);
+  cursor: default;
+}
+.car-card.active.coord {
+  box-shadow: 0 40px 100px rgba(14,14,16,0.25),
+              0 0 0 4px var(--ink),
+              0 0 0 8px var(--blue),
+              0 0 100px var(--blue-tint);
+}
+
+.car-img-wrap {
+  position: relative; width: 100%; height: 100%;
+}
+.car-img-wrap img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(40%);
+  transition: filter .5s ease;
+}
+.car-card.active .car-img-wrap img { filter: grayscale(0%); }
+
+.car-badge {
+  position: absolute; top: 14px; left: 14px;
+  background: var(--y-400); color: var(--ink);
+  padding: 5px 11px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em;
+  box-shadow: 0 4px 14px rgba(14,14,16,0.18);
+}
+.car-badge.coord {
+  background: var(--blue); color: #fff;
+  display: inline-flex; align-items: center; gap: 6px;
+  box-shadow: 0 4px 14px var(--blue-tint);
+}
+
+.carousel-info {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 36px;
+  align-items: end;
+  border-top: 1px solid var(--line);
+  padding-top: 36px;
+}
+@media (max-width: 720px) {
+  .carousel-info { grid-template-columns: 1fr; gap: 24px; align-items: stretch; }
+}
+
+.info-block { min-height: 140px; }
+.info-meta {
+  display: flex; gap: 12px; align-items: center;
+  margin-bottom: 12px; flex-wrap: wrap;
+}
+.info-prime {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--y-600);
+  background: var(--y-100); padding: 4px 10px; border-radius: 999px;
+  font-weight: 600;
+}
+.info-prime sub { font-size: 10px; }
+.info-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.08em; font-weight: 600;
+}
+.info-role.coord { color: var(--blue-deep); display: inline-flex; align-items: center; gap: 6px; }
+.info-role .star { color: var(--blue); display: inline-flex; align-items: center; }
+
+.info-name {
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1; margin: 0 0 12px;
+  background: linear-gradient(120deg, var(--ink) 0%, var(--slate) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.info-bio { color: var(--slate); font-size: 16px; margin: 0; max-width: 520px; }
+
+.carousel-controls {
+  display: flex; align-items: center; gap: 14px;
+}
+.ctrl {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--ink); color: var(--y-300);
+  display: grid; place-items: center;
+  transition: transform .2s ease, background .2s ease;
+}
+.ctrl:hover { transform: translateY(-2px); background: var(--y-500); color: var(--ink); }
+.ctrl:active { transform: translateY(0); }
+
+.dots {
+  display: flex; gap: 8px;
+  padding: 0 6px;
+}
+.dot {
+  position: relative;
+  width: 28px; height: 5px; border-radius: 99px;
+  background: rgba(14,14,16,0.12);
+  overflow: hidden;
+  transition: background .25s ease;
+}
+.dot.on { background: rgba(14,14,16,0.20); }
+.dot:hover { background: rgba(14,14,16,0.25); }
+.dot-bar {
+  position: absolute; inset: 0;
+  background: var(--y-500);
+  transform-origin: left;
+  border-radius: 99px;
+}

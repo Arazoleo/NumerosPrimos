@@ -1,0 +1,20 @@
+.marquee {
+  background: var(--ink);
+  color: var(--y-300);
+  padding: 22px 0;
+  overflow: hidden;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.marquee-track {
+  display: flex; gap: 56px;
+  animation: scroll 32s linear infinite;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px; font-weight: 600;
+}
+.marquee-track .sep {
+  width: 8px; height: 8px; background: var(--y-300);
+  border-radius: 50%; display: inline-block;
+}
+@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }

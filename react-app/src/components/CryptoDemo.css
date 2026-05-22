@@ -1,0 +1,43 @@
+.crypto { background: var(--bone); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.crypto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+@media (max-width: 900px) { .crypto-grid { grid-template-columns: 1fr; gap: 36px; } }
+
+.crypto-demo {
+  background: var(--ink); color: var(--cream);
+  border-radius: 24px; padding: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: var(--shadow-lg);
+  position: relative; overflow: hidden;
+}
+.crypto-demo::before {
+  content: ''; position: absolute; inset: -2px; z-index: -1;
+  background: conic-gradient(from 0deg, var(--y-400), transparent 30%, var(--y-300) 60%, transparent 100%);
+  animation: spin 8s linear infinite; border-radius: 26px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.crypto-bar { display: flex; gap: 8px; margin-bottom: 18px; }
+.crypto-bar i { width: 12px; height: 12px; border-radius: 50%; background: #333; display: inline-block; }
+.crypto-bar i.y { background: var(--y-400); }
+.crypto-line { font-size: 14px; margin: 6px 0; min-height: 22px; }
+.crypto-line .label { color: var(--y-300); }
+.crypto-line .val { color: var(--cream); }
+.crypto-line .secret { color: #ff7676; }
+.cursor {
+  display: inline-block; width: 8px; height: 16px; background: var(--y-300);
+  vertical-align: middle; animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.timeline {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 40px;
+}
+@media (max-width: 540px) { .timeline { grid-template-columns: 1fr; } }
+.step {
+  background: #fff; border: 1px solid var(--line);
+  border-radius: 18px; padding: 22px;
+  transition: transform .25s ease, border-color .25s;
+}
+.step:hover { transform: translateY(-4px); border-color: var(--y-400); }
+.step-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--y-600); font-weight: 700; margin-bottom: 12px; }
+.step h4 { font-size: 18px; margin-bottom: 8px; }
+.step p { font-size: 14.5px; color: var(--slate); margin: 0; }

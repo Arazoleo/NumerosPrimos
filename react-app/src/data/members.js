@@ -1,0 +1,24 @@
+export const members = [
+  { file: 'grasi',   name: 'Grasiele',  role: 'Coordenadora', prime: 2,  isCoord: true,
+    bio: 'Coordenadora do projeto e pesquisadora em Teoria algébrica dos números e Teoria da Informação.' },
+  { file: 'leo',     name: 'Leonardo',  role: 'Membro',       prime: 3,
+    bio: 'Pesquisador em IA e Álgebra Linear Computacional com interesse em criptografia.' },
+  { file: 'abreu',   name: 'Pedro',     role: 'Membro',       prime: 5,
+    bio: 'Pesquisador em Compressão de modelos e Metaheurísticas com viés matemático.' },
+  { file: 'ana',     name: 'Ana',       role: 'Membro',       prime: 7,
+    bio: 'Engenheira de Software e professora de matemática.' },
+  { file: 'arthur',  name: 'Arthur',    role: 'Membro',       prime: 11,
+    bio: 'Desenvolvedor e admirador de conceitos sobre criptografia.' },
+  { file: 'enrique', name: 'Enrique',   role: 'Membro',       prime: 13,
+    bio: 'Pesquisador em Cyber-segurança e Machine Learning.' },
+  { file: 'flavio',  name: 'Flávio',    role: 'Membro',       prime: 17,
+    bio: 'Explora a distribuição dos primos ao longo dos inteiros.' },
+  { file: 'leticia', name: 'Letícia',   role: 'Membro',       prime: 19,
+    bio: 'Pesquisa aritmética modular e suas conexões com criptografia.' },
+  { file: 'menina',  name: 'Convidada', role: 'Membro',       prime: 23,
+    bio: 'Contribuição especial para o projeto.' },
+  { file: 'miguel',  name: 'Miguel',    role: 'Membro',       prime: 29,
+    bio: 'Estuda complexidade computacional da fatoração de inteiros.' },
+]
+
+export const primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103]

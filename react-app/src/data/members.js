@@ -21,6 +21,9 @@ export const members = [
     bio: 'Um analista de dados apaixonado por matemática.' },
   { file: 'jose', name: 'José', role: 'Membro', prime: 31, 
     bio: 'Altamente interessado em redes de computadores e computação em nuvem.'
+  },
+  { file: 'let', nome: 'Letícia', role: 'Membro', prime: 37, 
+    bio: 'Pesquisadora de métodos da Computação para a análise de dados do Meio Ambiente.'
   }
 ]
 

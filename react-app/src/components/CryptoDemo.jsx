@@ -3,10 +3,10 @@ import { motion } from 'framer-motion'
 import './CryptoDemo.css'
 
 const steps = [
-  { num: '01 / Escolha',    t: 'Dois primos',  d: 'Dois números primos grandes p e q, gerados aleatoriamente.' },
-  { num: '02 / Multiplique', t: 'n = p × q',   d: 'O produto vira a base da chave. Público, mas indecifrável.' },
-  { num: '03 / Encripte',   t: 'Mensagem',     d: 'Qualquer um pode criptografar usando n.' },
-  { num: '04 / Decifre',    t: 'Só você',      d: 'Só quem conhece p e q consegue voltar atrás.' },
+  { num: '01 / Escolha', t: 'Dois primos', d: 'Dois números primos grandes p e q, gerados aleatoriamente.' },
+  { num: '02 / Multiplique', t: 'n = p × q', d: 'O produto vira a base da chave. Público, mas indecifrável.' },
+  { num: '03 / Encripte', t: 'Mensagem', d: 'Qualquer um pode criptografar usando n.' },
+  { num: '04 / Decifre', t: 'Só você', d: 'Só quem conhece p e q consegue voltar atrás.' },
 ]
 
 function useTypewriter(active) {
@@ -64,11 +64,14 @@ export default function CryptoDemo() {
           <motion.div
             initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6 }}>
-            <span className="kicker">// como funciona</span>
-            <h2 className="h2">Multiplicar é fácil.<br/><em>Fatorar é impossível.</em></h2>
-            <p className="section-sub">Pegue dois primos enormes, multiplique. Pronto: uma chave pública.
-              Para descobrir os primos originais a partir do produto, nem o melhor supercomputador do mundo
-              consegue em tempo útil. Esse é o segredo.</p>
+            <span className="kicker">// a base da criptografia RSA</span>
+            <h2 className="h2">Multiplicar é fácil.<br /><em>Fatorar é impossível.</em></h2>
+            <p className="section-sub">
+              Como a criptografia moderna protege seus dados na internet? A resposta está no algoritmo RSA.
+              Pegue dois primos enormes e multiplique-os. O resultado é sua chave pública.
+              Para quebrar a segurança, seria preciso descobrir os primos originais a partir desse produto, algo que
+              nem o melhor supercomputador do mundo consegue fazer em tempo útil. Esse é o grande segredo.
+            </p>
             <div className="timeline">
               {steps.map((s, i) => (
                 <motion.div key={s.num} className="step"

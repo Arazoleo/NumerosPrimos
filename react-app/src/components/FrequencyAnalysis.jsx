@@ -63,6 +63,44 @@ function AnimatedLetter({ cipherChar, plainChar, isDecoded, globalIndex }) {
   )
 }
 
+function AnimatedBar({ percent, char, isTop, analyzing, index }) {
+  const [displayChar, setDisplayChar] = useState(char)
+
+  useEffect(() => {
+    let iterations = 0;
+    const maxIterations = 6 + Math.random() * 10;
+    const startDelay = index * 40;
+
+    let interval;
+    const timeout = setTimeout(() => {
+      interval = setInterval(() => {
+        if (iterations >= maxIterations) {
+          clearInterval(interval)
+          setDisplayChar(char)
+        } else {
+          setDisplayChar(ALPHA[Math.floor(Math.random() * 26)])
+          iterations++
+        }
+      }, 35)
+    }, startDelay)
+
+    return () => {
+      clearTimeout(timeout)
+      clearInterval(interval)
+    }
+  }, [char, index])
+
+  return (
+    <div className="freq-bar-wrap">
+      <div 
+        className={`freq-bar ${isTop && analyzing ? 'highlight' : ''}`}
+        style={{ height: `${percent}%` }}
+      />
+      <div className="freq-bar-label">{displayChar}</div>
+    </div>
+  )
+}
+
 export default function FrequencyAnalysis() {
   const [analyzing, setAnalyzing] = useState(false)
 
@@ -102,13 +140,14 @@ export default function FrequencyAnalysis() {
             <div className="freq-chart-title">Frequência de Letras</div>
             <div className="freq-chart">
               {frequencies.map((item, i) => (
-                <div key={`${item.char}-${i}`} className="freq-bar-wrap">
-                  <div 
-                    className={`freq-bar ${item.isTop && analyzing ? 'highlight' : ''}`}
-                    style={{ height: `${item.percent}%` }}
-                  />
-                  <div className="freq-bar-label">{item.char}</div>
-                </div>
+                <AnimatedBar 
+                  key={i}
+                  percent={item.percent}
+                  char={item.char}
+                  isTop={item.isTop}
+                  analyzing={analyzing}
+                  index={i}
+                />
               ))}
             </div>
           </div>

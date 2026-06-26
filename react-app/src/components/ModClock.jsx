@@ -28,7 +28,7 @@ function ModClock() {
   const turns = Math.floor(aVal / MOD)
 
   return (
-    <section ref={ref} className="modclock-section">
+    <section id="relogio" ref={ref} className="modclock-section">
       <div className="modclock-sticky">
         <div className="container modclock-grid">
           <div className="modclock-text">

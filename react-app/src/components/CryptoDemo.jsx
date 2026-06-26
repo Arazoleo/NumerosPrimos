@@ -58,7 +58,7 @@ export default function CryptoDemo() {
   }, [])
 
   return (
-    <section className="crypto" id="como">
+    <section className="crypto" id="criptografia">
       <div className="container">
         <div className="crypto-grid">
           <motion.div

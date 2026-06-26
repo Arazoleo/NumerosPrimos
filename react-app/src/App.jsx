@@ -7,6 +7,7 @@ import Sieve from './components/Sieve'
 import Ulam from './components/Ulam'
 import FibSpiral from './components/FibSpiral'
 import Caesar from './components/Caesar'
+import FrequencyAnalysis from './components/FrequencyAnalysis'
 import ModClock from './components/ModClock'
 import CryptoDemo from './components/CryptoDemo'
 import Mission from './components/Mission'
@@ -45,6 +46,7 @@ export default function App() {
       <Ulam />
       <FibSpiral />
       <Caesar />
+      <FrequencyAnalysis />
       <ModClock />
       <CryptoDemo />
       <Mission />

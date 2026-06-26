@@ -106,7 +106,7 @@ export default function Ulam() {
   const rotate = useTransform(scrollYProgress, [0, 1], [-3, 4])
 
   return (
-    <section ref={ref} className="ulam-section">
+    <section id="ulam" ref={ref} className="ulam-section">
       <div className="ulam-sticky">
         <div className="container ulam-grid">
           <div className="ulam-text">

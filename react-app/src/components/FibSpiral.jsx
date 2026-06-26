@@ -123,7 +123,7 @@ export default function FibSpiral() {
   const textY         = useTransform(scrollYProgress, [0, 0.08], [40, 0])
 
   return (
-    <section ref={ref} className="fib-section">
+    <section id="fibonacci" ref={ref} className="fib-section">
       <div className="fib-sticky">
         <div className="container fib-grid">
           <motion.div className="fib-text" style={{ opacity: textOpacity, y: textY }}>

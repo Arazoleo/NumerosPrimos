@@ -84,7 +84,7 @@ export default function Caesar() {
   const encoded = MSG.split('').map(ch => shift(ch, k)).join('')
 
   return (
-    <section ref={ref} className="caesar-section">
+    <section id="caesar" ref={ref} className="caesar-section">
       <div className="caesar-sticky">
         <div className="container caesar-grid">
           <div className="caesar-text">
@@ -102,10 +102,10 @@ export default function Caesar() {
               </div>
 
               <div className="caesar-row">
-                <div className="caesar-row-lbl">texto</div>
+                <div className="caesar-row-lbl">cifrado</div>
                 <div className="caesar-row-msg">
                   {MSG.split('').map((ch, i) => (
-                    <span key={i} className={`tile ${ch === ' ' ? 'space' : ''}`}>{ch}</span>
+                    <span key={i} className={`tile ${ch === ' ' ? 'space' : ''}`}>{ch === ' ' ? ' ' : shift(ch, 25)}</span>
                   ))}
                 </div>
               </div>
@@ -113,16 +113,18 @@ export default function Caesar() {
               <div className="caesar-arrow">↓</div>
 
               <div className="caesar-row cipher">
-                <div className="caesar-row-lbl">cifrado</div>
+                <div className="caesar-row-lbl">decifrado</div>
                 <div className="caesar-row-msg">
-                  {MSG.split('').map((ch, i) => (
-                    <LetterTile key={i} original={ch} k={k} encoded={ch === ' ' ? ' ' : shift(ch, k)} />
-                  ))}
+                  {MSG.split('').map((ch, i) => {
+                    const cipherChar = ch === ' ' ? ' ' : shift(ch, 25);
+                    const decodedChar = ch === ' ' ? ' ' : shift(cipherChar, 26 - (k % 26));
+                    return <LetterTile key={i} original={cipherChar} k={k} encoded={decodedChar} />
+                  })}
                 </div>
               </div>
 
               <div className="caesar-formula">
-                <code>c = (m + k) mod 26</code>
+                <code>m = (c - k) mod 26</code>
               </div>
             </div>
           </div>

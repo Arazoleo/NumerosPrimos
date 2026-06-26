@@ -1,0 +1,242 @@
+.rsa-game-section {
+  position: relative;
+  padding: 120px 0;
+  background: var(--cream);
+  border-bottom: 1px solid var(--line);
+}
+
+.rsa-game-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .rsa-game-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.rsa-game-text {
+  max-width: 500px;
+}
+
+.game-rules {
+  margin-top: 24px;
+  background: var(--bone);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--line);
+}
+
+.game-rules ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.game-rules li {
+  font-size: 15px;
+  color: var(--slate);
+  margin-bottom: 8px;
+}
+
+.game-rules li:last-child {
+  margin-bottom: 0;
+}
+
+.game-rules strong {
+  color: var(--ink);
+}
+
+.best-time-badge {
+  margin-top: 20px;
+  display: inline-block;
+  background: var(--y-200);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 99px;
+}
+
+.best-time-badge strong {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+}
+
+/* Card UI */
+.rsa-game-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.rsa-game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: var(--bone);
+  border-bottom: 1px solid var(--line);
+}
+
+.level-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--slate);
+}
+
+.time-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--cream);
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  transition: all 0.3s ease;
+}
+
+.time-badge.danger {
+  background: #E63946;
+  color: white;
+  border-color: #E63946;
+  animation: pulse-danger 1s infinite;
+}
+
+@keyframes pulse-danger {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.rsa-game-body {
+  padding: 40px 24px;
+  min-height: 320px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.game-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.game-state h3 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 16px 0;
+}
+
+.game-state p {
+  color: var(--slate);
+  margin-bottom: 24px;
+}
+
+.shield-icon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.target-shield {
+  background: var(--ink);
+  color: white;
+  padding: 24px 40px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-md);
+}
+
+.shield-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--y-300);
+  margin-bottom: 8px;
+}
+
+.shield-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.factor-form {
+  width: 100%;
+  max-width: 320px;
+}
+
+.inputs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.input-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--slate);
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--ink);
+  background: var(--cream);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-group input:focus {
+  border-color: var(--blue);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.multiply-sign {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--slate);
+  margin-top: 24px;
+}
+
+.btn-block {
+  width: 100%;
+}

@@ -49,6 +49,7 @@ export default function Nav() {
               <a href="#frequencia" onClick={close}>Análise de Frequência</a>
               <a href="#relogio" onClick={close}>Aritmética Modular</a>
               <a href="#criptografia" onClick={close}>Criptografia</a>
+              <a href="#rsa-game" onClick={close}>Minijogo RSA</a>
             </div>
           </div>
           <a href="#missao" onClick={close}>Sobre Nós</a>

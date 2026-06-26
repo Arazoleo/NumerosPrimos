@@ -10,6 +10,7 @@ import Caesar from './components/Caesar'
 import FrequencyAnalysis from './components/FrequencyAnalysis'
 import ModClock from './components/ModClock'
 import CryptoDemo from './components/CryptoDemo'
+import RsaGame from './components/RsaGame'
 import Mission from './components/Mission'
 import TeamCarousel from './components/TeamCarousel'
 import FinalCTA from './components/FinalCTA'
@@ -49,6 +50,7 @@ export default function App() {
       <FrequencyAnalysis />
       <ModClock />
       <CryptoDemo />
+      <RsaGame />
       <Mission />
       <TeamCarousel />
       <FinalCTA />

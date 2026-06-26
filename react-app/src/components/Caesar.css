@@ -21,9 +21,8 @@
   width: 100%;
 }
 @media (max-width: 960px) {
-  .caesar-grid { grid-template-columns: 1fr; gap: 28px; }
-  .caesar-section { height: auto; }
-  .caesar-sticky { position: static; height: auto; padding: 80px 0; display: block; }
+  .caesar-grid { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
+  .caesar-sticky { padding: 0 16px; }
 }
 .caesar-text {
   max-width: 540px;
@@ -32,6 +31,10 @@
 }
 @media (max-width: 960px) {
   .caesar-text { padding-left: 0; justify-self: stretch; max-width: 100%; }
+  .caesar-text .h2 { font-size: 26px; }
+  .caesar-text .section-sub { font-size: 14px; margin-top: 8px; margin-bottom: 0; }
+  .caesar-readout { margin-top: 12px; padding: 12px; }
+  .caesar-formula { margin-top: 8px; }
 }
 .caesar-text .h2 { margin-top: 8px; }
 .caesar-text .section-sub { margin-top: 18px; }
@@ -136,6 +139,10 @@
   max-width: 440px;
   height: auto;
   filter: drop-shadow(0 30px 60px rgba(14,14,16,0.10));
+}
+@media (max-width: 960px) {
+  .caesar-wheel { max-width: 220px; }
+  .caesar-viz { gap: 8px; }
 }
 .caesar-letter {
   font-family: 'JetBrains Mono', monospace;

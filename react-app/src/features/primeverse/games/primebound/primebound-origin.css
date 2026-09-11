@@ -1,0 +1,654 @@
+/* ============================================================ origin films
+   One cinematic per champion. Shared chrome here at the top; below it, each
+   scene keeps its own camera script and its own animation vocabulary. */
+
+.pbo-film {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: #030308;
+  animation: pbo-film-in 900ms ease-out both;
+}
+
+@keyframes pbo-film-in { from { opacity: 0; } to { opacity: 1; } }
+
+.pbo-stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  transition: transform 4200ms cubic-bezier(.22, .61, .21, 1);
+  will-change: transform;
+}
+
+.pbo-svg { width: 100%; height: 100%; display: block; }
+
+.pbo-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .5;
+  background-image: repeating-radial-gradient(circle at 17% 31%, transparent 0 2px, rgba(255, 255, 255, .015) 2px 3px),
+    repeating-radial-gradient(circle at 73% 64%, transparent 0 3px, rgba(0, 0, 0, .05) 3px 4px);
+  animation: pbo-grain-shift 640ms steps(3) infinite;
+}
+
+@keyframes pbo-grain-shift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-1.2%, .8%); }
+  100% { transform: translate(.9%, -1%); }
+}
+
+.pbo-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: clamp(38px, 7vh, 76px);
+  background: #020204;
+  z-index: 3;
+}
+
+.pbo-bar--top { top: 0; animation: pbo-bar-top 900ms cubic-bezier(.2, .8, .2, 1) both; }
+.pbo-bar--bottom { bottom: 0; animation: pbo-bar-bottom 900ms cubic-bezier(.2, .8, .2, 1) both; }
+
+@keyframes pbo-bar-top { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes pbo-bar-bottom { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.pbo-epigraph {
+  position: absolute;
+  top: clamp(52px, 11vh, 110px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  z-index: 4;
+  color: var(--accent, #f2c15c);
+  font: 500 clamp(15px, 2.2vw, 24px)/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .22em;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, .9);
+  animation: pbo-epigraph-in 1400ms 500ms ease-out both;
+}
+
+@keyframes pbo-epigraph-in {
+  from { opacity: 0; letter-spacing: .5em; filter: blur(5px); }
+  to { opacity: .92; letter-spacing: .22em; filter: blur(0); }
+}
+
+.pbo-caption {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(46px, 9vh, 92px);
+  transform: translateX(-50%);
+  width: min(760px, 86vw);
+  z-index: 4;
+  text-align: center;
+}
+
+.pbo-caption p {
+  margin: 0 0 10px;
+  color: #f3ecda;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(17px, 2.4vw, 26px);
+  line-height: 1.45;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .95), 0 0 46px rgba(0, 0, 0, .8);
+  animation: pbo-caption-in 800ms ease-out both;
+}
+
+@keyframes pbo-caption-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pbo-caption__dots { display: flex; gap: 8px; justify-content: center; }
+
+.pbo-caption__dots i {
+  width: 22px;
+  height: 2px;
+  background: rgba(243, 236, 218, .22);
+  transition: background 600ms ease;
+}
+
+.pbo-caption__dots i.is-lit { background: var(--accent, #f2c15c); }
+
+.pbo-titlecard {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(2, 2, 5, .34) 0%, rgba(2, 2, 5, .88) 100%);
+  animation: pbo-caption-in 1100ms ease-out both;
+}
+
+.pbo-titlecard small {
+  color: var(--energy, #8df8f2);
+  font: 700 clamp(10px, 1.2vw, 13px)/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .4em;
+}
+
+.pbo-titlecard strong {
+  color: #fdf7e7;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(52px, 9vw, 118px);
+  line-height: .95;
+  text-shadow: 0 6px 60px rgba(0, 0, 0, .9);
+}
+
+.pbo-titlecard em {
+  color: var(--accent, #f2c15c);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(18px, 2.6vw, 30px);
+}
+
+.pbo-titlecard p {
+  margin: 18px 0 0;
+  max-width: min(560px, 80vw);
+  color: rgba(243, 236, 218, .85);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: clamp(15px, 2vw, 21px);
+  line-height: 1.5;
+  animation: pbo-caption-in 900ms 700ms ease-out both;
+}
+
+.pbo-skip {
+  position: absolute;
+  right: clamp(16px, 3vw, 40px);
+  bottom: clamp(12px, 2.4vh, 26px);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid rgba(243, 236, 218, .3);
+  background: rgba(3, 3, 8, .55);
+  color: rgba(243, 236, 218, .82);
+  font: 600 10px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .18em;
+  cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.pbo-skip:hover { border-color: var(--accent, #f2c15c); color: #fdf7e7; }
+
+.pbo-skip kbd {
+  padding: 3px 6px;
+  border: 1px solid rgba(243, 236, 218, .35);
+  border-radius: 3px;
+  font: inherit;
+}
+
+.pbo-voice {
+  position: absolute;
+  left: clamp(16px, 3vw, 40px);
+  bottom: clamp(12px, 2.4vh, 26px);
+  z-index: 6;
+  padding: 9px 14px;
+  border: 1px solid rgba(243, 236, 218, .3);
+  background: rgba(3, 3, 8, .55);
+  color: rgba(243, 236, 218, .82);
+  font: 600 10px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .18em;
+  cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+.pbo-voice:hover { border-color: var(--accent, #f2c15c); color: #fdf7e7; }
+
+.pbo-hero-bob { animation: pbo-hero-bob 2.8s steps(2, jump-none) infinite; }
+@keyframes pbo-hero-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
+
+/* ======================================================= 1 · mountain forge
+   Verb: strike. Heat breathing, sparks climbing, a hammer that keeps time. */
+
+.pbof-furnace { animation: pbof-heat 3.4s ease-in-out infinite; transform-origin: 1320px 480px; }
+@keyframes pbof-heat { 0%, 100% { opacity: .92; } 50% { opacity: 1; } }
+
+.pbof-spark {
+  opacity: 0;
+  animation: pbof-spark 2.6s linear infinite;
+  animation-delay: calc(var(--i) * .37s);
+}
+
+@keyframes pbof-spark {
+  0% { opacity: 0; transform: translateY(0); }
+  12% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-260px) translateX(18px); }
+}
+
+.pbof-hammer-swing {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+  animation: pbof-strike 1.9s cubic-bezier(.6, 0, .3, 1) infinite;
+}
+
+@keyframes pbof-strike {
+  0%, 55% { transform: rotate(0deg); }
+  72% { transform: rotate(34deg); }
+  80%, 100% { transform: rotate(-2deg); }
+}
+
+.pbof-strike-flash {
+  opacity: 0;
+  animation: pbof-flash 1.9s linear infinite;
+  transform-origin: 754px 626px;
+}
+
+@keyframes pbof-flash {
+  0%, 79% { opacity: 0; transform: scale(.4); }
+  82% { opacity: .85; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1.25); }
+}
+
+.pbof-blade-shards, .pbof-blade-prime { opacity: 0; }
+
+.pbo-film--mountain-forge[data-shot='forge-shatter'] .pbof-blade-composite { opacity: 0; transition: opacity 200ms 1.4s; }
+.pbo-film--mountain-forge[data-shot='forge-shatter'] .pbof-blade-shards {
+  opacity: 1;
+  transition: opacity 160ms 1.4s;
+  animation: pbof-shard-drop 900ms 1.4s cubic-bezier(.3, .7, .4, 1) both;
+}
+
+@keyframes pbof-shard-drop {
+  from { transform: translateY(-10px); }
+  to { transform: translateY(14px); }
+}
+
+.pbo-film--mountain-forge[data-shot='forge-single'] .pbof-blade-composite,
+.pbo-film--mountain-forge[data-shot='forge-depart'] .pbof-blade-composite { opacity: 0; }
+.pbo-film--mountain-forge[data-shot='forge-single'] .pbof-blade-prime,
+.pbo-film--mountain-forge[data-shot='forge-depart'] .pbof-blade-prime {
+  opacity: 1;
+  transition: opacity 900ms 1s ease;
+  animation: pbof-prime-glow 2.2s 1s ease-in-out infinite;
+}
+
+@keyframes pbof-prime-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(242, 193, 92, .6)); }
+  50% { filter: drop-shadow(0 0 22px rgba(242, 193, 92, 1)); }
+}
+
+.pbo-film--mountain-forge[data-shot='forge-single'] .pbof-hammer-swing { animation-duration: 2.8s; }
+.pbo-film--mountain-forge[data-shot='forge-depart'] .pbof-hammer-swing,
+.pbo-film--mountain-forge[data-shot='forge-depart'] .pbof-strike-flash { animation: none; opacity: 0; }
+.pbo-film--mountain-forge[data-shot='forge-depart'] .pbof-hammer-swing { opacity: 1; }
+
+.pbo-stage[data-shot='forge-ember'] { transform: scale(1.04); }
+.pbo-stage[data-shot='forge-shatter'] { transform: scale(1.55) translate(1%, -14%); }
+.pbo-stage[data-shot='forge-single'] { transform: scale(1.72) translate(2%, -17%); }
+.pbo-stage[data-shot='forge-depart'] { transform: scale(1.08) translate(-8%, 2%); }
+
+/* ========================================================== 2 · cipher city
+   Verb: extinguish and relight. A skyline that breathes in window-light. */
+
+.pbc-window {
+  opacity: .85;
+  animation: pbc-flicker 5.2s ease-in-out infinite;
+  animation-delay: calc(var(--w) * -.7s);
+  transition: opacity 900ms ease;
+  transition-delay: calc(var(--w) * 220ms);
+}
+
+@keyframes pbc-flicker { 0%, 100% { opacity: .85; } 50% { opacity: .6; } }
+
+.pbc-oldkey-copy { opacity: 0; }
+.pbo-stage[data-shot='city-siege'] .pbc-oldkey-copy {
+  animation: pbc-copy 2.6s 1.2s cubic-bezier(.3, .7, .3, 1) both;
+}
+
+@keyframes pbc-copy {
+  0% { opacity: 0; transform: translate(800px, 210px); }
+  25% { opacity: .9; }
+  100% { opacity: 0; transform: translate(1180px, 560px) scale(.5) rotate(40deg); }
+}
+
+.pbo-film--cipher-city[data-shot='city-dark'] .pbc-window { opacity: 0; animation: none; }
+.pbo-film--cipher-city[data-shot='city-dark'] .pbc-oldkey {
+  animation: pbc-key-fall 1.8s .6s cubic-bezier(.5, 0, .8, .4) both;
+}
+
+@keyframes pbc-key-fall {
+  0% { transform: translate(800px, 210px); opacity: 1; }
+  100% { transform: translate(800px, 700px) rotate(70deg); opacity: 0; }
+}
+
+.pbc-twokeys { opacity: 0; }
+.pbo-film--cipher-city[data-shot='city-keys'] .pbc-twokeys,
+.pbo-film--cipher-city[data-shot='city-dawn'] .pbc-twokeys {
+  opacity: 1;
+  transition: opacity 1s .5s ease;
+  animation: pbc-keys-float 4s ease-in-out infinite;
+}
+
+@keyframes pbc-keys-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+
+.pbo-film--cipher-city[data-shot='city-keys'] .pbc-oldkey,
+.pbo-film--cipher-city[data-shot='city-dawn'] .pbc-oldkey { opacity: 0; }
+.pbo-film--cipher-city[data-shot='city-keys'] .pbc-window { opacity: .25; animation: none; }
+.pbo-film--cipher-city[data-shot='city-dawn'] .pbc-window { opacity: .95; animation: none; }
+
+.pbc-dawn { opacity: 0; transition: opacity 2.6s ease; mix-blend-mode: screen; }
+.pbo-film--cipher-city[data-shot='city-dawn'] .pbc-dawn { opacity: .5; }
+
+.pbo-stage[data-shot='city-siege'] { transform: scale(1.28) translate(0, 6%); }
+.pbo-stage[data-shot='city-dark'] { transform: scale(1.12) translate(3%, 1%); }
+.pbo-stage[data-shot='city-keys'] { transform: scale(1.42) translate(0, 13%); }
+.pbo-stage[data-shot='city-dawn'] { transform: scale(1.02); }
+
+/* ======================================================== 3 · residue steppe
+   Verb: return. Everything circles: the sky, the herd, the arrow itself. */
+
+.pbs-wheel-spin { animation: pbs-spin 46s linear infinite; }
+@keyframes pbs-spin { to { transform: rotate(360deg); } }
+
+.pbs-house-mark {
+  animation: pbs-house 6s ease-in-out infinite;
+  transform-origin: 0 0;
+}
+
+@keyframes pbs-house {
+  0%, 100% { transform: translate(199px, -115px) scale(1); opacity: .9; }
+  50% { transform: translate(199px, -115px) scale(1.35); opacity: .4; }
+}
+
+.pbs-fog { opacity: 0; }
+.pbo-film--residue-steppe[data-shot='steppe-fog'] .pbs-fog {
+  opacity: .82;
+  transition: opacity 2.4s ease;
+  animation: pbs-fog-drift 9s linear infinite;
+}
+
+@keyframes pbs-fog-drift { 0% { transform: translateX(-3%); } 100% { transform: translateX(3%); } }
+
+.pbo-film--residue-steppe[data-shot='steppe-fog'] .pbs-herd { opacity: .12; transition: opacity 2.8s 1s ease; }
+.pbo-film--residue-steppe[data-shot='steppe-remainder'] .pbs-fog { opacity: .3; transition: opacity 2.6s ease; }
+.pbo-film--residue-steppe[data-shot='steppe-remainder'] .pbs-herd { opacity: 1; transition: opacity 2.4s 1.2s ease; }
+
+.pbs-arrow-a, .pbs-arrow-b { stroke-dasharray: 560; stroke-dashoffset: 560; }
+.pbs-mod-label { opacity: 0; }
+.pbo-film--residue-steppe[data-shot='steppe-arrow'] .pbs-arrow-a { animation: pbs-loose 1.2s .8s cubic-bezier(.3, 0, .4, 1) both; }
+.pbo-film--residue-steppe[data-shot='steppe-arrow'] .pbs-arrow-b { animation: pbs-loose 1.4s 2s cubic-bezier(.3, 0, .4, 1) both; }
+.pbo-film--residue-steppe[data-shot='steppe-arrow'] .pbs-mod-label { opacity: 1; transition: opacity 900ms 3.2s ease; }
+.pbo-film--residue-steppe[data-shot='steppe-arrow'] .pbs-bowstring { animation: pbs-string 1s .3s ease-out; }
+
+@keyframes pbs-loose { to { stroke-dashoffset: 0; } }
+@keyframes pbs-string {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(-8px); }
+  55% { transform: translateX(3px); }
+}
+
+.pbo-stage[data-shot='steppe-wheel'] { transform: scale(1.18) translate(0, 9%); }
+.pbo-stage[data-shot='steppe-fog'] { transform: scale(1.34) translate(6%, -16%); }
+.pbo-stage[data-shot='steppe-remainder'] { transform: scale(1.22) translate(2%, -12%); }
+.pbo-stage[data-shot='steppe-arrow'] { transform: scale(1.02); }
+
+/* =========================================================== 4 · organ tower
+   Verb: resonate. Brass breathing in chords; one pipe answers off the scale. */
+
+.pbn-pipe {
+  animation: pbn-breathe 3.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * .3s);
+  transform-origin: 50% 100%;
+}
+
+@keyframes pbn-breathe {
+  0%, 100% { filter: brightness(.9); }
+  50% { filter: brightness(1.25); }
+}
+
+.pbn-chordlight {
+  opacity: 0;
+  mix-blend-mode: overlay;
+  animation: pbn-chord 3.8s ease-in-out infinite;
+}
+
+@keyframes pbn-chord { 0%, 100% { opacity: 0; } 50% { opacity: .2; } }
+
+.pbn-mersenne, .pbn-mersenne-label { opacity: 0; }
+.pbo-film--organ-tower[data-shot='tower-voice'] .pbn-mersenne,
+.pbo-film--organ-tower[data-shot='tower-call'] .pbn-mersenne {
+  opacity: 1;
+  transition: opacity 1.4s .8s ease;
+  animation: pbn-alive 2.1s 1s ease-in-out infinite;
+}
+
+@keyframes pbn-alive {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(141, 248, 242, .35)) brightness(1); }
+  50% { filter: drop-shadow(0 0 26px rgba(141, 248, 242, .95)) brightness(1.35); }
+}
+
+.pbo-film--organ-tower[data-shot='tower-voice'] .pbn-mersenne-label,
+.pbo-film--organ-tower[data-shot='tower-call'] .pbn-mersenne-label { opacity: 1; transition: opacity 1s 1.6s ease; }
+.pbo-film--organ-tower[data-shot='tower-voice'] .pbn-pipe { animation-play-state: paused; filter: brightness(.68); }
+
+.pbn-bolt { opacity: 0; transform-origin: 1180px 420px; }
+.pbo-film--organ-tower[data-shot='tower-call'] .pbn-bolt { animation: pbn-bolt 2.4s 1s linear infinite; }
+
+@keyframes pbn-bolt {
+  0%, 71% { opacity: 0; transform: scaleY(.2); }
+  74% { opacity: 1; transform: scaleY(1); }
+  80% { opacity: .35; }
+  84% { opacity: .9; }
+  92%, 100% { opacity: 0; }
+}
+
+.pbo-stage[data-shot='tower-pipes'] { transform: scale(1.06); }
+.pbo-stage[data-shot='tower-chords'] { transform: scale(1.3) translate(0, -8%); }
+.pbo-stage[data-shot='tower-voice'] { transform: scale(1.62) translate(-16%, -6%); }
+.pbo-stage[data-shot='tower-call'] { transform: scale(1.14) translate(-4%, 0); }
+
+/* =========================================================== 5 · mirror hall
+   Verb: vanish. Reflections shimmer until the hall gives some of them zero. */
+
+.pbm-reflection { animation: pbm-shimmer 4.6s ease-in-out infinite; }
+@keyframes pbm-shimmer { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+
+.pbm-mu { opacity: 0; }
+.pbo-film--mirror-hall[data-shot='hall-vanish'] .pbm-reflection--vanishing {
+  animation: pbm-erase 1.6s 1.2s steps(5, end) both;
+}
+
+@keyframes pbm-erase {
+  0% { opacity: 1; transform: translateX(0); }
+  40% { opacity: .7; transform: translateX(-5px); }
+  70% { opacity: .3; transform: translateX(6px); }
+  100% { opacity: 0; transform: translateX(0); }
+}
+
+.pbo-film--mirror-hall[data-shot='hall-vanish'] .pbm-mu,
+.pbo-film--mirror-hall[data-shot='hall-signs'] .pbm-mu,
+.pbo-film--mirror-hall[data-shot='hall-invert'] .pbm-mu { opacity: 1; transition: opacity 1s 2.2s ease; }
+.pbo-film--mirror-hall[data-shot='hall-signs'] .pbm-reflection--vanishing,
+.pbo-film--mirror-hall[data-shot='hall-invert'] .pbm-reflection--vanishing { opacity: 0; animation: none; }
+
+.pbm-maia { transition: transform 4s cubic-bezier(.3, .6, .3, 1); }
+.pbo-film--mirror-hall[data-shot='hall-signs'] .pbm-maia { transform: translate(880px, 688px); }
+.pbo-film--mirror-hall[data-shot='hall-invert'] .pbm-maia { transform: translate(1080px, 688px) scale(-1, 1); }
+
+.pbm-ribbon { stroke-dasharray: 900; stroke-dashoffset: 900; }
+.pbo-film--mirror-hall[data-shot='hall-invert'] .pbm-ribbon { animation: pbm-ribbon 3s .6s ease both; }
+@keyframes pbm-ribbon { to { stroke-dashoffset: 0; } }
+
+.pbo-stage[data-shot='hall-mirrors'] { transform: scale(1.05); }
+.pbo-stage[data-shot='hall-vanish'] { transform: scale(1.45) translate(6%, -9%); }
+.pbo-stage[data-shot='hall-signs'] { transform: scale(1.3) translate(-7%, -6%); }
+.pbo-stage[data-shot='hall-invert'] { transform: scale(1.06) translate(0, 2%); }
+
+/* =========================================================== 6 · frozen fjord
+   Verb: split. Aurora drifting; two blows where a thousand were promised. */
+
+.pbg-aurora { animation: pbg-aurora 11s ease-in-out infinite; }
+@keyframes pbg-aurora {
+  0%, 100% { transform: translateX(0); opacity: .8; }
+  50% { transform: translateX(-46px); opacity: 1; }
+}
+
+.pbg-fist-swing {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: pbg-windup 2.4s ease-in-out infinite;
+}
+@keyframes pbg-windup {
+  0%, 60%, 100% { transform: rotate(0); }
+  74% { transform: rotate(-24deg); }
+  82% { transform: rotate(6deg); }
+}
+
+.pbg-block-left, .pbg-block-right { opacity: 0; }
+.pbg-crack { stroke-dasharray: 420; stroke-dashoffset: 420; opacity: 0; }
+.pbg-sum-label { opacity: 0; }
+
+.pbo-film--frozen-fjord[data-shot='fjord-split'] .pbg-crack {
+  opacity: 1;
+  animation: pbg-crack 700ms 1s cubic-bezier(.6, 0, .4, 1) both;
+}
+
+@keyframes pbg-crack { to { stroke-dashoffset: 0; } }
+
+.pbo-film--frozen-fjord[data-shot='fjord-split'] .pbg-block-whole { opacity: 0; transition: opacity 150ms 1.8s; }
+.pbo-film--frozen-fjord[data-shot='fjord-split'] .pbg-block-left {
+  opacity: 1;
+  transition: opacity 100ms 1.8s;
+  animation: pbg-part-left 900ms 1.8s cubic-bezier(.2, .7, .3, 1) both;
+}
+.pbo-film--frozen-fjord[data-shot='fjord-split'] .pbg-block-right {
+  opacity: 1;
+  transition: opacity 100ms 1.8s;
+  animation: pbg-part-right 900ms 1.8s cubic-bezier(.2, .7, .3, 1) both;
+}
+
+@keyframes pbg-part-left { from { transform: translateX(0); } to { transform: translateX(-34px) rotate(-3deg); } }
+@keyframes pbg-part-right { from { transform: translateX(0); } to { transform: translateX(34px) rotate(3deg); } }
+
+.pbo-film--frozen-fjord[data-shot='fjord-split'] .pbg-sum-label { opacity: 1; transition: opacity 800ms 2.6s ease; }
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-block-whole { opacity: 0; }
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-block-left,
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-block-right,
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-sum-label { opacity: 1; }
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-fist-swing { animation-duration: 1.1s; }
+.pbo-film--frozen-fjord[data-shot='fjord-rage'] .pbg-aurora { animation-duration: 5s; }
+
+.pbo-stage[data-shot='fjord-ice'] { transform: scale(1.04); }
+.pbo-stage[data-shot='fjord-doubt'] { transform: scale(1.34) translate(9%, -4%); }
+.pbo-stage[data-shot='fjord-split'] { transform: scale(1.5) translate(-2%, -6%); }
+.pbo-stage[data-shot='fjord-rage'] { transform: scale(1.24) translate(8%, -2%); }
+
+/* ====================================================== 7 · sieve greenhouse
+   Verb: cross out. A field learns subtraction until only light is left. */
+
+.pbl-strike { stroke-dasharray: 120; stroke-dashoffset: 120; opacity: 0; }
+.pbl-bloom { opacity: 0; transform-origin: center; }
+.pbl-cell-prime { opacity: .55; }
+
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-cross'] .pbl-strike,
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-glow'] .pbl-strike,
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-build'] .pbl-strike {
+  opacity: 1;
+  animation: pbl-strike 500ms cubic-bezier(.5, 0, .5, 1) both;
+  animation-delay: calc(.5s + var(--d) * .34s);
+}
+
+@keyframes pbl-strike { to { stroke-dashoffset: 0; } }
+
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-glow'] .pbl-bloom,
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-build'] .pbl-bloom {
+  animation: pbl-bloom 2.6s ease-in-out infinite;
+}
+
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-glow'] .pbl-cell-prime,
+.pbo-film--sieve-greenhouse[data-shot='greenhouse-build'] .pbl-cell-prime {
+  opacity: 1;
+  transition: opacity 1.4s .6s ease;
+}
+
+@keyframes pbl-bloom {
+  0%, 100% { opacity: .18; transform: scale(.9); }
+  50% { opacity: .5; transform: scale(1.08); }
+}
+
+.pbl-lena { animation: pbl-walk 5.4s ease-in-out infinite alternate; }
+@keyframes pbl-walk { from { transform: translate(150px, 784px); } to { transform: translate(210px, 784px); } }
+
+.pbo-stage[data-shot='greenhouse-grid'] { transform: scale(1.05); }
+.pbo-stage[data-shot='greenhouse-cross'] { transform: scale(1.36) translate(-4%, -10%); }
+.pbo-stage[data-shot='greenhouse-glow'] { transform: scale(1.24) translate(3%, -8%); }
+.pbo-stage[data-shot='greenhouse-build'] { transform: scale(1.02); }
+
+/* ===================================================== 8 · tide observatory
+   Verb: answer. Two points chosen, a third obliged; the sea keeps time. */
+
+.pbi-star { animation: pbi-twinkle 3.6s ease-in-out infinite; }
+.pbi-star:nth-of-type(odd) { animation-delay: -1.7s; }
+@keyframes pbi-twinkle { 0%, 100% { opacity: .9; } 50% { opacity: .35; } }
+
+.pbi-wave { animation: pbi-tide 7s ease-in-out infinite; }
+@keyframes pbi-tide {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-38px, 6px); }
+}
+
+.pbi-ruler { stroke-dasharray: 660; stroke-dashoffset: 660; }
+.pbi-third, .pbi-drop { opacity: 0; }
+.pbi-curve { stroke-dasharray: 1400; stroke-dashoffset: 1400; opacity: 0; }
+
+.pbo-film--tide-observatory[data-shot='cliff-tangent'] .pbi-ruler { animation: pbi-draw 1.6s .8s ease both; }
+.pbo-film--tide-observatory[data-shot='cliff-tangent'] .pbi-third {
+  opacity: 1;
+  transition: opacity 400ms 2.6s;
+  animation: pbi-pop 1.8s 2.6s ease-in-out infinite;
+}
+.pbo-film--tide-observatory[data-shot='cliff-tangent'] .pbi-drop { opacity: .8; transition: opacity 700ms 3s; }
+
+@keyframes pbi-draw { to { stroke-dashoffset: 0; } }
+@keyframes pbi-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.5); }
+}
+
+.pbo-film--tide-observatory[data-shot='cliff-curve'] .pbi-ruler,
+.pbo-film--tide-observatory[data-shot='cliff-fold'] .pbi-ruler { stroke-dashoffset: 0; opacity: .45; }
+.pbo-film--tide-observatory[data-shot='cliff-curve'] .pbi-third,
+.pbo-film--tide-observatory[data-shot='cliff-fold'] .pbi-third { opacity: 1; }
+.pbo-film--tide-observatory[data-shot='cliff-curve'] .pbi-curve,
+.pbo-film--tide-observatory[data-shot='cliff-fold'] .pbi-curve {
+  opacity: 1;
+  animation: pbi-curve-reveal 3.2s .6s cubic-bezier(.3, .4, .2, 1) both;
+}
+
+@keyframes pbi-curve-reveal { to { stroke-dashoffset: 0; } }
+
+.pbo-stage[data-shot='cliff-tides'] { transform: scale(1.08) translate(-3%, 0); }
+.pbo-stage[data-shot='cliff-tangent'] { transform: scale(1.32) translate(-6%, 8%); }
+.pbo-stage[data-shot='cliff-curve'] { transform: scale(1.2) translate(-2%, 3%); }
+.pbo-stage[data-shot='cliff-fold'] { transform: scale(1.02); }
+
+/* --------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .pbo-stage { transition: none; transform: none !important; }
+  .pbo-grain,
+  .pbo-film .pbo-hero-bob,
+  .pbo-film [class*='pbof-'],
+  .pbo-film [class*='pbc-'],
+  .pbo-film [class*='pbs-'],
+  .pbo-film [class*='pbn-'],
+  .pbo-film [class*='pbm-'],
+  .pbo-film [class*='pbg-'],
+  .pbo-film [class*='pbl-'],
+  .pbo-film [class*='pbi-'] {
+    animation: none !important;
+    transition: none !important;
+  }
+  .pbs-arrow-a, .pbs-arrow-b, .pbm-ribbon, .pbg-crack, .pbl-strike, .pbi-ruler, .pbi-curve {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .pbc-twokeys, .pbn-mersenne, .pbn-mersenne-label, .pbm-mu, .pbg-block-left, .pbg-block-right,
+  .pbg-sum-label, .pbl-bloom, .pbi-third, .pbi-drop { opacity: 1 !important; }
+}

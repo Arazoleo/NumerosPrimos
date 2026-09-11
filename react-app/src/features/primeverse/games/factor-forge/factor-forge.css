@@ -1,0 +1,1047 @@
+.factor-forge {
+  --ff-bg: #03050b;
+  --ff-panel: rgba(7, 13, 22, 0.82);
+  --ff-panel-solid: #09111c;
+  --ff-cyan: #40e3ff;
+  --ff-cyan-soft: rgba(64, 227, 255, 0.15);
+  --ff-gold: #ffca3a;
+  --ff-gold-soft: rgba(255, 202, 58, 0.15);
+  --ff-white: #f5fbff;
+  --ff-muted: #8fa6b4;
+  --ff-line: rgba(151, 220, 237, 0.16);
+  --ff-danger: #ff6d72;
+  background: var(--ff-bg);
+  color: var(--ff-white);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  isolation: isolate;
+  min-height: 100svh;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.factor-forge::before {
+  background:
+    linear-gradient(rgba(73, 212, 242, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(73, 212, 242, 0.025) 1px, transparent 1px);
+  background-size: 52px 52px;
+  content: '';
+  inset: 0;
+  mask-image: radial-gradient(circle at center, black, transparent 75%);
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.factor-forge *,
+.factor-forge *::before,
+.factor-forge *::after {
+  box-sizing: border-box;
+}
+
+.factor-forge button,
+.factor-forge input,
+.factor-forge select {
+  font: inherit;
+}
+
+.factor-forge button,
+.factor-forge a,
+.factor-forge select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.factor-forge button:focus-visible,
+.factor-forge a:focus-visible,
+.factor-forge input:focus-visible,
+.factor-forge select:focus-visible {
+  outline: 2px solid var(--ff-gold);
+  outline-offset: 3px;
+}
+
+.factor-forge__canvas {
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+.factor-forge__canvas canvas {
+  display: block;
+  height: 100% !important;
+  touch-action: none;
+  width: 100% !important;
+}
+
+.factor-forge__hud {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.factor-forge__hud button,
+.factor-forge__hud a,
+.factor-forge__hud input,
+.factor-forge__hud select,
+.factor-forge__intro,
+.factor-forge__result,
+.factor-forge__console,
+.factor-forge__topbar {
+  pointer-events: auto;
+}
+
+.factor-forge__modal-wrap {
+  align-items: center;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(13, 105, 127, 0.12), transparent 48%),
+    linear-gradient(90deg, rgba(3, 5, 11, 0.72), rgba(3, 5, 11, 0.28), rgba(3, 5, 11, 0.72));
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: clamp(18px, 4vw, 56px);
+  pointer-events: auto;
+  position: absolute;
+}
+
+.factor-forge__intro,
+.factor-forge__result {
+  animation: ff-panel-in 550ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  backdrop-filter: blur(24px);
+  background:
+    linear-gradient(135deg, rgba(16, 28, 42, 0.94), rgba(5, 10, 18, 0.91)),
+    var(--ff-panel-solid);
+  border: 1px solid var(--ff-line);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5), inset 0 1px rgba(255, 255, 255, 0.04);
+  max-height: calc(100svh - 36px);
+  overflow: auto;
+  position: relative;
+}
+
+.factor-forge__intro::before,
+.factor-forge__result::before,
+.factor-forge__console::before {
+  border-left: 2px solid var(--ff-cyan);
+  border-top: 2px solid var(--ff-cyan);
+  content: '';
+  height: 18px;
+  left: -1px;
+  position: absolute;
+  top: -1px;
+  width: 18px;
+}
+
+.factor-forge__intro {
+  clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 0 100%);
+  padding: clamp(28px, 4vw, 54px);
+  width: min(760px, 100%);
+}
+
+.factor-forge__eyebrow {
+  align-items: center;
+  color: var(--ff-cyan);
+  display: flex;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 10px;
+  letter-spacing: 0.18em;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+
+.factor-forge__eyebrow-dot {
+  animation: ff-status-pulse 1.6s ease-in-out infinite;
+  background: var(--ff-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 14px var(--ff-cyan);
+  height: 6px;
+  width: 6px;
+}
+
+.factor-forge__intro h1,
+.factor-forge__result h2 {
+  color: var(--ff-white);
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: clamp(48px, 7vw, 78px);
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.factor-forge__intro h1 em,
+.factor-forge__result h2 em {
+  color: var(--ff-gold);
+  display: block;
+  font-style: normal;
+}
+
+.factor-forge__lead {
+  color: #b9c9d2;
+  font-size: clamp(15px, 1.7vw, 18px);
+  line-height: 1.7;
+  margin: 24px 0 28px;
+  max-width: 650px;
+}
+
+.factor-forge__instructions {
+  border-bottom: 1px solid var(--ff-line);
+  border-top: 1px solid var(--ff-line);
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 0 28px;
+}
+
+.factor-forge__instructions > div {
+  align-items: flex-start;
+  display: flex;
+  gap: 10px;
+  padding: 17px 14px;
+}
+
+.factor-forge__instructions > div + div {
+  border-left: 1px solid var(--ff-line);
+}
+
+.factor-forge__instructions span {
+  color: var(--ff-gold);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.factor-forge__instructions p {
+  color: var(--ff-muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.factor-forge__challenge-picker {
+  border: 0;
+  margin: 0 0 26px;
+  padding: 0;
+}
+
+.factor-forge__challenge-picker legend,
+.factor-forge__suggestions > span,
+.factor-forge__pending-nodes > span {
+  color: var(--ff-muted);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.factor-forge__challenge-picker > div {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(6, 1fr);
+  margin-top: 10px;
+}
+
+.factor-forge__challenge-picker button {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--ff-line);
+  color: #a9bac4;
+  min-height: 43px;
+  transition: 180ms ease;
+}
+
+.factor-forge__challenge-picker button:hover,
+.factor-forge__challenge-picker button.is-selected {
+  background: var(--ff-cyan-soft);
+  border-color: rgba(64, 227, 255, 0.7);
+  box-shadow: inset 0 -2px var(--ff-cyan);
+  color: var(--ff-white);
+}
+
+.factor-forge__intro-actions,
+.factor-forge__result-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.factor-forge__primary-action,
+.factor-forge__secondary-action {
+  align-items: center;
+  border: 0;
+  display: inline-flex;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 30px;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  min-height: 50px;
+  padding: 0 22px;
+  text-transform: uppercase;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.factor-forge__primary-action {
+  background: var(--ff-gold);
+  box-shadow: 0 10px 34px rgba(255, 202, 58, 0.17);
+  color: #101217;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.factor-forge__primary-action:hover {
+  box-shadow: 0 12px 40px rgba(255, 202, 58, 0.3);
+  transform: translateY(-2px);
+}
+
+.factor-forge__secondary-action {
+  background: transparent;
+  border: 1px solid var(--ff-line);
+  color: var(--ff-white);
+}
+
+.factor-forge__secondary-action:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.factor-forge__back {
+  align-items: center;
+  color: var(--ff-muted);
+  display: inline-flex;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 8px;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.factor-forge__back:hover {
+  color: var(--ff-white);
+}
+
+.factor-forge__back--compact {
+  color: #b6c5ce;
+}
+
+.factor-forge__intro-footer {
+  align-items: center;
+  color: #546b78;
+  display: flex;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  margin-top: 30px;
+}
+
+.factor-forge__quality {
+  align-items: center;
+  color: var(--ff-muted);
+  display: inline-flex;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  gap: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.factor-forge__quality select {
+  appearance: none;
+  background: rgba(7, 16, 26, 0.92);
+  border: 1px solid var(--ff-line);
+  border-radius: 0;
+  color: var(--ff-white);
+  cursor: pointer;
+  font-size: 9px;
+  padding: 7px 24px 7px 9px;
+}
+
+.factor-forge__topbar {
+  align-items: center;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(3, 7, 13, 0.91), rgba(3, 7, 13, 0.58));
+  border-bottom: 1px solid var(--ff-line);
+  display: flex;
+  height: 66px;
+  justify-content: space-between;
+  left: 0;
+  padding: 0 clamp(16px, 3vw, 42px);
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.factor-forge__brand {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  left: 50%;
+  letter-spacing: 0.08em;
+  position: absolute;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+
+.factor-forge__brand > span {
+  color: var(--ff-gold);
+}
+
+.factor-forge__brand small {
+  color: var(--ff-cyan);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  margin-left: 8px;
+}
+
+.factor-forge__top-actions {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.factor-forge__top-actions > button {
+  background: transparent;
+  border: 1px solid var(--ff-line);
+  color: var(--ff-muted);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  min-height: 31px;
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.factor-forge__top-actions > button:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--ff-white);
+}
+
+.factor-forge__metrics {
+  display: flex;
+  gap: 8px;
+  left: clamp(16px, 3vw, 42px);
+  position: absolute;
+  top: 84px;
+}
+
+.factor-forge__metrics > div {
+  backdrop-filter: blur(12px);
+  background: rgba(4, 10, 17, 0.74);
+  border-left: 2px solid rgba(64, 227, 255, 0.38);
+  min-width: 92px;
+  padding: 10px 13px;
+}
+
+.factor-forge__metrics span,
+.factor-forge__console-head span,
+.factor-forge__equation > span,
+.factor-forge__result-grid span,
+.factor-forge__xp-award > span {
+  color: var(--ff-muted);
+  display: block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.factor-forge__metrics strong {
+  color: var(--ff-white);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+}
+
+.factor-forge__console {
+  backdrop-filter: blur(20px);
+  background: var(--ff-panel);
+  border: 1px solid var(--ff-line);
+  bottom: clamp(18px, 3vw, 38px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  padding: 20px;
+  position: absolute;
+  right: clamp(16px, 3vw, 42px);
+  width: min(330px, calc(100vw - 32px));
+}
+
+.factor-forge__console-head {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--ff-line);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+}
+
+.factor-forge__console-head strong {
+  color: var(--ff-cyan);
+  display: block;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.factor-forge__stability {
+  text-align: right;
+}
+
+.factor-forge__stability strong {
+  color: var(--ff-gold);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 17px;
+}
+
+.factor-forge__console-prompt,
+.factor-forge__console-empty {
+  color: #b5c5ce;
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+
+.factor-forge__console-prompt strong {
+  color: var(--ff-white);
+}
+
+.factor-forge__divisor-form label {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.factor-forge__divisor-form > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+
+.factor-forge__divisor-form input {
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid var(--ff-line);
+  border-right: 0;
+  color: var(--ff-white);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  min-width: 0;
+  padding: 12px;
+}
+
+.factor-forge__divisor-form input::placeholder {
+  color: #536974;
+}
+
+.factor-forge__divisor-form button {
+  background: var(--ff-cyan);
+  border: 0;
+  color: #041015;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0 16px;
+  text-transform: uppercase;
+}
+
+.factor-forge__divisor-form button:disabled {
+  cursor: not-allowed;
+  filter: saturate(0.2);
+  opacity: 0.45;
+}
+
+.factor-forge__suggestions,
+.factor-forge__pending-nodes {
+  margin-top: 17px;
+}
+
+.factor-forge__suggestions > div,
+.factor-forge__pending-nodes > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.factor-forge__suggestions button {
+  background: rgba(64, 227, 255, 0.07);
+  border: 1px solid rgba(64, 227, 255, 0.17);
+  color: var(--ff-cyan);
+  flex: 1 1 74px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  min-height: 34px;
+  padding: 5px 8px;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.factor-forge__suggestions button:hover {
+  background: rgba(64, 227, 255, 0.16);
+  border-color: rgba(64, 227, 255, 0.5);
+}
+
+.factor-forge__suggestions small {
+  color: #708d9a;
+  font-size: 8px;
+}
+
+.factor-forge__pending-nodes button {
+  background: transparent;
+  border: 1px solid var(--ff-line);
+  color: #a9bdc7;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  height: 30px;
+  min-width: 40px;
+}
+
+.factor-forge__pending-nodes button.is-active,
+.factor-forge__pending-nodes button:hover {
+  border-color: var(--ff-cyan);
+  color: var(--ff-cyan);
+}
+
+.factor-forge__equation {
+  backdrop-filter: blur(12px);
+  background: rgba(4, 10, 17, 0.76);
+  border-left: 2px solid var(--ff-gold);
+  bottom: clamp(18px, 3vw, 38px);
+  left: clamp(16px, 3vw, 42px);
+  max-width: calc(100vw - 410px);
+  min-width: 220px;
+  padding: 12px 16px;
+  position: absolute;
+}
+
+.factor-forge__equation strong {
+  color: var(--ff-white);
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: clamp(16px, 2vw, 22px);
+}
+
+.factor-forge__feedback {
+  align-items: center;
+  animation: ff-feedback-in 300ms ease both;
+  backdrop-filter: blur(16px);
+  background: rgba(5, 12, 20, 0.92);
+  border: 1px solid var(--ff-line);
+  display: flex;
+  font-size: 12px;
+  gap: 10px;
+  left: 50%;
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 11px 15px;
+  position: absolute;
+  top: 82px;
+  transform: translateX(-50%);
+}
+
+.factor-forge__feedback > span {
+  color: var(--ff-cyan);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.factor-forge__feedback--error {
+  border-color: rgba(255, 109, 114, 0.45);
+  color: #ffd3d4;
+}
+
+.factor-forge__feedback--error > span {
+  color: var(--ff-danger);
+}
+
+.factor-forge__feedback--success {
+  border-color: rgba(255, 202, 58, 0.38);
+}
+
+.factor-forge__feedback--success > span {
+  color: var(--ff-gold);
+}
+
+.factor-forge__modal-wrap--result {
+  background: rgba(2, 5, 10, 0.6);
+}
+
+.factor-forge__result {
+  padding: clamp(28px, 4vw, 50px);
+  text-align: center;
+  width: min(680px, 100%);
+}
+
+.factor-forge__result::before {
+  border-color: var(--ff-gold);
+}
+
+.factor-forge__completion-mark {
+  align-items: center;
+  background: var(--ff-gold-soft);
+  border: 1px solid rgba(255, 202, 58, 0.65);
+  border-radius: 50%;
+  color: var(--ff-gold);
+  display: flex;
+  font-size: 22px;
+  height: 48px;
+  justify-content: center;
+  margin: 0 auto 18px;
+  width: 48px;
+}
+
+.factor-forge__result .factor-forge__eyebrow {
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.factor-forge__result h2 {
+  font-size: clamp(34px, 6vw, 58px);
+}
+
+.factor-forge__result-equation {
+  color: var(--ff-gold);
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 700;
+  margin: 24px 0 12px;
+}
+
+.factor-forge__result > p {
+  color: var(--ff-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 auto 26px;
+  max-width: 510px;
+}
+
+.factor-forge__result-grid {
+  border-bottom: 1px solid var(--ff-line);
+  border-top: 1px solid var(--ff-line);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 18px;
+}
+
+.factor-forge__result-grid > div {
+  padding: 16px 8px;
+}
+
+.factor-forge__result-grid > div + div {
+  border-left: 1px solid var(--ff-line);
+}
+
+.factor-forge__result-grid strong {
+  color: var(--ff-white);
+  display: block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 16px;
+}
+
+.factor-forge__result-grid strong small {
+  color: var(--ff-muted);
+  display: block;
+  font-size: 7px;
+  margin-top: 3px;
+}
+
+.factor-forge__xp-award {
+  align-items: center;
+  background: var(--ff-gold-soft);
+  border: 1px solid rgba(255, 202, 58, 0.18);
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  min-height: 44px;
+  padding: 8px 15px;
+}
+
+.factor-forge__xp-award > span {
+  margin: 0 14px 0 0;
+}
+
+.factor-forge__xp-award strong {
+  color: var(--ff-gold);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 15px;
+}
+
+.factor-forge__xp-award small {
+  background: var(--ff-gold);
+  color: #101217;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 7px;
+  font-weight: 800;
+  margin-left: 14px;
+  padding: 3px 6px;
+}
+
+.factor-forge__result-actions {
+  justify-content: center;
+}
+
+.factor-forge__loading,
+.factor-forge__webgl-fallback {
+  background: rgba(5, 12, 20, 0.88);
+  border: 1px solid var(--ff-line);
+  color: var(--ff-cyan);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 12px 16px;
+  white-space: nowrap;
+}
+
+.factor-forge__webgl-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  left: 50%;
+  max-width: min(430px, calc(100vw - 32px));
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: normal;
+}
+
+.factor-forge__webgl-fallback strong {
+  color: var(--ff-gold);
+  font-size: 12px;
+}
+
+.factor-forge__webgl-fallback span {
+  color: var(--ff-muted);
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-transform: none;
+}
+
+@keyframes ff-panel-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes ff-feedback-in {
+  from { opacity: 0; transform: translate(-50%, -8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes ff-status-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@media (max-width: 900px) {
+  .factor-forge__quality > span,
+  .factor-forge__top-actions > button,
+  .factor-forge__brand small {
+    display: none;
+  }
+
+  .factor-forge__console {
+    bottom: 14px;
+    max-height: 47svh;
+    overflow: auto;
+    right: 14px;
+    width: min(310px, calc(100vw - 28px));
+  }
+
+  .factor-forge__equation {
+    bottom: 14px;
+    max-width: calc(100vw - 354px);
+  }
+}
+
+@media (max-width: 680px) {
+  .factor-forge__modal-wrap {
+    align-items: flex-end;
+    padding: 10px;
+  }
+
+  .factor-forge__intro,
+  .factor-forge__result {
+    max-height: calc(100svh - 20px);
+    padding: 25px 20px;
+  }
+
+  .factor-forge__intro h1 {
+    font-size: clamp(44px, 17vw, 64px);
+  }
+
+  .factor-forge__instructions {
+    grid-template-columns: 1fr;
+  }
+
+  .factor-forge__instructions > div {
+    padding: 10px 8px;
+  }
+
+  .factor-forge__instructions > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--ff-line);
+  }
+
+  .factor-forge__challenge-picker > div {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .factor-forge__intro-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .factor-forge__intro-actions .factor-forge__back {
+    justify-content: center;
+  }
+
+  .factor-forge__intro-footer > span {
+    display: none;
+  }
+
+  .factor-forge__intro-footer {
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .factor-forge__topbar {
+    height: 58px;
+    padding: 0 12px;
+  }
+
+  .factor-forge__brand {
+    font-size: 13px;
+  }
+
+  .factor-forge__back--compact > span:last-child {
+    display: none;
+  }
+
+  .factor-forge__quality select {
+    padding: 6px 20px 6px 6px;
+    width: 62px;
+  }
+
+  .factor-forge__metrics {
+    left: 10px;
+    right: 10px;
+    top: 67px;
+  }
+
+  .factor-forge__metrics > div {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 9px;
+  }
+
+  .factor-forge__metrics strong {
+    font-size: 11px;
+  }
+
+  .factor-forge__console {
+    bottom: 10px;
+    left: 10px;
+    max-height: 43svh;
+    padding: 16px;
+    right: 10px;
+    width: auto;
+  }
+
+  .factor-forge__console-head {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .factor-forge__console-head strong {
+    font-size: 27px;
+  }
+
+  .factor-forge__equation {
+    bottom: calc(43svh + 20px);
+    left: 10px;
+    max-width: calc(100vw - 20px);
+    overflow: hidden;
+    padding: 8px 11px;
+    right: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .factor-forge__equation > span {
+    display: none;
+  }
+
+  .factor-forge__equation strong {
+    font-size: 14px;
+  }
+
+  .factor-forge__feedback {
+    animation: none;
+    bottom: calc(43svh + 68px);
+    font-size: 10px;
+    left: 10px;
+    max-width: none;
+    right: 10px;
+    top: auto;
+    transform: none;
+  }
+
+  .factor-forge__result-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .factor-forge__result-grid > div:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid var(--ff-line);
+  }
+
+  .factor-forge__result-grid > div:nth-child(4) {
+    border-top: 1px solid var(--ff-line);
+  }
+
+  .factor-forge__result-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .factor-forge__result-actions .factor-forge__back {
+    justify-content: center;
+    margin-top: 5px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 681px) {
+  .factor-forge__intro {
+    padding-bottom: 28px;
+    padding-top: 28px;
+  }
+
+  .factor-forge__lead {
+    margin-bottom: 18px;
+    margin-top: 16px;
+  }
+
+  .factor-forge__instructions,
+  .factor-forge__challenge-picker {
+    margin-bottom: 18px;
+  }
+
+  .factor-forge__intro-footer {
+    margin-top: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .factor-forge *,
+  .factor-forge *::before,
+  .factor-forge *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}

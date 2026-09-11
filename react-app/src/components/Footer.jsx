@@ -4,7 +4,7 @@ const IG = 'https://www.instagram.com/numerosprimos_cripto/'
 
 export default function Footer() {
   return (
-    <footer>
+    <footer className="site-footer">
       <div className="container footer-inner">
         <div className="footer-left">
           <div className="brand">

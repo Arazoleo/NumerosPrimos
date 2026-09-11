@@ -1,0 +1,195 @@
+.pv-minigame {
+  --minigame-accent: #6ff4ff;
+  position: fixed;
+  top: clamp(5.5rem, 10vh, 8rem);
+  left: clamp(1rem, 3vw, 3.4rem);
+  z-index: 32;
+  width: min(23rem, calc(100vw - 2rem));
+  padding: 1rem;
+  overflow: hidden;
+  color: #edfaff;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--minigame-accent) 10%, transparent), transparent 50%),
+    rgba(3, 9, 20, 0.91);
+  border: 1px solid color-mix(in srgb, var(--minigame-accent) 46%, transparent);
+  border-radius: 0.35rem;
+  box-shadow: 0 1.2rem 4rem rgba(0, 0, 0, 0.46), inset 0 0 2rem rgba(33, 105, 146, 0.08);
+  backdrop-filter: blur(14px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.pv-minigame--ulam { --minigame-accent: #ff6ec7; }
+.pv-minigame--reactor { --minigame-accent: #ffba6c; }
+
+.pv-minigame__header,
+.pv-minigame__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pv-minigame__header {
+  color: var(--minigame-accent);
+  font-size: 0.69rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.pv-minigame__close {
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0;
+  color: #9eb1c4;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(154, 197, 220, 0.18);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.pv-minigame__countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(3, 7, 18, 0.88);
+  font: 800 clamp(5rem, 18vw, 8rem) / 1 system-ui, sans-serif;
+  text-shadow: 0 0 2.5rem var(--minigame-accent);
+  animation: pv-minigame-count 0.8s ease-out infinite;
+}
+
+.pv-minigame__timer {
+  margin: 0.8rem 0 0.35rem;
+  color: #f4fbff;
+  font: 300 2.8rem / 1 system-ui, sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.pv-minigame__timer small {
+  margin-left: 0.2rem;
+  color: var(--minigame-accent);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.pv-minigame__eyebrow {
+  margin: 1rem 0 0.45rem;
+  color: #8299ae;
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+}
+
+.pv-minigame__sequence {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.pv-minigame__sequence span {
+  display: grid;
+  flex: 1;
+  min-width: 1.7rem;
+  aspect-ratio: 1;
+  place-items: center;
+  color: #71869b;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(158, 189, 213, 0.12);
+  border-radius: 50%;
+  font-size: 0.68rem;
+}
+
+.pv-minigame__sequence .is-cleared {
+  color: #06101a;
+  background: var(--minigame-accent);
+  border-color: var(--minigame-accent);
+}
+
+.pv-minigame__sequence .is-current {
+  color: #fff;
+  border-color: var(--minigame-accent);
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--minigame-accent) 42%, transparent);
+  animation: pv-minigame-pulse 1.15s ease-in-out infinite;
+}
+
+.pv-minigame__equation {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3.4rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.035);
+  border-left: 2px solid var(--minigame-accent);
+}
+
+.pv-minigame__equation span { color: var(--minigame-accent); font-size: 1.5rem; }
+.pv-minigame__equation b { color: #62798f; font-weight: 400; }
+.pv-minigame__equation strong { color: #d8e6f1; font-size: 0.8rem; }
+.pv-minigame__equation em { color: #fff; font-size: 1.25rem; font-style: normal; }
+
+.pv-minigame__directive,
+.pv-minigame__result,
+.pv-minigame__feedback {
+  min-height: 2rem;
+  margin: 0.8rem 0;
+  color: #9db0c2;
+  font: 500 0.72rem / 1.55 system-ui, sans-serif;
+}
+
+.pv-minigame__directive strong { color: var(--minigame-accent); }
+.pv-minigame__result { color: #dfffea; }
+.pv-minigame__result.is-danger,
+.pv-minigame__feedback.is-error,
+.pv-minigame__feedback.is-composite { color: #ff8f9f; }
+.pv-minigame__feedback.is-correct,
+.pv-minigame__feedback.is-round-complete { color: #7dffd0; }
+
+.pv-minigame__footer {
+  padding-top: 0.7rem;
+  color: #6f8295;
+  border-top: 1px solid rgba(138, 178, 205, 0.13);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pv-minigame__footer button {
+  padding: 0.58rem 0.8rem;
+  color: #06101a;
+  background: var(--minigame-accent);
+  border: 0;
+  border-radius: 0.18rem;
+  font: 800 0.58rem / 1 ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+@keyframes pv-minigame-count {
+  from { opacity: 0.45; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pv-minigame-pulse {
+  50% { box-shadow: 0 0 1.8rem color-mix(in srgb, var(--minigame-accent) 65%, transparent); }
+}
+
+@media (max-width: 680px) {
+  .pv-minigame {
+    top: auto;
+    bottom: max(5.4rem, env(safe-area-inset-bottom));
+    left: 0.7rem;
+    width: calc(100vw - 1.4rem);
+    padding: 0.8rem;
+  }
+  .pv-minigame__timer { font-size: 2rem; }
+  .pv-minigame__directive, .pv-minigame__feedback { margin: 0.5rem 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv-minigame__countdown,
+  .pv-minigame__sequence .is-current { animation: none; }
+}
+

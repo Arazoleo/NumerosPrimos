@@ -1,0 +1,77 @@
+name: Criar uma tarefa técnica
+description: Trabalho interno, refatoração, testes, conteúdo ou infraestrutura.
+title: "[Task]: "
+labels:
+  - "type: task"
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Tipo
+      options:
+        - Implementação técnica
+        - Refatoração
+        - Testes e qualidade
+        - Conteúdo e narrativa
+        - Arte e áudio
+        - Documentação
+        - Infraestrutura
+        - Pesquisa técnica
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objetivo
+      description: Qual resultado verificável esta tarefa precisa produzir?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto técnico
+      description: Explique decisões anteriores, restrições e links relevantes.
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Entregáveis
+      placeholder: |
+        - [ ] Código ou conteúdo...
+        - [ ] Testes...
+        - [ ] Documentação...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      description: Como outra pessoa confirma que a tarefa terminou?
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Arquivos ou sistemas compartilhados
+      description: Liste pontos com risco de conflito de merge.
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependências e bloqueios
+
+  - type: checkboxes
+    id: ready
+    attributes:
+      label: Pronto para triagem
+      options:
+        - label: A tarefa possui apenas um objetivo principal.
+          required: true
+        - label: Não incluí segredos, tokens ou dados pessoais.
+          required: true

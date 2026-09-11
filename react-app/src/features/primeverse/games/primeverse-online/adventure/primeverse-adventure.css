@@ -1,0 +1,227 @@
+.pvo-adventure {
+  --adventure-accent: #65efff;
+  --adventure-rgb: 101, 239, 255;
+  position: absolute;
+  z-index: 31;
+  top: clamp(6.25rem, 10vh, 7.75rem);
+  left: clamp(1rem, 3vw, 3.5rem);
+  width: min(21rem, calc(100vw - 2rem));
+  padding: 1rem 1.05rem 0.9rem;
+  border: 1px solid rgba(var(--adventure-rgb), 0.24);
+  border-left: 2px solid var(--adventure-accent);
+  background:
+    linear-gradient(112deg, rgba(var(--adventure-rgb), 0.08), transparent 52%),
+    rgba(4, 10, 20, 0.86);
+  box-shadow: 0 1.2rem 3.5rem rgba(0, 0, 0, 0.28);
+  color: #e9f5ff;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  animation: pvo-adventure-arrive 360ms ease-out both;
+}
+
+.pvo-adventure--magenta {
+  --adventure-accent: #ff6ec7;
+  --adventure-rgb: 255, 110, 199;
+}
+
+.pvo-adventure--amber {
+  --adventure-accent: #ffba6c;
+  --adventure-rgb: 255, 186, 108;
+}
+
+.pvo-adventure--horror {
+  --adventure-accent: #c7ff66;
+  --adventure-rgb: 199, 255, 102;
+  background:
+    radial-gradient(circle at 88% 0, rgba(118, 7, 40, 0.22), transparent 48%),
+    rgba(3, 8, 11, 0.91);
+}
+
+.pvo-adventure.is-complete {
+  border-left-color: #a8ffca;
+}
+
+.pvo-adventure__header,
+.pvo-adventure__integrity > span,
+.pvo-adventure__inventory,
+.pvo-adventure__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.pvo-adventure__header {
+  color: var(--adventure-accent);
+  font: 600 0.58rem/1.2 var(--pvo-mono, ui-monospace, monospace);
+  letter-spacing: 0.14em;
+}
+
+.pvo-adventure__header b {
+  color: rgba(230, 243, 255, 0.62);
+  font-size: 0.63rem;
+}
+
+.pvo-adventure h2 {
+  margin: 0.52rem 0 0.35rem;
+  color: #f2f8ff;
+  font: 500 clamp(1rem, 1.35vw, 1.22rem)/1.12 var(--pvo-display, sans-serif);
+  letter-spacing: -0.02em;
+}
+
+.pvo-adventure > p {
+  margin: 0;
+  color: rgba(218, 231, 245, 0.68);
+  font: 400 0.7rem/1.52 var(--pvo-sans, sans-serif);
+}
+
+.pvo-adventure__progress {
+  height: 2px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  background: rgba(206, 227, 246, 0.1);
+}
+
+.pvo-adventure__progress i {
+  display: block;
+  width: var(--adventure-progress);
+  height: 100%;
+  background: var(--adventure-accent);
+  box-shadow: 0 0 0.7rem rgba(var(--adventure-rgb), 0.7);
+  transition: width 420ms ease;
+}
+
+.pvo-adventure__horror {
+  margin-top: 0.75rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(var(--adventure-rgb), 0.14);
+}
+
+.pvo-adventure__integrity > span,
+.pvo-adventure__inventory {
+  color: rgba(220, 234, 226, 0.62);
+  font: 600 0.55rem/1.2 var(--pvo-mono, ui-monospace, monospace);
+  letter-spacing: 0.1em;
+}
+
+.pvo-adventure__integrity > span b,
+.pvo-adventure__inventory b {
+  color: #effff1;
+}
+
+.pvo-adventure__integrity > i {
+  display: block;
+  height: 0.28rem;
+  margin-top: 0.35rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pvo-adventure__integrity > i b {
+  display: block;
+  width: var(--integrity);
+  height: 100%;
+  background: linear-gradient(90deg, #c7375d, #c7ff66);
+  transition: width 220ms ease;
+}
+
+.pvo-adventure__inventory {
+  justify-content: flex-start;
+  margin-top: 0.6rem;
+}
+
+.pvo-adventure__actions {
+  justify-content: flex-start;
+  margin-top: 0.7rem;
+  pointer-events: auto;
+}
+
+.pvo-adventure__actions button,
+.pvo-adventure__reset {
+  min-height: 2rem;
+  border: 1px solid rgba(var(--adventure-rgb), 0.22);
+  background: rgba(var(--adventure-rgb), 0.06);
+  color: rgba(233, 246, 238, 0.8);
+  font: 600 0.54rem/1 var(--pvo-mono, ui-monospace, monospace);
+  letter-spacing: 0.09em;
+  cursor: pointer;
+}
+
+.pvo-adventure__actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.28rem 0.62rem;
+}
+
+.pvo-adventure__actions button:hover:not(:disabled),
+.pvo-adventure__actions button.is-active {
+  border-color: var(--adventure-accent);
+  background: rgba(var(--adventure-rgb), 0.15);
+  color: #fff;
+}
+
+.pvo-adventure__actions button:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.pvo-adventure__actions kbd {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  place-items: center;
+  border: 1px solid rgba(var(--adventure-rgb), 0.32);
+  color: var(--adventure-accent);
+  font: inherit;
+}
+
+.pvo-adventure__reset {
+  width: 100%;
+  margin-top: 0.7rem;
+  pointer-events: auto;
+}
+
+.pvo-adventure__feedback {
+  margin-top: 0.65rem;
+  padding-top: 0.58rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(230, 241, 250, 0.72);
+  font: 500 0.62rem/1.42 var(--pvo-mono, ui-monospace, monospace);
+}
+
+.pvo-adventure__feedback.is-success { color: #a8ffca; }
+.pvo-adventure__feedback.is-warning { color: #ffd273; }
+.pvo-adventure__feedback.is-danger { color: #ff849f; }
+
+@keyframes pvo-adventure-arrive {
+  from { opacity: 0; transform: translateX(-0.65rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 760px) {
+  .pvo-adventure {
+    top: 4.9rem;
+    left: 0.7rem;
+    width: min(19rem, calc(100vw - 1.4rem));
+    padding: 0.75rem 0.8rem 0.7rem;
+    backdrop-filter: blur(8px);
+  }
+
+  .pvo-adventure h2 { font-size: 0.95rem; }
+  .pvo-adventure > p { font-size: 0.64rem; }
+}
+
+@media (max-height: 620px) {
+  .pvo-adventure {
+    top: 4.4rem;
+    transform: scale(0.9);
+    transform-origin: top left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pvo-adventure { animation: none; }
+  .pvo-adventure__progress i,
+  .pvo-adventure__integrity > i b { transition: none; }
+}

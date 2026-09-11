@@ -1,0 +1,232 @@
+/* Gathering panel for group expeditions: one card, the code front and centre. */
+.pvo-lobby-toggle {
+  position: absolute;
+  right: clamp(14px, 2vw, 30px);
+  bottom: clamp(88px, 12vh, 132px);
+  z-index: 9;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid rgba(155, 240, 189, 0.35);
+  background: rgba(4, 14, 10, 0.82);
+  color: #d9ffe9;
+  font: 700 9px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.pvo-lobby-toggle:hover {
+  background: rgba(10, 30, 20, 0.9);
+}
+
+.pvo-lobby-toggle i {
+  color: #9bf0bd;
+  font-style: normal;
+}
+
+.pvo-lobby {
+  position: absolute;
+  right: clamp(14px, 2vw, 30px);
+  bottom: clamp(88px, 12vh, 132px);
+  z-index: 9;
+  width: min(320px, calc(100vw - 28px));
+  padding: 14px;
+  border: 1px solid rgba(155, 240, 189, 0.28);
+  background: linear-gradient(160deg, rgba(5, 18, 12, 0.96), rgba(2, 9, 6, 0.92));
+  color: #d9ffe9;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+
+.pvo-lobby header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font: 700 8px/1.2 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.2em;
+  color: #9bf0bd;
+}
+
+.pvo-lobby header button {
+  border: 0;
+  background: none;
+  color: #6d8a7c;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pvo-lobby__lead {
+  margin: 10px 0;
+  color: #a9c3b5;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.pvo-lobby__games {
+  display: grid;
+  gap: 6px;
+}
+
+.pvo-lobby__games button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid rgba(155, 240, 189, 0.16);
+  background: rgba(155, 240, 189, 0.05);
+  color: #e6fff0;
+  font: 600 10px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.pvo-lobby__games button:hover {
+  border-color: var(--expedition-accent, #9bf0bd);
+  background: rgba(155, 240, 189, 0.1);
+}
+
+.pvo-lobby__games i {
+  color: var(--expedition-accent, #9bf0bd);
+  font-style: normal;
+}
+
+.pvo-lobby__join {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.pvo-lobby__join input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(155, 240, 189, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+  color: #eafff3;
+  font: 700 13px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.3em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.pvo-lobby__join button {
+  padding: 0 12px;
+  border: 1px solid rgba(155, 240, 189, 0.35);
+  background: rgba(155, 240, 189, 0.12);
+  color: #d9ffe9;
+  font: 700 9px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  cursor: pointer;
+}
+
+.pvo-lobby__join button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pvo-lobby__code {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.pvo-lobby__code b {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 48px;
+  border: 1px solid rgba(155, 240, 189, 0.4);
+  background: rgba(155, 240, 189, 0.07);
+  color: #ecfff4;
+  font: 700 22px/1 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.pvo-lobby__share {
+  display: block;
+  margin-bottom: 10px;
+  color: #7d998b;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.pvo-lobby__members {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.pvo-lobby__members li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border: 1px solid rgba(155, 240, 189, 0.1);
+  background: rgba(155, 240, 189, 0.03);
+  font-size: 11px;
+}
+
+.pvo-lobby__members li i {
+  width: 16px;
+  color: #6d8a7c;
+  font-style: normal;
+  text-align: center;
+}
+
+.pvo-lobby__members li.is-ready i {
+  color: #6cf5a5;
+}
+
+.pvo-lobby__members li em {
+  margin-left: auto;
+  color: #9bf0bd;
+  font: 700 7px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.18em;
+  font-style: normal;
+}
+
+.pvo-lobby__members li.is-empty {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.pvo-lobby__actions {
+  display: grid;
+  gap: 6px;
+}
+
+.pvo-lobby__actions button {
+  padding: 11px;
+  border: 1px solid rgba(155, 240, 189, 0.35);
+  background: rgba(155, 240, 189, 0.1);
+  color: #e6fff0;
+  font: 700 10px/1 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+
+.pvo-lobby__actions button.is-active {
+  border-color: #6cf5a5;
+  background: rgba(108, 245, 165, 0.18);
+}
+
+.pvo-lobby__actions .pvo-lobby__launch:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+@media (max-width: 720px) {
+  .pvo-lobby,
+  .pvo-lobby-toggle {
+    right: 12px;
+    bottom: 132px;
+  }
+}

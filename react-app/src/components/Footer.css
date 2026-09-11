@@ -1,4 +1,4 @@
-footer {
+.site-footer {
   padding: 56px 0 40px;
   border-top: 1px solid var(--line);
   font-size: 14px;
@@ -15,10 +15,10 @@ footer {
   .footer-right { align-items: flex-start; }
 }
 
-footer .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); }
-footer .brand-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
-footer .brand-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
-footer .brand-text span { color: var(--y-600); }
+.site-footer .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); }
+.site-footer .brand-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
+.site-footer .brand-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+.site-footer .brand-text span { color: var(--y-600); }
 
 .footer-affil {
   display: flex; align-items: center; gap: 10px;

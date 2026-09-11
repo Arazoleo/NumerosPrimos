@@ -1,0 +1,85 @@
+name: Propor uma funcionalidade
+description: Descreva uma melhoria de produto, gameplay ou experiência.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área
+      options:
+        - Plataforma e progressão
+        - Landing e navegação
+        - Primeverse Online
+        - O Último Primo
+        - Núcleo 257
+        - Cripta do Crivo
+        - Fenda de Ulam
+        - Cerco de Euclides
+        - Novo jogo ou experiência
+        - Backend ou infraestrutura
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou oportunidade
+      description: O que falta hoje e para quem isso importa?
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Resultado desejado
+      description: Descreva o comportamento final sem prender a Issue a uma implementação específica.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Explique a experiência, fluxo ou mecânica imaginada.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      placeholder: |
+        - [ ] O jogador consegue...
+        - [ ] A interface informa...
+        - [ ] O comportamento funciona no desktop e celular...
+    validations:
+      required: true
+
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fora de escopo
+      description: O que explicitamente não faz parte desta entrega?
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Referências
+      description: Mockups, vídeos, jogos de referência ou Issues relacionadas.
+
+  - type: dropdown
+    id: size_guess
+    attributes:
+      label: Tamanho inicial estimado
+      description: A triagem pode alterar esta estimativa.
+      options:
+        - XS — menos de meio dia
+        - S — até um dia
+        - M — até dois dias
+        - L — precisa ser refinada
+        - XL — precisa virar sub-issues
+    validations:
+      required: true
+

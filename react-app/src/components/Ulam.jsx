@@ -1,16 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { isPrime } from '../lib/math/primes'
 import './Ulam.css'
 
 const N_ULAM = 225
-
-function isPrime(n) {
-  if (n < 2) return false
-  if (n < 4) return true
-  if (n % 2 === 0) return false
-  for (let i = 3; i * i <= n; i += 2) if (n % i === 0) return false
-  return true
-}
 
 function ulamPositions(N) {
   const pos = [{ x: 0, y: 0 }]

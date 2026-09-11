@@ -1,0 +1,100 @@
+name: Relatar um bug
+description: Registre um comportamento incorreto ou uma regressão reproduzível.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por ajudar a melhorar o Primeverse. Remova tokens, chaves, dados pessoais e conteúdo de `.env` antes de anexar logs ou imagens.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área afetada
+      options:
+        - Landing e navegação
+        - Primeverse Online
+        - O Último Primo
+        - Núcleo 257
+        - Cripta do Crivo
+        - Fenda de Ulam
+        - Cerco de Euclides
+        - Outro jogo
+        - Backend ou infraestrutura
+    validations:
+      required: true
+
+  - type: input
+    id: route
+    attributes:
+      label: Rota ou tela
+      description: Onde o problema acontece?
+      placeholder: /jogos/primebound
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o resultado observado de forma objetiva.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Abra...
+        2. Clique...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequência
+      options:
+        - Sempre
+        - Frequentemente
+        - Às vezes
+        - Aconteceu uma vez
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Ambiente
+      description: Informe dispositivo, sistema, navegador, ambiente e quantidade de jogadores quando relevante.
+      placeholder: macOS, Chrome, localhost, 2 jogadores
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidências
+      description: Adicione screenshots, vídeo ou logs já sanitizados.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmações
+      options:
+        - label: Procurei por uma Issue duplicada.
+          required: true
+        - label: Removi credenciais e dados pessoais das evidências.
+          required: true
+

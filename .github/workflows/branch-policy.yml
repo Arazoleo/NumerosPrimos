@@ -1,0 +1,46 @@
+name: Política de branches
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+  merge_group:
+    types:
+      - checks_requested
+
+permissions:
+  contents: read
+
+jobs:
+  target:
+    name: Destino correto do Pull Request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar origem e destino
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "merge_group" ]]; then
+            echo "PR já validado; liberando a verificação da merge queue."
+            exit 0
+          fi
+
+          if [[ "$BASE_BRANCH" == "main" && "$HEAD_BRANCH" != "develop" && "$HEAD_BRANCH" != hotfix/* ]]; then
+            echo "PRs para main devem vir de develop ou de hotfix/*."
+            exit 1
+          fi
+
+          if [[ "$BASE_BRANCH" == "develop" && "$HEAD_BRANCH" == "develop" ]]; then
+            echo "A origem e o destino do PR não podem ser develop."
+            exit 1
+          fi
+
+          echo "Fluxo válido: $HEAD_BRANCH -> $BASE_BRANCH"

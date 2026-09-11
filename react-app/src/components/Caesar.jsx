@@ -49,7 +49,7 @@ function CaesarWheel({ k, kFloat }) {
   )
 }
 
-function LetterTile({ original, k, encoded }) {
+function LetterTile({ original, encoded }) {
   return (
     <div className="letter-tile">
       <div className="letter-top">{original}</div>
@@ -80,8 +80,6 @@ export default function Caesar() {
   useMotionValueEvent(kProgress, 'change', (v) => {
     setK(Math.max(0, Math.min(25, Math.round(v))))
   })
-
-  const encoded = MSG.split('').map(ch => shift(ch, k)).join('')
 
   return (
     <section id="caesar" ref={ref} className="caesar-section">
@@ -116,9 +114,9 @@ export default function Caesar() {
                 <div className="caesar-row-lbl">decifrado</div>
                 <div className="caesar-row-msg">
                   {MSG.split('').map((ch, i) => {
-                    const cipherChar = ch === ' ' ? ' ' : shift(ch, 25);
-                    const decodedChar = ch === ' ' ? ' ' : shift(cipherChar, 26 - (k % 26));
-                    return <LetterTile key={i} original={cipherChar} k={k} encoded={decodedChar} />
+                    const cipherChar = ch === ' ' ? ' ' : shift(ch, 25)
+                    const decodedChar = ch === ' ' ? ' ' : shift(cipherChar, 26 - (k % 26))
+                    return <LetterTile key={i} original={cipherChar} encoded={decodedChar} />
                   })}
                 </div>
               </div>

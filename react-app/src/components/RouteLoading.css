@@ -1,0 +1,37 @@
+.route-loading {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 22px;
+  text-align: center;
+  color: #faf6ec;
+  background: #07090d;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.route-loading__orbit {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 204, 26, .28);
+  border-radius: 50%;
+  animation: route-orbit 2.8s linear infinite;
+}
+.route-loading__orbit::before,
+.route-loading__orbit::after {
+  content: '';
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(37, 99, 235, .28);
+  border-radius: 50%;
+}
+.route-loading__orbit::after { inset: 40px; background: #ffcc1a; box-shadow: 0 0 28px rgba(255, 204, 26, .55); }
+.route-loading__orbit span { position: absolute; color: #ffdb4d; font-size: 12px; }
+.route-loading__orbit span:nth-child(1) { top: -9px; left: 48px; }
+.route-loading__orbit span:nth-child(2) { right: -7px; bottom: 19px; }
+.route-loading__orbit span:nth-child(3) { left: -6px; bottom: 17px; }
+.route-loading p { margin: 0; font-size: 11px; color: rgba(250, 246, 236, .58); }
+@keyframes route-orbit { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .route-loading__orbit { animation-duration: 8s; } }

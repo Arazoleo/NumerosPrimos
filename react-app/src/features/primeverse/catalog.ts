@@ -1,0 +1,163 @@
+export type GameStatus = 'available' | 'coming-soon'
+
+export interface PrimeverseGame {
+  id: string
+  title: string
+  label: string
+  description: string
+  mathematicalIdea: string
+  path: string | null
+  status: GameStatus
+  portalPosition: [number, number, number]
+  accent: string
+  glyph: string
+}
+
+export const PRIMEVERSE_GAMES: readonly PrimeverseGame[] = [
+  {
+    id: 'primeverse-online',
+    title: 'Primeverse Online',
+    label: 'Nexus multiplayer',
+    description: 'Encontre outros exploradores no Nexus, desperte o Prime Core e use os portais para lançar quatro jogos independentes.',
+    mathematicalIdea: 'Primos, presença e cooperação',
+    path: '/jogos/primeverse-online',
+    status: 'available',
+    portalPosition: [0, 3.2, -20.4],
+    accent: '#79f7d4',
+    glyph: '◎',
+  },
+  {
+    id: 'prime-hunter',
+    title: 'Prime Hunter',
+    label: 'Arcade de primalidade',
+    description: 'Intercepte somente os números primos antes que atravessem sua linha de defesa.',
+    mathematicalIdea: 'Primalidade sob pressão',
+    path: '/jogos/prime-hunter',
+    status: 'available',
+    portalPosition: [-3.65, 0.25, 0],
+    accent: '#ffcc1a',
+    glyph: 'P',
+  },
+  {
+    id: 'factor-forge',
+    title: 'Factor Forge',
+    label: 'Forja de fatoração',
+    description: 'Quebre núcleos compostos até revelar os átomos primos que os tornam únicos.',
+    mathematicalIdea: 'Teorema Fundamental da Aritmética',
+    path: '/jogos/factor-forge',
+    status: 'available',
+    portalPosition: [3.65, 0.25, -0.7],
+    accent: '#5fa8ff',
+    glyph: '×',
+  },
+  {
+    id: 'modular-orbit',
+    title: 'Modular Orbit',
+    label: 'Órbitas congruentes',
+    description: 'Navegue ciclos, resíduos e congruências como sistemas orbitais.',
+    mathematicalIdea: 'Aritmética modular',
+    path: '/jogos/modular-orbit',
+    status: 'available',
+    portalPosition: [-7.2, 1.35, -5.2],
+    accent: '#65f1db',
+    glyph: '%',
+  },
+  {
+    id: 'prime-defense',
+    title: 'Prime Defense',
+    label: 'Estratégia aritmética',
+    description: 'Configure filtros divisores, destrua compostos e deixe os primos alimentarem o núcleo.',
+    mathematicalIdea: 'Padrões de divisibilidade',
+    path: '/jogos/prime-defense',
+    status: 'available',
+    portalPosition: [7.1, 1.2, -5.8],
+    accent: '#ff9364',
+    glyph: 'Δ',
+  },
+  {
+    id: 'rsa-vault',
+    title: 'RSA Vault',
+    label: 'Criptografia assimétrica',
+    description: 'Fatore módulos, derive chaves privadas e decifre cofres construídos com RSA.',
+    mathematicalIdea: 'RSA e fatoração',
+    path: '/jogos/rsa-vault',
+    status: 'available',
+    portalPosition: [-8.7, -1.1, -10],
+    accent: '#ffc85a',
+    glyph: 'R',
+  },
+  {
+    id: 'diffie-hellman',
+    title: 'Diffie–Hellman Relay',
+    label: 'Troca de segredos',
+    description: 'Troque valores públicos por um canal exposto e sincronize um segredo compartilhado.',
+    mathematicalIdea: 'Logaritmo discreto',
+    path: '/jogos/diffie-hellman',
+    status: 'available',
+    portalPosition: [8.8, -1, -10.5],
+    accent: '#68e8ff',
+    glyph: 'K',
+  },
+  {
+    id: 'ulam-galaxy',
+    title: 'Ulam Galaxy',
+    label: 'Cartografia dos primos',
+    description: 'Escaneie centenas de inteiros e cartografe diagonais primas em uma galáxia espiral.',
+    mathematicalIdea: 'Espiral de Ulam',
+    path: '/jogos/ulam-galaxy',
+    status: 'available',
+    portalPosition: [-4.4, 2.3, -13.8],
+    accent: '#a58cff',
+    glyph: 'U',
+  },
+  {
+    id: 'crypto-escape',
+    title: 'Crypto Liminal',
+    label: 'Terror e exploração criptográfica',
+    description: 'Perca-se em cinco setores liminais, fuja de uma presença e abra mecanismos em camadas até reconstruir uma chave RSA.',
+    mathematicalIdea: 'Primos, Cifra de César, congruências e RSA',
+    path: '/jogos/crypto-escape',
+    status: 'available',
+    portalPosition: [4.5, 2.15, -14.3],
+    accent: '#9f88ff',
+    glyph: '⌁',
+  },
+  {
+    id: 'primebound',
+    title: 'Primebound: O Último Primo',
+    label: 'Aventura pixel art',
+    description: 'Escolha um dos quatro campeões, atravesse oito regiões e desperte as runas 2, 3, 5, 7, 11 e 13 contra as forças compostas.',
+    mathematicalIdea: 'Primos vs. compostos',
+    path: '/jogos/primebound',
+    status: 'available',
+    portalPosition: [0, 2.65, -17.6],
+    accent: '#f2c15c',
+    glyph: '†',
+  },
+  {
+    id: 'skyline-runner',
+    title: 'Prime Runner: Skyline Protocol',
+    label: 'Parkour em primeira pessoa',
+    description: 'Atravesse uma megacidade vertical com parkour e gancho, recupere núcleos primos e enfrente Sentinelas Compostas.',
+    mathematicalIdea: 'Primos vs. compostos em movimento',
+    path: '/jogos/skyline-runner',
+    status: 'available',
+    portalPosition: [6.8, 2.9, -18.8],
+    accent: '#47e4ff',
+    glyph: '⇗',
+  },
+  {
+    id: 'nucleus-257',
+    title: 'Núcleo 257',
+    label: 'FPS de poderes primos',
+    description: 'Dispute uma arena em primeira pessoa, combine poderes aritméticos e enfrente agentes rivais pelo controle do Núcleo 257.',
+    mathematicalIdea: 'Primos, resíduos e criptografia em combate',
+    path: '/jogos/nucleo-257',
+    status: 'available',
+    portalPosition: [0, 3.1, -21.8],
+    accent: '#58f5b5',
+    glyph: '257',
+  },
+] as const
+
+export const AVAILABLE_GAMES = PRIMEVERSE_GAMES.filter((game) => game.status === 'available')

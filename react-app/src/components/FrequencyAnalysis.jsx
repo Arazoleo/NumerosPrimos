@@ -108,11 +108,9 @@ export default function FrequencyAnalysis() {
 
   const frequencies = useMemo(() => {
     const counts = {}
-    let totalLetters = 0
     for (const char of currentText) {
       if (ALPHA.includes(char)) {
         counts[char] = (counts[char] || 0) + 1
-        totalLetters++
       }
     }
     

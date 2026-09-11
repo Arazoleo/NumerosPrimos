@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import './Nav.css'
 
 export default function Nav() {
@@ -27,13 +28,13 @@ export default function Nav() {
   return (
     <nav className={`nav ${scrolled ? 'scrolled' : ''} ${open ? 'open' : ''}`}>
       <div className="container nav-inner">
-        <a href="#" className="brand" onClick={close}>
+        <Link to="/" className="brand" onClick={close}>
           <img src="/assets/logo.jpg" alt="Logo" className="brand-logo" />
           <span className="brand-text">Números <span>Primos</span></span>
-        </a>
+        </Link>
         <div className="nav-links">
           <a href="#sobre" onClick={close}>Números primos</a>
-          <div 
+          <div
             className={`nav-dropdown ${dropdownOpen ? 'open' : ''}`}
             onMouseEnter={() => window.innerWidth > 720 && setDropdownOpen(true)}
             onMouseLeave={() => window.innerWidth > 720 && setDropdownOpen(false)}
@@ -53,7 +54,7 @@ export default function Nav() {
             </div>
           </div>
           <a href="#missao" onClick={close}>Sobre Nós</a>
-          <a href="#contato" className="nav-cta" onClick={close}>Saber Mais →</a>
+          <Link to="/jogos" className="nav-cta" onClick={close}>Primeverse →</Link>
         </div>
         <button
           className="nav-toggle"

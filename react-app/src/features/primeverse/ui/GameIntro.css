@@ -1,0 +1,222 @@
+/*
+ * One screen, three things: the name, one instruction, one way in.
+ * Editorial serif against a technical monospace, on near-black, with the game's
+ * number standing behind everything at very low contrast.
+ */
+.game-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  /* Room for the back link at the bottom, and clear of a notch on either side. */
+  padding:
+    max(clamp(28px, 7vw, 96px), env(safe-area-inset-top))
+    max(clamp(28px, 7vw, 96px), env(safe-area-inset-right))
+    max(clamp(96px, 12vw, 148px), env(safe-area-inset-bottom))
+    max(clamp(28px, 7vw, 96px), env(safe-area-inset-left));
+  overflow: hidden;
+  background:
+    radial-gradient(120% 90% at 12% 8%, color-mix(in srgb, var(--intro-accent) 9%, transparent), transparent 58%),
+    linear-gradient(178deg, #05070a 0%, #04060a 46%, #03060b 100%);
+  color: #eef4f2;
+  pointer-events: auto;
+  isolation: isolate;
+}
+
+/* Film grain: keeps the flat background from reading as a dead PNG. */
+.game-intro::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  z-index: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.6) 0 1px, transparent 1.6px),
+    radial-gradient(circle at 74% 66%, rgba(255, 255, 255, 0.45) 0 1px, transparent 1.4px);
+  background-size: 97px 83px, 131px 111px;
+  animation: game-intro-grain 6s steps(3, end) infinite;
+}
+
+.game-intro__mark {
+  position: absolute;
+  right: clamp(-24px, -2vw, 0px);
+  bottom: -0.24em;
+  z-index: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(220px, 48vw, 760px);
+  line-height: 0.78;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--intro-accent) 22%, transparent);
+  pointer-events: none;
+  user-select: none;
+  animation: game-intro-mark 1.6s cubic-bezier(0.16, 0.84, 0.3, 1) both;
+}
+
+.game-intro__body {
+  position: relative;
+  z-index: 1;
+  max-width: min(720px, 100%);
+}
+
+.game-intro__title {
+  margin: 0;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(46px, 9vw, 132px);
+  font-weight: 400;
+  line-height: 0.94;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.game-intro__title em {
+  font-style: italic;
+  color: var(--intro-accent);
+}
+
+/* The rule under the name is the only decoration that moves on load. */
+.game-intro__instruction {
+  position: relative;
+  max-width: 46ch;
+  margin: clamp(22px, 3vw, 34px) 0 0;
+  padding-top: clamp(18px, 2.4vw, 26px);
+  color: #9fb3ad;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: clamp(11px, 1.15vw, 13px);
+  line-height: 1.75;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
+}
+
+.game-intro__instruction::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(64px, 12vw, 132px);
+  height: 1px;
+  background: var(--intro-accent);
+  transform-origin: left;
+  animation: game-intro-rule 1s cubic-bezier(0.2, 0.8, 0.2, 1) 220ms both;
+}
+
+.game-intro__action {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: clamp(30px, 4vw, 46px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #eef4f2;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(22px, 2.6vw, 34px);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 260ms both;
+}
+
+.game-intro__action i {
+  display: block;
+  width: clamp(52px, 8vw, 104px);
+  height: 1px;
+  background: color-mix(in srgb, var(--intro-accent) 55%, transparent);
+  transition: width 320ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 320ms ease;
+}
+
+.game-intro__action:hover i,
+.game-intro__action:focus-visible i {
+  width: clamp(96px, 16vw, 200px);
+  background: var(--intro-accent);
+}
+
+.game-intro__action:focus-visible {
+  outline: 1px solid var(--intro-accent);
+  outline-offset: 8px;
+}
+
+.game-intro__extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(24px, 3vw, 36px);
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 380ms both;
+}
+
+.game-intro__keys {
+  margin: clamp(26px, 3vw, 38px) 0 0;
+  color: #63756f;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 340ms both;
+}
+
+.game-intro__back {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  bottom: clamp(20px, 3vw, 42px);
+  left: clamp(28px, 7vw, 96px);
+  z-index: 1;
+  color: #5d716b;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 220ms ease;
+  animation: game-intro-rise 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 420ms both;
+}
+
+.game-intro__back:hover,
+.game-intro__back:focus-visible {
+  color: var(--intro-accent);
+}
+
+@keyframes game-intro-rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes game-intro-rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes game-intro-mark {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes game-intro-grain {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1%); }
+  66% { transform: translate(1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-intro::after,
+  .game-intro__mark,
+  .game-intro__title,
+  .game-intro__instruction,
+  .game-intro__instruction::before,
+  .game-intro__action,
+  .game-intro__keys,
+  .game-intro__extra,
+  .game-intro__back {
+    animation: none !important;
+  }
+
+  .game-intro__instruction::before {
+    transform: scaleX(1);
+  }
+}

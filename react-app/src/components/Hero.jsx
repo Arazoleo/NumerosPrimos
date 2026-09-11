@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, animate } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { primes } from '../data/members'
 import './Hero.css'
 
@@ -34,7 +35,7 @@ export default function Hero() {
     && window.matchMedia?.('(max-width: 720px)').matches
   const floaterCount = isCoarse ? 12 : 28
 
-  const floaters = useMemo(() => Array.from({ length: floaterCount }).map((_, i) => ({
+  const floaters = useMemo(() => Array.from({ length: floaterCount }).map(() => ({
     n: primes[Math.floor(Math.random() * primes.length)],
     left: Math.random() * 100,
     top: Math.random() * 100,
@@ -89,8 +90,8 @@ export default function Hero() {
           <motion.div className="hero-cta"
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}>
-            <a href="#sobre" className="btn btn-primary">Explorar o projeto <span className="arrow">→</span></a>
-            <a href="#equipe" className="btn btn-ghost">Quem somos ?</a>
+            <Link to="/jogos" className="btn btn-primary">Entrar no Primeverse <span className="arrow">→</span></Link>
+            <a href="#sobre" className="btn btn-ghost">Explorar o projeto</a>
           </motion.div>
 
           <motion.div className="hero-stats"

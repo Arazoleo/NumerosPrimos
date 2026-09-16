@@ -135,7 +135,7 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
   const used = getPlacementEnergy(placements)
 
   return (
-    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && tutorialStep === 1 ? 100 : 1 }}>
+    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 2 || tutorialStep === 6) ? 100 : 1 }}>
       <div className="defense-palette__heading">
         <div><span>BANCO DE FILTROS</span><strong>Escolha uma frequência</strong></div>
         <small>{wave.energy - used} energia livre</small>
@@ -145,25 +145,32 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
         <progress max={wave.energy} value={used}>{used} de {wave.energy}</progress>
       </div>
       <div className="defense-filter-list">
-        {DEFENSE_DIVISORS.map((divisor) => (
-          <button
-            key={divisor}
-            type="button"
-            className={`${selectedDivisor === divisor ? 'is-selected' : ''} ${isTutorialActive && tutorialStep === 1 ? 'tutorial-highlight' : ''}`}
-            aria-pressed={selectedDivisor === divisor}
-            disabled={phase !== 'planning'}
-            data-divisor={divisor}
-            onClick={() => {
-              selectDivisor(divisor)
-              onSoundEvent?.('select')
-              if (isTutorialActive && tutorialStep === 1) nextTutorialStep()
-            }}
-          >
-            <span>{divisor}</span>
-            <div><strong>FILTRO ÷ {divisor}</strong><small>{TOWER_COSTS[divisor]} ENERGIA</small></div>
-            <i aria-hidden="true">{selectedDivisor === divisor ? '✓' : '+'}</i>
-          </button>
-        ))}
+        {DEFENSE_DIVISORS.map((divisor) => {
+          const isStep2Highlight = isTutorialActive && tutorialStep === 2 && divisor === 2
+          const isStep6Highlight = isTutorialActive && tutorialStep === 6 && divisor === 3
+          const shouldHighlight = isStep2Highlight || isStep6Highlight
+
+          return (
+            <button
+              key={divisor}
+              type="button"
+              className={`${selectedDivisor === divisor ? 'is-selected' : ''} ${shouldHighlight ? 'tutorial-highlight' : ''}`}
+              aria-pressed={selectedDivisor === divisor}
+              disabled={phase !== 'planning'}
+              data-divisor={divisor}
+              onClick={() => {
+                selectDivisor(divisor)
+                onSoundEvent?.('select')
+                // CORREÇÃO AQUI: Só avança se for o passo 2. O passo 6 vai avançar lá no tabuleiro!
+                if (isStep2Highlight) nextTutorialStep()
+              }}
+            >
+              <span>{divisor}</span>
+              <div><strong>FILTRO ÷ {divisor}</strong><small>{TOWER_COSTS[divisor]} ENERGIA</small></div>
+              <i aria-hidden="true">{selectedDivisor === divisor ? '✓' : '+'}</i>
+            </button>
+          )
+        })}
       </div>
       <p className="defense-palette__tip">
         Um filtro detém <strong>todos os múltiplos</strong> de seu divisor naquela pista.
@@ -212,11 +219,17 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
   const install = (lane: DefenseLane, slot: 0 | 1 | 2) => {
     const valid = placeTower(lane, slot)
     onSoundEvent?.(valid ? 'place' : 'breach')
-    if (valid && isTutorialActive && tutorialStep === 2) nextTutorialStep()
+    
+    if (valid && isTutorialActive) {
+      if (tutorialStep === 3 && lane === 1) nextTutorialStep()
+      if (tutorialStep === 6 && lane === 2) nextTutorialStep()
+    }
   }
 
+  const isBoardElevated = isTutorialActive && [1, 3, 4, 6, 7].includes(tutorialStep)
+
   return (
-    <section className="defense-board" aria-labelledby="defense-wave-title" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 2 || tutorialStep === 3) ? 100 : 1 }}>
+    <section className="defense-board" aria-labelledby="defense-wave-title" style={{ position: 'relative', zIndex: isBoardElevated ? 100 : 1 }}>
       <div className="defense-board__head">
         <div>
           <span>ONDA {String(waveIndex + 1).padStart(2, '0')} // {wave.id.toUpperCase()}</span>
@@ -233,56 +246,65 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
       </div>
 
       <div className="defense-lanes" aria-label="Tabuleiro de três pistas">
-        {DEFENSE_LANES.map((lane) => (
-          <div className="defense-lane" key={lane}>
-            <div className="defense-lane__label"><span>0{lane + 1}</span><small>PISTA</small></div>
-            <div className="defense-enemy-preview" aria-label={`Sequência da pista ${lane + 1}`}>
-              {enemies.filter((enemy) => enemy.lane === lane).map((enemy) => {
-                const outcome = outcomesByEnemy.get(enemy.id)
-                if (!outcome) return null
-                const resolved = resolvedIds.has(enemy.id)
-                const active = activeEnemyId === enemy.id
-                return (
-                  <span
-                    key={enemy.id}
-                    className={outcomeClass(outcome, resolved, active)}
-                    title={outcome.explanation}
-                    aria-label={`${enemy.value}: ${outcome.kind === 'prime-passed' ? 'primo autorizado' : outcome.kind === 'intercepted' ? `coberto pelo divisor ${outcome.divisor}` : 'composto sem cobertura'}`}
-                  >
-                    {enemy.value}
-                    <i aria-hidden="true">
-                      {outcome.kind === 'prime-passed' ? 'P' : outcome.kind === 'intercepted' ? `÷${outcome.divisor}` : '!'}
-                    </i>
-                  </span>
-                )
-              })}
+        {DEFENSE_LANES.map((lane) => {
+          const isPreviewHighlight = isTutorialActive && (tutorialStep === 1 || tutorialStep === 4)
+
+          return (
+            <div className="defense-lane" key={lane}>
+              <div className="defense-lane__label"><span>0{lane + 1}</span><small>PISTA</small></div>
+              <div className={`defense-enemy-preview ${isPreviewHighlight ? 'tutorial-highlight' : ''}`} aria-label={`Sequência da pista ${lane + 1}`}>
+                {enemies.filter((enemy) => enemy.lane === lane).map((enemy) => {
+                  const outcome = outcomesByEnemy.get(enemy.id)
+                  if (!outcome) return null
+                  const resolved = resolvedIds.has(enemy.id)
+                  const active = activeEnemyId === enemy.id
+                  return (
+                    <span
+                      key={enemy.id}
+                      className={outcomeClass(outcome, resolved, active)}
+                      title={outcome.explanation}
+                      aria-label={`${enemy.value}: ${outcome.kind === 'prime-passed' ? 'primo autorizado' : outcome.kind === 'intercepted' ? `coberto pelo divisor ${outcome.divisor}` : 'composto sem cobertura'}`}
+                    >
+                      {enemy.value}
+                      <i aria-hidden="true">
+                        {outcome.kind === 'prime-passed' ? 'P' : outcome.kind === 'intercepted' ? `÷${outcome.divisor}` : '!'}
+                      </i>
+                    </span>
+                  )
+                })}
+              </div>
+              <div className="defense-slot-row" aria-label={`Slots defensivos da pista ${lane + 1}`}>
+                {DEFENSE_SLOTS.map((slot) => {
+                  const placement = placements.find((candidate) => candidate.id === towerId(lane, slot))
+                  const label = placement
+                    ? placement.divisor === selectedDivisor
+                      ? `Remover filtro ${placement.divisor} da pista ${lane + 1}, slot ${slot + 1}`
+                      : `Trocar filtro ${placement.divisor} por ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
+                    : `Instalar filtro ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
+                  
+                  const isStep3Slot = isTutorialActive && tutorialStep === 3 && lane === 1 && !placement
+                  const isStep6Slot = isTutorialActive && tutorialStep === 6 && lane === 2 && !placement
+                  const shouldHighlightSlot = isStep3Slot || isStep6Slot
+
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`${placement ? 'is-occupied' : ''} ${shouldHighlightSlot ? 'tutorial-highlight' : ''}`}
+                      data-divisor={placement?.divisor}
+                      aria-label={label}
+                      disabled={phase !== 'planning'}
+                      onClick={() => install(lane, slot)}
+                    >
+                      <span>{placement ? placement.divisor : '+'}</span>
+                      <small>{placement ? `÷ ${placement.divisor}` : `S${slot + 1}`}</small>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <div className="defense-slot-row" aria-label={`Slots defensivos da pista ${lane + 1}`}>
-              {DEFENSE_SLOTS.map((slot) => {
-                const placement = placements.find((candidate) => candidate.id === towerId(lane, slot))
-                const label = placement
-                  ? placement.divisor === selectedDivisor
-                    ? `Remover filtro ${placement.divisor} da pista ${lane + 1}, slot ${slot + 1}`
-                    : `Trocar filtro ${placement.divisor} por ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
-                  : `Instalar filtro ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
-                return (
-                  <button
-                    key={slot}
-                    type="button"
-                    className={`${placement ? 'is-occupied' : ''} ${isTutorialActive && tutorialStep === 2 && !placement ? 'tutorial-highlight' : ''}`}
-                    data-divisor={placement?.divisor}
-                    aria-label={label}
-                    disabled={phase !== 'planning'}
-                    onClick={() => install(lane, slot)}
-                  >
-                    <span>{placement ? placement.divisor : '+'}</span>
-                    <small>{placement ? `÷ ${placement.divisor}` : `S${slot + 1}`}</small>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="defense-board__footer">
@@ -293,12 +315,11 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
         </p>
         <button
           type="button"
-          className={`defense-launch ${isTutorialActive && tutorialStep === 3 ? 'tutorial-highlight' : ''}`}
+          className={`defense-launch ${isTutorialActive && tutorialStep === 7 ? 'tutorial-highlight' : ''}`}
           disabled={phase !== 'planning'}
           onClick={() => {
             if (!launchWave()) return
             onSoundEvent?.('launch')
-            // FINALIZA O TUTORIAL:
             if (isTutorialActive) skipTutorial()
           }}
         >
@@ -454,57 +475,62 @@ function TutorialOverlay(): JSX.Element | null {
   const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
   const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
   const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
 
   if (!isTutorialActive) return null
 
   let message = ""
-  if (tutorialStep === 1) message = "Selecione um filtro de divisor na paleta."
-  else if (tutorialStep === 2) message = "Instale o filtro em um dos espaços vazios (S1, S2, S3) nas pistas."
-  else if (tutorialStep === 3) message = "Acompanhe a simulação e clique em EXECUTAR ONDA."
-  else {
-    skipTutorial()
-    return null
+  let showNextButton = false
+  let showDarkBg = true
+  const bgOpacity = 'rgba(0, 0, 0, 0.85)'
+
+  switch (tutorialStep) {
+    case 1:
+      message = "Na seção central você vê quais números vão passar. Primos em azul passam direto; compostos em vermelho devem ser parados."
+      showNextButton = true
+      break
+    case 2:
+      message = "Na seção esquerda você pode escolher qual filtro usar. Escolha o filtro 2."
+      break
+    case 3:
+      message = "Adicione o filtro 2 selecionado na pista 2 em S1, S2 ou S3."
+      break
+    case 4:
+      message = "Quando um número composto vai ser filtrado, ele fica amarelo."
+      showNextButton = true
+      break
+    case 5:
+      message = "Ao fundo, você vê uma representação 3D das pistas."
+      showNextButton = true
+      showDarkBg = false
+      break
+    case 6:
+      message = "Coloque um filtro 3 na pista 3 para filtrar o 9."
+      showDarkBg = false
+    case 7:
+      message = "7 - Todos os compostos estão cobertos! Clique em EXECUTAR ONDA."
+      break
+    default:
+      skipTutorial()
+      return null
   }
 
   return (
     <>
-      {/* Fundo escuro */}
-      <div 
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          zIndex: 50,
-          pointerEvents: 'auto'
-        }} 
-      />
+      {showDarkBg && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: bgOpacity, zIndex: 50, pointerEvents: 'auto' }} />
+      )}
       
-      {/* Painel de texto flutuante */}
-      <div 
-        className="tutorial-dialog" 
-        style={{ 
-          position: 'fixed', 
-          top: '10%', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          zIndex: 101, 
-          background: '#0a1012',
-          padding: '24px 32px', 
-          border: '1px solid #4a9e9e',
-          borderRadius: '4px', 
-          textAlign: 'center',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
-        }}
-      >
+      <div className="tutorial-dialog" style={{ position: 'fixed', top: '10%', left: '50%', transform: 'translateX(-50%)', zIndex: 101, background: '#0a1012', padding: '24px 32px', border: '1px solid #4a9e9e', borderRadius: '4px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
         <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500 }}>{message}</p>
-        <button 
-          type="button" 
-          onClick={skipTutorial} 
-          style={{ color: '#4a9e9e', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-        >
+        
+        {showNextButton && (
+          <button type="button" onClick={nextTutorialStep} style={{ padding: '8px 16px', marginRight: '16px', background: '#4a9e9e', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Próximo
+          </button>
+        )}
+        
+        <button type="button" onClick={skipTutorial} style={{ color: '#4a9e9e', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
           Pular Tutorial
         </button>
       </div>

@@ -558,9 +558,13 @@ export function createPrimeDefenseStore(
         if (get().feedback?.id === feedbackId) set({ feedback: null })
       },
     
-      nextTutorialStep: () => {
-        set((state) => ({ tutorialStep: state.tutorialStep + 1 }))
-      },
+      nextTutorialStep: () => 
+        set((state) => {
+          if (state.tutorialStep < 7) {
+            return { tutorialStep: state.tutorialStep + 1 }
+          }
+          return { isTutorialActive: false, tutorialStep: 0 } 
+        }),
 
       skipTutorial: () => {
         set({ isTutorialActive: false })

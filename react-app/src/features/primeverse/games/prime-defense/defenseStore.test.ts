@@ -10,14 +10,12 @@ const PERFECT_PLANS: readonly Plan[] = [
   // Onda 0 (Tutorial)
   [[1, 0, 2], [2, 0, 3]],
   // Onda 1
-  [[0, 0, 2], [1, 0, 3], [1, 1, 5]],
-  // Onda 2
   [[0, 0, 7], [1, 0, 5], [2, 0, 3]],
-  // Onda 3
+  // Onda 2
   [[0, 0, 2], [0, 1, 3], [1, 0, 7], [1, 1, 3], [2, 0, 2], [2, 1, 5]],
-  // Onda 4
+  // Onda 3
   [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 2], [2, 1, 3]],
-  // Onda 5
+  // Onda 4
   [[0, 0, 2], [0, 1, 3], [0, 2, 5], [1, 0, 7], [1, 1, 3], [1, 2, 5], [2, 0, 2], [2, 1, 3]],
 ]
 
@@ -69,7 +67,7 @@ describe('Prime Defense store', () => {
     expect(store.getState().lives).toBe(5)
   })
 
-  it('completes all six waves with a perfect strategy and records progression once', () => {
+  it('completes all five waves with a perfect strategy and records progression once', () => {
     let clock = 10_000
     const recordProgress = vi.fn(() => true)
     const saveBestScore = vi.fn()
@@ -98,14 +96,14 @@ describe('Prime Defense store', () => {
     expect(state.phase).toBe('victory')
     expect(state.lives).toBe(6)
     expect(state.breaches).toBe(0)
-    expect(state.waveSummaries).toHaveLength(6)
+    expect(state.waveSummaries).toHaveLength(5)
     expect(state.waveSummaries.every((summary) => summary.perfect)).toBe(true)
     expect(state.result).toMatchObject({
       victory: true,
-      wavesCleared: 6,
+      wavesCleared: 5,
       isNewBest: true,
     })
-    expect(state.result?.elapsedMs).toBe(6_000)
+    expect(state.result?.elapsedMs).toBe(5_000)
     expect(state.result?.xp).toBeGreaterThan(0)
     expect(recordProgress).toHaveBeenCalledOnce()
     expect(saveBestScore).toHaveBeenCalledOnce()

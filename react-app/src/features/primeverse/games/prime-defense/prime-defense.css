@@ -249,3 +249,34 @@
 @media (max-width: 430px) { .defense-brand > span:last-child { display: none; } }
 @media (prefers-reduced-motion: reduce) { .prime-defense *, .prime-defense *::before, .prime-defense *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 .defense-wave-stats{margin-top: 15px;}
+.defense-final__sigil {
+  /* --- Original Sigil Properties --- */
+  align-items: center;
+  border: 1px solid var(--pd-cyan);
+  color: var(--pd-cyan);
+  display: flex;
+  font: 700 26px 'Space Grotesk', sans-serif;
+  height: 54px;
+  justify-content: center;
+  margin-bottom: 20px;
+  transform: rotate(45deg);
+  width: 54px;
+
+  /* --- Defense Panel Patterns --- */
+  backdrop-filter: blur(25px);
+  background: linear-gradient(145deg, rgba(10, 27, 34, .97), rgba(3, 11, 16, .95));
+  box-shadow: 0 35px 110px rgba(0, 0, 0, .58);
+  position: relative;
+}
+
+/* --- Defense Panel Child/Accent Pattern --- */
+.defense-final__sigil::before {
+  border-left: 2px solid var(--pd-cyan);
+  border-top: 2px solid var(--pd-cyan);
+  content: '';
+  height: 15px;
+  left: -1px;
+  position: absolute;
+  top: -1px;
+  width: 15px;
+}

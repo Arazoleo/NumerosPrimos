@@ -359,12 +359,11 @@ export function createPrimeDefenseStore(
       start: () => {
         const state = get()
         set(emptyRun(state.runId + 1, now(), state.bestScore, state.feedback))
-        const isFirstTime = state.bestScore === 0;
-
+        
         set({
           ...emptyRun(state.runId + 1, now(), state.bestScore, state.feedback),
-          isTutorialActive: isFirstTime,
-          tutorialStep: isFirstTime ? 1 : 0,
+          isTutorialActive: true,
+          tutorialStep: 1,
         })
       },
 

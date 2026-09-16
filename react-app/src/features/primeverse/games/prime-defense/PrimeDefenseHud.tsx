@@ -91,8 +91,16 @@ function MissionTopbar({ quality, onQualityChange }: Pick<PrimeDefenseHudProps, 
   const lives = usePrimeDefenseStore((state) => state.lives)
   const restart = usePrimeDefenseStore((state) => state.restart)
 
+  // Estados do Tutorial
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const isStep2Highlight = isTutorialActive && tutorialStep === 2
+
   return (
-    <header className="defense-topbar">
+    <header 
+      className={`defense-topbar ${isStep2Highlight ? 'tutorial-highlight' : ''}`}
+      style={{ position: 'relative', zIndex: isStep2Highlight ? 100 : 1 }}
+    >
       <DefenseBrand compact />
       <div className="defense-wave-progress" aria-label={`Onda ${waveIndex + 1} de ${DEFENSE_WAVES.length}`}>
         <div>
@@ -126,11 +134,16 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
   const placements = usePrimeDefenseStore((state) => state.placements)
   const selectedDivisor = usePrimeDefenseStore((state) => state.selectedDivisor)
   const selectDivisor = usePrimeDefenseStore((state) => state.selectDivisor)
+
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+
   const wave = DEFENSE_WAVES[waveIndex]
   const used = getPlacementEnergy(placements)
 
   return (
-    <aside className="defense-palette" aria-label="Banco de filtros divisores">
+    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 3 || tutorialStep === 7) ? 100 : 1 }}>
       <div className="defense-palette__heading">
         <div><span>BANCO DE FILTROS</span><strong>Escolha uma frequência</strong></div>
         <small>{wave.energy - used} energia livre</small>
@@ -140,24 +153,31 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
         <progress max={wave.energy} value={used}>{used} de {wave.energy}</progress>
       </div>
       <div className="defense-filter-list">
-        {DEFENSE_DIVISORS.map((divisor) => (
-          <button
-            key={divisor}
-            type="button"
-            className={selectedDivisor === divisor ? 'is-selected' : ''}
-            aria-pressed={selectedDivisor === divisor}
-            disabled={phase !== 'planning'}
-            data-divisor={divisor}
-            onClick={() => {
-              selectDivisor(divisor)
-              onSoundEvent?.('select')
-            }}
-          >
-            <span>{divisor}</span>
-            <div><strong>FILTRO ÷ {divisor}</strong><small>{TOWER_COSTS[divisor]} ENERGIA</small></div>
-            <i aria-hidden="true">{selectedDivisor === divisor ? '✓' : '+'}</i>
-          </button>
-        ))}
+        {DEFENSE_DIVISORS.map((divisor) => {
+          const isStep3Highlight = isTutorialActive && tutorialStep === 3 && divisor === 2
+          const isStep7Highlight = isTutorialActive && tutorialStep === 7 && divisor === 3
+          const shouldHighlight = isStep3Highlight || isStep7Highlight
+
+          return (
+            <button
+              key={divisor}
+              type="button"
+              className={`${selectedDivisor === divisor ? 'is-selected' : ''} ${shouldHighlight ? 'tutorial-highlight' : ''}`}
+              aria-pressed={selectedDivisor === divisor}
+              disabled={phase !== 'planning'}
+              data-divisor={divisor}
+              onClick={() => {
+                selectDivisor(divisor)
+                onSoundEvent?.('select')
+                if (isStep3Highlight) nextTutorialStep()
+              }}
+            >
+              <span>{divisor}</span>
+              <div><strong>FILTRO ÷ {divisor}</strong><small>{TOWER_COSTS[divisor]} ENERGIA</small></div>
+              <i aria-hidden="true">{selectedDivisor === divisor ? '✓' : '+'}</i>
+            </button>
+          )
+        })}
       </div>
       <p className="defense-palette__tip">
         Um filtro detém <strong>todos os múltiplos</strong> de seu divisor naquela pista.
@@ -165,6 +185,7 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
     </aside>
   )
 }
+
 
 function outcomeClass(outcome: DefenseOutcome, resolved: boolean, active: boolean): string {
   const classes = [`is-${outcome.kind}`]
@@ -184,6 +205,12 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
   const outcomes = usePrimeDefenseStore((state) => state.currentWaveOutcomes)
   const placeTower = usePrimeDefenseStore((state) => state.placeTower)
   const launchWave = usePrimeDefenseStore((state) => state.launchWave)
+
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+  const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
+
   const wave = DEFENSE_WAVES[waveIndex]
   const enemies = useMemo(() => createWaveEnemies(wave, waveIndex), [wave, waveIndex])
   const analysis = useMemo(
@@ -200,10 +227,18 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
   const install = (lane: DefenseLane, slot: 0 | 1 | 2) => {
     const valid = placeTower(lane, slot)
     onSoundEvent?.(valid ? 'place' : 'breach')
+    
+    if (valid && isTutorialActive) {
+      if (tutorialStep === 4 && lane === 1) nextTutorialStep()
+      if (tutorialStep === 7 && lane === 2) nextTutorialStep()
+    }
   }
 
+  // Elevado nos passos em que se interage com o board ou lê os inimigos (1, 4, 5, 7, 8)
+  const isBoardElevated = isTutorialActive && [1, 4, 5, 7, 8].includes(tutorialStep)
+
   return (
-    <section className="defense-board" aria-labelledby="defense-wave-title">
+    <section className="defense-board" aria-labelledby="defense-wave-title" style={{ position: 'relative', zIndex: isBoardElevated ? 100 : 1 }}>
       <div className="defense-board__head">
         <div>
           <span>ONDA {String(waveIndex + 1).padStart(2, '0')} // {wave.id.toUpperCase()}</span>
@@ -220,56 +255,65 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
       </div>
 
       <div className="defense-lanes" aria-label="Tabuleiro de três pistas">
-        {DEFENSE_LANES.map((lane) => (
-          <div className="defense-lane" key={lane}>
-            <div className="defense-lane__label"><span>0{lane + 1}</span><small>PISTA</small></div>
-            <div className="defense-enemy-preview" aria-label={`Sequência da pista ${lane + 1}`}>
-              {enemies.filter((enemy) => enemy.lane === lane).map((enemy) => {
-                const outcome = outcomesByEnemy.get(enemy.id)
-                if (!outcome) return null
-                const resolved = resolvedIds.has(enemy.id)
-                const active = activeEnemyId === enemy.id
-                return (
-                  <span
-                    key={enemy.id}
-                    className={outcomeClass(outcome, resolved, active)}
-                    title={outcome.explanation}
-                    aria-label={`${enemy.value}: ${outcome.kind === 'prime-passed' ? 'primo autorizado' : outcome.kind === 'intercepted' ? `coberto pelo divisor ${outcome.divisor}` : 'composto sem cobertura'}`}
-                  >
-                    {enemy.value}
-                    <i aria-hidden="true">
-                      {outcome.kind === 'prime-passed' ? 'P' : outcome.kind === 'intercepted' ? `÷${outcome.divisor}` : '!'}
-                    </i>
-                  </span>
-                )
-              })}
+        {DEFENSE_LANES.map((lane) => {
+          const isPreviewHighlight = isTutorialActive && (tutorialStep === 1 || tutorialStep === 5)
+
+          return (
+            <div className="defense-lane" key={lane}>
+              <div className="defense-lane__label"><span>0{lane + 1}</span><small>PISTA</small></div>
+              <div className={`defense-enemy-preview ${isPreviewHighlight ? 'tutorial-highlight' : ''}`} aria-label={`Sequência da pista ${lane + 1}`}>
+                {enemies.filter((enemy) => enemy.lane === lane).map((enemy) => {
+                  const outcome = outcomesByEnemy.get(enemy.id)
+                  if (!outcome) return null
+                  const resolved = resolvedIds.has(enemy.id)
+                  const active = activeEnemyId === enemy.id
+                  return (
+                    <span
+                      key={enemy.id}
+                      className={outcomeClass(outcome, resolved, active)}
+                      title={outcome.explanation}
+                      aria-label={`${enemy.value}: ${outcome.kind === 'prime-passed' ? 'primo autorizado' : outcome.kind === 'intercepted' ? `coberto pelo divisor ${outcome.divisor}` : 'composto sem cobertura'}`}
+                    >
+                      {enemy.value}
+                      <i aria-hidden="true">
+                        {outcome.kind === 'prime-passed' ? 'P' : outcome.kind === 'intercepted' ? `÷${outcome.divisor}` : '!'}
+                      </i>
+                    </span>
+                  )
+                })}
+              </div>
+              <div className="defense-slot-row" aria-label={`Slots defensivos da pista ${lane + 1}`}>
+                {DEFENSE_SLOTS.map((slot) => {
+                  const placement = placements.find((candidate) => candidate.id === towerId(lane, slot))
+                  const label = placement
+                    ? placement.divisor === selectedDivisor
+                      ? `Remover filtro ${placement.divisor} da pista ${lane + 1}, slot ${slot + 1}`
+                      : `Trocar filtro ${placement.divisor} por ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
+                    : `Instalar filtro ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
+                  
+                  const isStep4Slot = isTutorialActive && tutorialStep === 4 && lane === 1 && !placement
+                  const isStep7Slot = isTutorialActive && tutorialStep === 7 && lane === 2 && !placement
+                  const shouldHighlightSlot = isStep4Slot || isStep7Slot
+
+                  return (
+                    <button
+                      key={slot}
+                      type="button"
+                      className={`${placement ? 'is-occupied' : ''} ${shouldHighlightSlot ? 'tutorial-highlight' : ''}`}
+                      data-divisor={placement?.divisor}
+                      aria-label={label}
+                      disabled={phase !== 'planning'}
+                      onClick={() => install(lane, slot)}
+                    >
+                      <span>{placement ? placement.divisor : '+'}</span>
+                      <small>{placement ? `÷ ${placement.divisor}` : `S${slot + 1}`}</small>
+                    </button>
+                  )
+                })}
+              </div>
             </div>
-            <div className="defense-slot-row" aria-label={`Slots defensivos da pista ${lane + 1}`}>
-              {DEFENSE_SLOTS.map((slot) => {
-                const placement = placements.find((candidate) => candidate.id === towerId(lane, slot))
-                const label = placement
-                  ? placement.divisor === selectedDivisor
-                    ? `Remover filtro ${placement.divisor} da pista ${lane + 1}, slot ${slot + 1}`
-                    : `Trocar filtro ${placement.divisor} por ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
-                  : `Instalar filtro ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
-                return (
-                  <button
-                    key={slot}
-                    type="button"
-                    className={placement ? 'is-occupied' : ''}
-                    data-divisor={placement?.divisor}
-                    aria-label={label}
-                    disabled={phase !== 'planning'}
-                    onClick={() => install(lane, slot)}
-                  >
-                    <span>{placement ? placement.divisor : '+'}</span>
-                    <small>{placement ? `÷ ${placement.divisor}` : `S${slot + 1}`}</small>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="defense-board__footer">
@@ -280,11 +324,12 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
         </p>
         <button
           type="button"
-          className="defense-launch"
+          className={`defense-launch ${isTutorialActive && tutorialStep === 8 ? 'tutorial-highlight' : ''}`}
           disabled={phase !== 'planning'}
           onClick={() => {
             if (!launchWave()) return
             onSoundEvent?.('launch')
+            if (isTutorialActive) skipTutorial()
           }}
         >
           {phase === 'running' ? 'ONDA EM CURSO…' : 'EXECUTAR ONDA'}
@@ -435,6 +480,77 @@ function FinalResultPanel(): JSX.Element | null {
   )
 }
 
+function TutorialOverlay(): JSX.Element | null {
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+
+  if (!isTutorialActive) return null
+
+  let message = ""
+  let showNextButton = false
+  let showDarkBg = true
+  let bgOpacity = 'rgba(0, 0, 0, 0.85)'
+
+  switch (tutorialStep) {
+    case 1:
+      message = "1 - Aqui você vê quais números vão passar por quais pistas. Números primos em azul passam direto e alimentam o núcleo. Números compostos em vermelho devem ser parados por filtros."
+      showNextButton = true
+      break
+    case 2:
+      message = "2 - No topo da tela, você acompanha a onda atual e a integridade do seu núcleo. Se você deixar muitos compostos passarem, você perde o jogo!"
+      showNextButton = true
+      break
+    case 3:
+      message = "3 - Aqui você pode escolher qual filtro usar, cada filtro tem um custo em energia que é exibido nesta mesma seção. Escolha o filtro 2."
+      break
+    case 4:
+      message = "4 - Aqui você pode adicionar os filtros selecionados em S1, S2 ou S3. Adicione o filtro 2 na pista 2."
+      break
+    case 5:
+      message = "5 - Quando um número composto vai ser filtrado, ele fica amarelo."
+      showNextButton = true
+      break
+    case 6:
+      message = "6 - Aqui você vê uma representação 3D das pistas."
+      showNextButton = true
+      bgOpacity = 'rgba(0, 0, 0, 0.4)'
+      break
+    case 7:
+      message = "7 - Coloque um filtro 3 na pista 3 para filtrar o 9."
+      showDarkBg = false
+      break
+    case 8:
+      message = "8 - Todos os compostos estão cobertos! Agora para começar a onda, clique em EXECUTAR ONDA."
+      break
+    default:
+      skipTutorial()
+      return null
+  }
+
+  return (
+    <>
+      {showDarkBg && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: bgOpacity, zIndex: 50, pointerEvents: 'auto' }} />
+      )}
+      <div className="tutorial-dialog" style={{ position: 'fixed', top: '10%', left: '50%', transform: 'translateX(-50%)', zIndex: 101, background: '#0a1012', padding: '24px 32px', border: '1px solid #4a9e9e', borderRadius: '4px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
+        <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500, maxWidth: '600px' }}>{message}</p>
+        
+        {showNextButton && (
+          <button type="button" onClick={nextTutorialStep} style={{ padding: '8px 16px', marginRight: '16px', background: '#4a9e9e', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Próximo
+          </button>
+        )}
+        
+        <button type="button" onClick={skipTutorial} style={{ color: '#4a9e9e', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+          Pular Tutorial
+        </button>
+      </div>
+    </>
+  )
+}
+
 export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
   const phase = usePrimeDefenseStore((state) => state.phase)
 
@@ -445,6 +561,8 @@ export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
   const missionVisible = phase === 'planning' || phase === 'running'
   return (
     <div className="defense-hud">
+      <TutorialOverlay />
+      
       {missionVisible ? (
         <>
           <MissionTopbar quality={props.quality} onQualityChange={props.onQualityChange} />
@@ -456,6 +574,7 @@ export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
           <FeedbackToast />
         </>
       ) : null}
+      
       {phase === 'wave-result' ? <WaveResultPanel onSoundEvent={props.onSoundEvent} /> : null}
       {phase === 'victory' || phase === 'defeat' ? <FinalResultPanel /> : null}
     </div>

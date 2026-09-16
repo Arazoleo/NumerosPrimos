@@ -7,8 +7,8 @@ import type { DefenseDivisor, DefenseLane, DefenseSlot } from './types'
 type Plan = readonly [DefenseLane, DefenseSlot, DefenseDivisor][]
 
 const PERFECT_PLANS: readonly Plan[] = [
-  [[0, 0, 2], [1, 0, 3], [2, 0, 2]],
-  [[0, 0, 7], [1, 0, 2], [1, 1, 5], [2, 0, 3]],
+  [[1, 0, 2], [2, 0, 3]],
+  [[0, 0, 2], [1, 0, 3], [2, 0, 5]],
   [[0, 0, 2], [0, 1, 3], [1, 0, 7], [1, 1, 3], [2, 0, 2], [2, 1, 5]],
   [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 2], [2, 1, 3]],
   [[0, 0, 2], [0, 1, 3], [0, 2, 5], [1, 0, 7], [1, 1, 3], [1, 2, 5], [2, 0, 2], [2, 1, 3]],
@@ -33,9 +33,8 @@ describe('Prime Defense store', () => {
     })
 
     expect(store.getState().placeTower(0, 0, 7)).toBe(true)
-    expect(store.getState().placeTower(1, 0, 7)).toBe(true)
-    expect(store.getState().placeTower(2, 0, 2)).toBe(false)
-    expect(store.getState().placements).toHaveLength(2)
+    expect(store.getState().placeTower(1, 0, 2)).toBe(false)
+    expect(store.getState().placements).toHaveLength(1)
     expect(store.getState().feedback?.title).toBe('Energia insuficiente')
   })
 
@@ -57,9 +56,10 @@ describe('Prime Defense store', () => {
 
     expect(store.getState().resolveNextEnemy()?.kind).toBe('prime-passed')
     expect(store.getState()).toMatchObject({ coreCharge: 1, lives: 6 })
+    expect(store.getState().resolveNextEnemy()?.kind).toBe('prime-passed')
+    expect(store.getState()).toMatchObject({ coreCharge: 2, lives: 6 })
     expect(store.getState().resolveNextEnemy()?.kind).toBe('breach')
     expect(store.getState().lives).toBe(5)
-    expect(store.getState().resolveNextEnemy()?.kind).toBe('breach')
   })
 
   it('completes all five waves with a perfect strategy and records progression once', () => {
@@ -108,13 +108,18 @@ describe('Prime Defense store', () => {
     const recordProgress = vi.fn(() => false)
     const store = createPrimeDefenseStore({ recordProgress, initialBestScore: 9_999 })
     store.getState().start()
-    store.getState().launchWave()
 
-    while (store.getState().phase === 'running') store.getState().resolveNextEnemy()
-    if (store.getState().phase === 'wave-result') {
-      store.getState().nextWave()
-      store.getState().launchWave()
-      while (store.getState().phase === 'running') store.getState().resolveNextEnemy()
+    while (store.getState().phase !== 'defeat') {
+      const { phase } = store.getState()
+      if (phase === 'planning') {
+        store.getState().launchWave()
+      } else if (phase === 'running') {
+        store.getState().resolveNextEnemy()
+      } else if (phase === 'wave-result') {
+        store.getState().nextWave()
+      } else {
+        break
+      }
     }
 
     expect(store.getState().phase).toBe('defeat')

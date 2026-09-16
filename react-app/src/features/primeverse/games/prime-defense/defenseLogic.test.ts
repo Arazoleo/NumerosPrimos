@@ -24,11 +24,12 @@ describe('Prime Defense logic', () => {
   it('interleaves the three lanes without changing their internal order', () => {
     const enemies = createWaveEnemies(DEFENSE_WAVES[0], 0)
     expect(enemies.map((enemy) => [enemy.lane, enemy.value])).toEqual([
-      [0, 11], [1, 15], [2, 10],
-      [0, 6], [1, 17], [2, 19],
-      [0, 13],
+      [0, 2],
+      [1, 3],
+      [2, 9],
+      [1, 4],
     ])
-    expect(enemies.map((enemy) => enemy.travelOrder)).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(enemies.map((enemy) => enemy.travelOrder)).toEqual([0, 1, 2, 3])
   })
 
   it('lets primes pass even when their own value equals a tower divisor', () => {
@@ -73,10 +74,10 @@ describe('Prime Defense logic', () => {
   })
 
   it('analyzes a perfect first-wave plan within its energy budget', () => {
-    const placements = [placement(0, 0, 2), placement(1, 0, 3), placement(2, 0, 2)]
+    const placements = [placement(1, 0, 2), placement(2, 0, 3)]
     const analysis = analyzeDefensePlan(DEFENSE_WAVES[0], 0, placements)
-    expect(getPlacementEnergy(placements)).toBe(6)
-    expect(analysis).toMatchObject({ intercepted: 3, primes: 4, breaches: 0 })
+    expect(getPlacementEnergy(placements)).toBe(4)
+    expect(analysis).toMatchObject({ intercepted: 2, primes: 2, breaches: 0 })
   })
 
   it('keeps XP finite and rewards campaign completion', () => {
@@ -85,4 +86,3 @@ describe('Prime Defense logic', () => {
     expect(calculateDefenseXp(99_999, true)).toBe(450)
   })
 })
-

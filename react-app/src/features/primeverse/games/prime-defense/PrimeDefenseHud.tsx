@@ -91,8 +91,16 @@ function MissionTopbar({ quality, onQualityChange }: Pick<PrimeDefenseHudProps, 
   const lives = usePrimeDefenseStore((state) => state.lives)
   const restart = usePrimeDefenseStore((state) => state.restart)
 
+  // Estados do Tutorial
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const isStep2Highlight = isTutorialActive && tutorialStep === 2
+
   return (
-    <header className="defense-topbar">
+    <header 
+      className={`defense-topbar ${isStep2Highlight ? 'tutorial-highlight' : ''}`}
+      style={{ position: 'relative', zIndex: isStep2Highlight ? 100 : 1 }}
+    >
       <DefenseBrand compact />
       <div className="defense-wave-progress" aria-label={`Onda ${waveIndex + 1} de ${DEFENSE_WAVES.length}`}>
         <div>
@@ -135,7 +143,7 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
   const used = getPlacementEnergy(placements)
 
   return (
-    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 2 || tutorialStep === 6) ? 100 : 1 }}>
+    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 3 || tutorialStep === 7) ? 100 : 1 }}>
       <div className="defense-palette__heading">
         <div><span>BANCO DE FILTROS</span><strong>Escolha uma frequência</strong></div>
         <small>{wave.energy - used} energia livre</small>
@@ -146,9 +154,9 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
       </div>
       <div className="defense-filter-list">
         {DEFENSE_DIVISORS.map((divisor) => {
-          const isStep2Highlight = isTutorialActive && tutorialStep === 2 && divisor === 2
-          const isStep6Highlight = isTutorialActive && tutorialStep === 6 && divisor === 3
-          const shouldHighlight = isStep2Highlight || isStep6Highlight
+          const isStep3Highlight = isTutorialActive && tutorialStep === 3 && divisor === 2
+          const isStep7Highlight = isTutorialActive && tutorialStep === 7 && divisor === 3
+          const shouldHighlight = isStep3Highlight || isStep7Highlight
 
           return (
             <button
@@ -161,8 +169,7 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
               onClick={() => {
                 selectDivisor(divisor)
                 onSoundEvent?.('select')
-                // CORREÇÃO AQUI: Só avança se for o passo 2. O passo 6 vai avançar lá no tabuleiro!
-                if (isStep2Highlight) nextTutorialStep()
+                if (isStep3Highlight) nextTutorialStep()
               }}
             >
               <span>{divisor}</span>
@@ -178,6 +185,7 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
     </aside>
   )
 }
+
 
 function outcomeClass(outcome: DefenseOutcome, resolved: boolean, active: boolean): string {
   const classes = [`is-${outcome.kind}`]
@@ -221,12 +229,13 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
     onSoundEvent?.(valid ? 'place' : 'breach')
     
     if (valid && isTutorialActive) {
-      if (tutorialStep === 3 && lane === 1) nextTutorialStep()
-      if (tutorialStep === 6 && lane === 2) nextTutorialStep()
+      if (tutorialStep === 4 && lane === 1) nextTutorialStep()
+      if (tutorialStep === 7 && lane === 2) nextTutorialStep()
     }
   }
 
-  const isBoardElevated = isTutorialActive && [1, 3, 4, 6, 7].includes(tutorialStep)
+  // Elevado nos passos em que se interage com o board ou lê os inimigos (1, 4, 5, 7, 8)
+  const isBoardElevated = isTutorialActive && [1, 4, 5, 7, 8].includes(tutorialStep)
 
   return (
     <section className="defense-board" aria-labelledby="defense-wave-title" style={{ position: 'relative', zIndex: isBoardElevated ? 100 : 1 }}>
@@ -247,7 +256,7 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
 
       <div className="defense-lanes" aria-label="Tabuleiro de três pistas">
         {DEFENSE_LANES.map((lane) => {
-          const isPreviewHighlight = isTutorialActive && (tutorialStep === 1 || tutorialStep === 4)
+          const isPreviewHighlight = isTutorialActive && (tutorialStep === 1 || tutorialStep === 5)
 
           return (
             <div className="defense-lane" key={lane}>
@@ -282,9 +291,9 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
                       : `Trocar filtro ${placement.divisor} por ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
                     : `Instalar filtro ${selectedDivisor} na pista ${lane + 1}, slot ${slot + 1}`
                   
-                  const isStep3Slot = isTutorialActive && tutorialStep === 3 && lane === 1 && !placement
-                  const isStep6Slot = isTutorialActive && tutorialStep === 6 && lane === 2 && !placement
-                  const shouldHighlightSlot = isStep3Slot || isStep6Slot
+                  const isStep4Slot = isTutorialActive && tutorialStep === 4 && lane === 1 && !placement
+                  const isStep7Slot = isTutorialActive && tutorialStep === 7 && lane === 2 && !placement
+                  const shouldHighlightSlot = isStep4Slot || isStep7Slot
 
                   return (
                     <button
@@ -315,7 +324,7 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
         </p>
         <button
           type="button"
-          className={`defense-launch ${isTutorialActive && tutorialStep === 7 ? 'tutorial-highlight' : ''}`}
+          className={`defense-launch ${isTutorialActive && tutorialStep === 8 ? 'tutorial-highlight' : ''}`}
           disabled={phase !== 'planning'}
           onClick={() => {
             if (!launchWave()) return
@@ -482,33 +491,38 @@ function TutorialOverlay(): JSX.Element | null {
   let message = ""
   let showNextButton = false
   let showDarkBg = true
-  const bgOpacity = 'rgba(0, 0, 0, 0.85)'
+  let bgOpacity = 'rgba(0, 0, 0, 0.85)'
 
   switch (tutorialStep) {
     case 1:
-      message = "Na seção central você vê quais números vão passar. Primos em azul passam direto; compostos em vermelho devem ser parados."
+      message = "1 - Aqui você vê quais números vão passar por quais pistas. Números primos em azul passam direto e alimentam o núcleo. Números compostos em vermelho devem ser parados por filtros."
       showNextButton = true
       break
     case 2:
-      message = "Na seção esquerda você pode escolher qual filtro usar. Escolha o filtro 2."
+      message = "2 - No topo da tela, você acompanha a onda atual e a integridade do seu núcleo. Se você deixar muitos compostos passarem, você perde o jogo!"
+      showNextButton = true
       break
     case 3:
-      message = "Adicione o filtro 2 selecionado na pista 2 em S1, S2 ou S3."
+      message = "3 - Aqui você pode escolher qual filtro usar. Escolha o filtro 2."
       break
     case 4:
-      message = "Quando um número composto vai ser filtrado, ele fica amarelo."
-      showNextButton = true
+      message = "4 - Aqui você pode adicionar os filtros selecionados em S1, S2 ou S3. Adicione o filtro 2 na pista 2."
       break
     case 5:
-      message = "Ao fundo, você vê uma representação 3D das pistas."
+      message = "5 - Quando um número composto vai ser filtrado, ele fica amarelo."
       showNextButton = true
-      showDarkBg = false
       break
     case 6:
-      message = "Coloque um filtro 3 na pista 3 para filtrar o 9."
-      showDarkBg = false
+      message = "6 - Aqui você vê uma representação 3D das pistas."
+      showNextButton = true
+      bgOpacity = 'rgba(0, 0, 0, 0.4)'
+      break
     case 7:
-      message = "7 - Todos os compostos estão cobertos! Clique em EXECUTAR ONDA."
+      message = "7 - Coloque um filtro 3 na pista 3 para filtrar o 9."
+      showDarkBg = false
+      break
+    case 8:
+      message = "8 - Todos os compostos estão cobertos! Agora para começar a onda, clique em EXECUTAR ONDA."
       break
     default:
       skipTutorial()
@@ -520,9 +534,8 @@ function TutorialOverlay(): JSX.Element | null {
       {showDarkBg && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: bgOpacity, zIndex: 50, pointerEvents: 'auto' }} />
       )}
-      
       <div className="tutorial-dialog" style={{ position: 'fixed', top: '10%', left: '50%', transform: 'translateX(-50%)', zIndex: 101, background: '#0a1012', padding: '24px 32px', border: '1px solid #4a9e9e', borderRadius: '4px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
-        <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500 }}>{message}</p>
+        <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500, maxWidth: '600px' }}>{message}</p>
         
         {showNextButton && (
           <button type="button" onClick={nextTutorialStep} style={{ padding: '8px 16px', marginRight: '16px', background: '#4a9e9e', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>

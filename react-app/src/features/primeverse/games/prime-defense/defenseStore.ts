@@ -359,7 +359,7 @@ export function createPrimeDefenseStore(
       start: () => {
         const state = get()
         set(emptyRun(state.runId + 1, now(), state.bestScore, state.feedback))
-        
+
         set({
           ...emptyRun(state.runId + 1, now(), state.bestScore, state.feedback),
           isTutorialActive: true,
@@ -559,7 +559,7 @@ export function createPrimeDefenseStore(
     
       nextTutorialStep: () => 
         set((state) => {
-          if (state.tutorialStep < 7) {
+          if (state.tutorialStep < 8) {
             return { tutorialStep: state.tutorialStep + 1 }
           }
           return { isTutorialActive: false, tutorialStep: 0 } 

@@ -29,6 +29,13 @@ const seeds = (...values: number[]): readonly { value: number }[] =>
 
 export const DEFENSE_WAVES: readonly DefenseWave[] = [
   {
+    id: 'tutorial',
+    name: 'Tutorial',
+    briefing: 'Aprendendo mecânicas básicas do jogo.',
+    energy: 4,
+    lanes: [seeds(2), seeds(3, 4), seeds(9)],
+  },
+  {
     id: 'parity-signal',
     name: 'Sinal de paridade',
     briefing: 'Calibre filtros simples e deixe as assinaturas primas alcançarem o núcleo.',

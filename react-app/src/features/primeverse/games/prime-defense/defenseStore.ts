@@ -50,6 +50,14 @@ export interface PrimeDefenseState {
   feedback: DefenseFeedback | null
   result: DefenseResult | null
   bestScore: number
+  
+  tutorialStep: number
+  isTutorialActive: boolean
+  
+  nextTutorialStep: () => void
+  skipTutorial: () => void
+  startTutorial: () => void
+  
   selectDivisor: (divisor: DefenseDivisor) => void
   placeTower: (lane: DefenseLane, slot: DefenseSlot, divisor?: DefenseDivisor) => boolean
   removeTower: (lane: DefenseLane, slot: DefenseSlot) => boolean
@@ -138,6 +146,8 @@ function emptyRun(
     ),
     result: null,
     bestScore,
+    tutorialStep: 0,
+    isTutorialActive: false,
   }
 }
 
@@ -153,6 +163,9 @@ type PrimeDefenseActions = Pick<
   | 'restart'
   | 'returnToIntro'
   | 'clearFeedback'
+  | 'nextTutorialStep'
+  | 'skipTutorial'
+  | 'startTutorial'
 >
 
 export function createPrimeDefenseStore(
@@ -254,6 +267,8 @@ export function createPrimeDefenseStore(
       feedback: null,
       result: null,
       bestScore: initialBestScore,
+      tutorialStep: 0,
+      isTutorialActive: false,
 
       selectDivisor: (divisor) => {
         const state = get()
@@ -344,6 +359,13 @@ export function createPrimeDefenseStore(
       start: () => {
         const state = get()
         set(emptyRun(state.runId + 1, now(), state.bestScore, state.feedback))
+        const isFirstTime = state.bestScore === 0;
+
+        set({
+          ...emptyRun(state.runId + 1, now(), state.bestScore, state.feedback),
+          isTutorialActive: isFirstTime,
+          tutorialStep: isFirstTime ? 1 : 0,
+        })
       },
 
       launchWave: () => {
@@ -534,6 +556,18 @@ export function createPrimeDefenseStore(
 
       clearFeedback: (feedbackId) => {
         if (get().feedback?.id === feedbackId) set({ feedback: null })
+      },
+    
+      nextTutorialStep: () => {
+        set((state) => ({ tutorialStep: state.tutorialStep + 1 }))
+      },
+
+      skipTutorial: () => {
+        set({ isTutorialActive: false })
+      },
+
+      startTutorial: () => {
+        set({ isTutorialActive: true, tutorialStep: 1 })
       },
     }
   })

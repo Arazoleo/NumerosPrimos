@@ -126,11 +126,16 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
   const placements = usePrimeDefenseStore((state) => state.placements)
   const selectedDivisor = usePrimeDefenseStore((state) => state.selectedDivisor)
   const selectDivisor = usePrimeDefenseStore((state) => state.selectDivisor)
+
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+
   const wave = DEFENSE_WAVES[waveIndex]
   const used = getPlacementEnergy(placements)
 
   return (
-    <aside className="defense-palette" aria-label="Banco de filtros divisores">
+    <aside className="defense-palette" aria-label="Banco de filtros divisores" style={{ position: 'relative', zIndex: isTutorialActive && tutorialStep === 1 ? 100 : 1 }}>
       <div className="defense-palette__heading">
         <div><span>BANCO DE FILTROS</span><strong>Escolha uma frequência</strong></div>
         <small>{wave.energy - used} energia livre</small>
@@ -144,13 +149,14 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
           <button
             key={divisor}
             type="button"
-            className={selectedDivisor === divisor ? 'is-selected' : ''}
+            className={`${selectedDivisor === divisor ? 'is-selected' : ''} ${isTutorialActive && tutorialStep === 1 ? 'tutorial-highlight' : ''}`}
             aria-pressed={selectedDivisor === divisor}
             disabled={phase !== 'planning'}
             data-divisor={divisor}
             onClick={() => {
               selectDivisor(divisor)
               onSoundEvent?.('select')
+              if (isTutorialActive && tutorialStep === 1) nextTutorialStep()
             }}
           >
             <span>{divisor}</span>
@@ -184,6 +190,12 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
   const outcomes = usePrimeDefenseStore((state) => state.currentWaveOutcomes)
   const placeTower = usePrimeDefenseStore((state) => state.placeTower)
   const launchWave = usePrimeDefenseStore((state) => state.launchWave)
+
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+  const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
+
   const wave = DEFENSE_WAVES[waveIndex]
   const enemies = useMemo(() => createWaveEnemies(wave, waveIndex), [wave, waveIndex])
   const analysis = useMemo(
@@ -200,10 +212,11 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
   const install = (lane: DefenseLane, slot: 0 | 1 | 2) => {
     const valid = placeTower(lane, slot)
     onSoundEvent?.(valid ? 'place' : 'breach')
+    if (valid && isTutorialActive && tutorialStep === 2) nextTutorialStep()
   }
 
   return (
-    <section className="defense-board" aria-labelledby="defense-wave-title">
+    <section className="defense-board" aria-labelledby="defense-wave-title" style={{ position: 'relative', zIndex: isTutorialActive && (tutorialStep === 2 || tutorialStep === 3) ? 100 : 1 }}>
       <div className="defense-board__head">
         <div>
           <span>ONDA {String(waveIndex + 1).padStart(2, '0')} // {wave.id.toUpperCase()}</span>
@@ -256,7 +269,7 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
                   <button
                     key={slot}
                     type="button"
-                    className={placement ? 'is-occupied' : ''}
+                    className={`${placement ? 'is-occupied' : ''} ${isTutorialActive && tutorialStep === 2 && !placement ? 'tutorial-highlight' : ''}`}
                     data-divisor={placement?.divisor}
                     aria-label={label}
                     disabled={phase !== 'planning'}
@@ -280,11 +293,13 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
         </p>
         <button
           type="button"
-          className="defense-launch"
+          className={`defense-launch ${isTutorialActive && tutorialStep === 3 ? 'tutorial-highlight' : ''}`}
           disabled={phase !== 'planning'}
           onClick={() => {
             if (!launchWave()) return
             onSoundEvent?.('launch')
+            // FINALIZA O TUTORIAL:
+            if (isTutorialActive) skipTutorial()
           }}
         >
           {phase === 'running' ? 'ONDA EM CURSO…' : 'EXECUTAR ONDA'}
@@ -435,6 +450,68 @@ function FinalResultPanel(): JSX.Element | null {
   )
 }
 
+function TutorialOverlay(): JSX.Element | null {
+  const isTutorialActive = usePrimeDefenseStore((state) => state.isTutorialActive)
+  const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
+  const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
+
+  if (!isTutorialActive) return null
+
+  let message = ""
+  if (tutorialStep === 1) message = "Selecione um filtro de divisor na paleta."
+  else if (tutorialStep === 2) message = "Instale o filtro em um dos espaços vazios (S1, S2, S3) nas pistas."
+  else if (tutorialStep === 3) message = "Acompanhe a simulação e clique em EXECUTAR ONDA."
+  else {
+    skipTutorial()
+    return null
+  }
+
+  return (
+    <>
+      {/* Fundo escuro */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 50,
+          pointerEvents: 'auto'
+        }} 
+      />
+      
+      {/* Painel de texto flutuante */}
+      <div 
+        className="tutorial-dialog" 
+        style={{ 
+          position: 'fixed', 
+          top: '10%', 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          zIndex: 101, 
+          background: '#0a1012',
+          padding: '24px 32px', 
+          border: '1px solid #4a9e9e',
+          borderRadius: '4px', 
+          textAlign: 'center',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.8)'
+        }}
+      >
+        <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500 }}>{message}</p>
+        <button 
+          type="button" 
+          onClick={skipTutorial} 
+          style={{ color: '#4a9e9e', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          Pular Tutorial
+        </button>
+      </div>
+    </>
+  )
+}
+
 export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
   const phase = usePrimeDefenseStore((state) => state.phase)
 
@@ -445,6 +522,8 @@ export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
   const missionVisible = phase === 'planning' || phase === 'running'
   return (
     <div className="defense-hud">
+      <TutorialOverlay />
+      
       {missionVisible ? (
         <>
           <MissionTopbar quality={props.quality} onQualityChange={props.onQualityChange} />
@@ -456,6 +535,7 @@ export function PrimeDefenseHud(props: PrimeDefenseHudProps): JSX.Element {
           <FeedbackToast />
         </>
       ) : null}
+      
       {phase === 'wave-result' ? <WaveResultPanel onSoundEvent={props.onSoundEvent} /> : null}
       {phase === 'victory' || phase === 'defeat' ? <FinalResultPanel /> : null}
     </div>

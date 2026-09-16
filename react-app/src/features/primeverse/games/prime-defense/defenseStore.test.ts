@@ -7,7 +7,7 @@ import type { DefenseDivisor, DefenseLane, DefenseSlot } from './types'
 type Plan = readonly [DefenseLane, DefenseSlot, DefenseDivisor][]
 
 const PERFECT_PLANS: readonly Plan[] = [
-  [[0, 0, 2], [1, 0, 3], [2, 0, 2]],
+  [[1, 0, 2], [2, 0, 3]],
   [[0, 0, 7], [1, 0, 2], [1, 1, 5], [2, 0, 3]],
   [[0, 0, 2], [0, 1, 3], [1, 0, 7], [1, 1, 3], [2, 0, 2], [2, 1, 5]],
   [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 2], [2, 1, 3]],
@@ -33,9 +33,8 @@ describe('Prime Defense store', () => {
     })
 
     expect(store.getState().placeTower(0, 0, 7)).toBe(true)
-    expect(store.getState().placeTower(1, 0, 7)).toBe(true)
-    expect(store.getState().placeTower(2, 0, 2)).toBe(false)
-    expect(store.getState().placements).toHaveLength(2)
+    expect(store.getState().placeTower(1, 0, 2)).toBe(false)
+    expect(store.getState().placements).toHaveLength(1)
     expect(store.getState().feedback?.title).toBe('Energia insuficiente')
   })
 
@@ -52,14 +51,14 @@ describe('Prime Defense store', () => {
   it('resolves prime, interception and breach outcomes one at a time', () => {
     const store = createPrimeDefenseStore({ initialBestScore: 0 })
     store.getState().start()
-    store.getState().placeTower(0, 0, 2)
     store.getState().launchWave()
 
     expect(store.getState().resolveNextEnemy()?.kind).toBe('prime-passed')
     expect(store.getState()).toMatchObject({ coreCharge: 1, lives: 6 })
+    expect(store.getState().resolveNextEnemy()?.kind).toBe('prime-passed')
+    expect(store.getState()).toMatchObject({ coreCharge: 2, lives: 6 })
     expect(store.getState().resolveNextEnemy()?.kind).toBe('breach')
     expect(store.getState().lives).toBe(5)
-    expect(store.getState().resolveNextEnemy()?.kind).toBe('breach')
   })
 
   it('completes all five waves with a perfect strategy and records progression once', () => {

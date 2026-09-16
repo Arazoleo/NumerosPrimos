@@ -32,8 +32,8 @@ describe('Prime Defense store', () => {
       startedAt: 1_000,
     })
 
-    expect(store.getState().placeTower(0, 0, 7)).toBe(true)
-    expect(store.getState().placeTower(1, 0, 2)).toBe(false)
+    expect(store.getState().placeTower(0, 0, 7)).toBe(true) // Custo 3
+    expect(store.getState().placeTower(1, 0, 2)).toBe(false) // Custo 3 + 2 = 5 > 4 (Energia da Onda 0 = 4)
     expect(store.getState().placements).toHaveLength(1)
     expect(store.getState().feedback?.title).toBe('Energia insuficiente')
   })
@@ -51,6 +51,7 @@ describe('Prime Defense store', () => {
   it('resolves prime, interception and breach outcomes one at a time', () => {
     const store = createPrimeDefenseStore({ initialBestScore: 0 })
     store.getState().start()
+    store.getState().placeTower(0, 0, 2)
     store.getState().launchWave()
 
     expect(store.getState().resolveNextEnemy()?.kind).toBe('prime-passed')
@@ -107,13 +108,18 @@ describe('Prime Defense store', () => {
     const recordProgress = vi.fn(() => false)
     const store = createPrimeDefenseStore({ recordProgress, initialBestScore: 9_999 })
     store.getState().start()
-    store.getState().launchWave()
 
-    while (store.getState().phase === 'running') store.getState().resolveNextEnemy()
-    if (store.getState().phase === 'wave-result') {
-      store.getState().nextWave()
-      store.getState().launchWave()
-      while (store.getState().phase === 'running') store.getState().resolveNextEnemy()
+    while (store.getState().phase !== 'defeat') {
+      const { phase } = store.getState()
+      if (phase === 'planning') {
+        store.getState().launchWave()
+      } else if (phase === 'running') {
+        store.getState().resolveNextEnemy()
+      } else if (phase === 'wave-result') {
+        store.getState().nextWave()
+      } else {
+        break
+      }
     }
 
     expect(store.getState().phase).toBe('defeat')

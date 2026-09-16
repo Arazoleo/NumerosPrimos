@@ -503,7 +503,7 @@ function TutorialOverlay(): JSX.Element | null {
       showNextButton = true
       break
     case 3:
-      message = "3 - Aqui você pode escolher qual filtro usar. Escolha o filtro 2."
+      message = "3 - Aqui você pode escolher qual filtro usar, cada filtro tem um custo em energia que é exibido nesta mesma seção. Escolha o filtro 2."
       break
     case 4:
       message = "4 - Aqui você pode adicionar os filtros selecionados em S1, S2 ou S3. Adicione o filtro 2 na pista 2."

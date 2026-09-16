@@ -8,7 +8,7 @@ type Plan = readonly [DefenseLane, DefenseSlot, DefenseDivisor][]
 
 const PERFECT_PLANS: readonly Plan[] = [
   [[1, 0, 2], [2, 0, 3]],
-  [[0, 0, 7], [1, 0, 2], [1, 1, 5], [2, 0, 3]],
+  [[0, 0, 7], [1, 0, 5], [2, 0, 3]],
   [[0, 0, 2], [0, 1, 3], [1, 0, 7], [1, 1, 3], [2, 0, 2], [2, 1, 5]],
   [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 2], [2, 1, 3]],
   [[0, 0, 2], [0, 1, 3], [0, 2, 5], [1, 0, 7], [1, 1, 3], [1, 2, 5], [2, 0, 2], [2, 1, 3]],
@@ -32,8 +32,8 @@ describe('Prime Defense store', () => {
       startedAt: 1_000,
     })
 
-    expect(store.getState().placeTower(0, 0, 7)).toBe(true) // Custo 3
-    expect(store.getState().placeTower(1, 0, 2)).toBe(false) // Custo 3 + 2 = 5 > 4 (Energia da Onda 0 = 4)
+    expect(store.getState().placeTower(0, 0, 7)).toBe(true)
+    expect(store.getState().placeTower(1, 0, 2)).toBe(false)
     expect(store.getState().placements).toHaveLength(1)
     expect(store.getState().feedback?.title).toBe('Energia insuficiente')
   })

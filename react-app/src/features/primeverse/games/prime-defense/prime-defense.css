@@ -280,3 +280,14 @@
   top: -1px;
   width: 15px;
 }
+
+.defense-hud > *:only-child:not(.defense-modal-wrap) {
+  align-items: center;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: clamp(16px, 4vw, 54px);
+  pointer-events: auto;
+  position: fixed;
+  z-index: 10;
+}

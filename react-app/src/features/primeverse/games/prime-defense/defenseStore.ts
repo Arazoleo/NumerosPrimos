@@ -239,7 +239,7 @@ export function createPrimeDefenseStore(
           victory ? 'success' : 'error',
           victory ? 'Núcleo preservado' : 'Núcleo comprometido',
           victory
-            ? `Cinco ondas contidas. ${nextValues.coreCharge} primos energizaram a estação.`
+            ? `Seis ondas contidas. ${nextValues.coreCharge} primos energizaram a estação.`
             : `${outcome.enemy.value} atravessou a última camada de integridade.`,
         ),
       })

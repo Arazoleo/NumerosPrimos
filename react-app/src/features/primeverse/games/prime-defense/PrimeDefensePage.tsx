@@ -88,7 +88,7 @@ export default function PrimeDefensePage(): JSX.Element {
         <SceneBoundary>
           <Canvas
             aria-label="Arena tridimensional de defesa por divisibilidade"
-            camera={{ position: [0, 8.2, 12.4], fov: 45, near: 0.1, far: 70 }}
+            camera={{ position: [0, 9.4, 14.6], fov: 42, near: 0.1, far: 70 }}
             dpr={profile.dpr}
             shadows={profile.shadows}
             gl={{
@@ -117,4 +117,3 @@ export default function PrimeDefensePage(): JSX.Element {
     </main>
   )
 }
-

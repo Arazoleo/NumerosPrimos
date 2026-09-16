@@ -7,11 +7,18 @@ import type { DefenseDivisor, DefenseLane, DefenseSlot } from './types'
 type Plan = readonly [DefenseLane, DefenseSlot, DefenseDivisor][]
 
 const PERFECT_PLANS: readonly Plan[] = [
+  // tutorial (energy 4): lanes [2] / [3, 4] / [9]
   [[1, 0, 2], [2, 0, 3]],
-  [[0, 0, 2], [1, 0, 3], [2, 0, 5]],
+  // parity-signal (energy 6): lanes [11, 6, 13] / [15, 17] / [10, 19]
+  [[0, 0, 2], [1, 0, 3], [2, 0, 2]],
+  // crossed-factors (energy 10): lanes [21, 23, 35] / [22, 25, 29] / [27, 31, 33]
+  [[0, 0, 7], [1, 0, 2], [1, 1, 5], [2, 0, 3]],
+  // dual-front (energy 14): lanes [26, 39, 41] / [49, 43, 45] / [46, 55, 47]
   [[0, 0, 2], [0, 1, 3], [1, 0, 7], [1, 1, 3], [2, 0, 2], [2, 1, 5]],
-  [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 2], [2, 1, 3]],
-  [[0, 0, 2], [0, 1, 3], [0, 2, 5], [1, 0, 7], [1, 1, 3], [1, 2, 5], [2, 0, 2], [2, 1, 3]],
+  // compression-field (energy 12): lanes [51, 53, 65, 67] / [70, 71, 77] / [57, 59, 58, 61]
+  [[0, 0, 3], [0, 1, 5], [1, 0, 7], [2, 0, 3], [2, 1, 2]],
+  // factor-storm (energy 19): lanes [82, 83, 85, 87] / [91, 89, 93, 95] / [94, 97, 98, 99]
+  [[0, 0, 2], [0, 1, 5], [0, 2, 3], [1, 0, 7], [1, 1, 3], [1, 2, 5], [2, 0, 2], [2, 1, 3]],
 ]
 
 function runCurrentWave(store: PrimeDefenseStore): void {
@@ -62,7 +69,7 @@ describe('Prime Defense store', () => {
     expect(store.getState().lives).toBe(5)
   })
 
-  it('completes all five waves with a perfect strategy and records progression once', () => {
+  it('completes all six waves with a perfect strategy and records progression once', () => {
     let clock = 10_000
     const recordProgress = vi.fn(() => true)
     const saveBestScore = vi.fn()
@@ -91,14 +98,14 @@ describe('Prime Defense store', () => {
     expect(state.phase).toBe('victory')
     expect(state.lives).toBe(6)
     expect(state.breaches).toBe(0)
-    expect(state.waveSummaries).toHaveLength(5)
+    expect(state.waveSummaries).toHaveLength(6)
     expect(state.waveSummaries.every((summary) => summary.perfect)).toBe(true)
     expect(state.result).toMatchObject({
       victory: true,
-      wavesCleared: 5,
+      wavesCleared: 6,
       isNewBest: true,
     })
-    expect(state.result?.elapsedMs).toBe(5_000)
+    expect(state.result?.elapsedMs).toBe(6_000)
     expect(state.result?.xp).toBeGreaterThan(0)
     expect(recordProgress).toHaveBeenCalledOnce()
     expect(saveBestScore).toHaveBeenCalledOnce()

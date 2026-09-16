@@ -404,37 +404,39 @@ function WaveResultPanel({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEv
   return (
     <div className="defense-modal-wrap defense-modal-wrap--result">
       <section className="defense-panel defense-wave-result" role="dialog" aria-modal="true" aria-labelledby="defense-wave-result-title">
-        <div className={`defense-result-mark${summary.perfect ? ' is-perfect' : ''}`} aria-hidden="true">
-          {summary.perfect ? '✓' : '△'}
-        </div>
-        <div className="defense-eyebrow">ONDA {String(waveIndex + 1).padStart(2, '0')} CONTIDA</div>
-        <h2 id="defense-wave-result-title">
-          {summary.perfect ? <>Cobertura <em>integral.</em></> : <>Núcleo ainda <em>operacional.</em></>}
-        </h2>
-        <div className="defense-wave-stats">
-          <div><span>INTERCEPTADOS</span><strong>{summary.intercepted}</strong></div>
-          <div><span>PRIMOS</span><strong>{summary.primesPassed}</strong></div>
-          <div><span>BRECHAS</span><strong>{summary.breaches}</strong></div>
-          <div><span>PONTOS</span><strong>+{summary.points.toLocaleString('pt-BR')}</strong></div>
-        </div>
-        <div className="defense-wave-log" aria-label="Relatório matemático da onda">
-          {outcomes.map((outcome) => (
-            <div key={outcome.enemy.id} className={`is-${outcome.kind}`}>
-              <strong>{outcome.enemy.value}</strong><span>{outcome.explanation}</span>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="defense-primary"
-          autoFocus
-          onClick={() => {
-            if (!nextWave()) return
-            onSoundEvent?.('wave-complete')
-          }}
-        >
-          Preparar onda {waveIndex + 2} <span aria-hidden="true">→</span>
-        </button>
+        <section className="defense-panel-intern">
+          <div className={`defense-result-mark${summary.perfect ? ' is-perfect' : ''}`} aria-hidden="true">
+            {summary.perfect ? '✓' : '△'}
+          </div>
+          <div className="defense-eyebrow">ONDA {String(waveIndex + 1).padStart(2, '0')} CONTIDA</div>
+          <h2 id="defense-wave-result-title">
+            {summary.perfect ? <>Cobertura <em>integral.</em></> : <>Núcleo ainda <em>operacional.</em></>}
+          </h2>
+          <div className="defense-wave-stats">
+            <div><span>INTERCEPTADOS</span><strong>{summary.intercepted}</strong></div>
+            <div><span>PRIMOS</span><strong>{summary.primesPassed}</strong></div>
+            <div><span>BRECHAS</span><strong>{summary.breaches}</strong></div>
+            <div><span>PONTOS</span><strong>+{summary.points.toLocaleString('pt-BR')}</strong></div>
+          </div>
+          <div className="defense-wave-log" aria-label="Relatório matemático da onda">
+            {outcomes.map((outcome) => (
+              <div key={outcome.enemy.id} className={`is-${outcome.kind}`}>
+                <strong>{outcome.enemy.value}</strong><span>{outcome.explanation}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="defense-primary"
+            autoFocus
+            onClick={() => {
+              if (!nextWave()) return
+              onSoundEvent?.('wave-complete')
+            }}
+          >
+            Preparar onda {waveIndex + 2} <span aria-hidden="true">→</span>
+          </button>
+        </section>
       </section>
     </div>
   )
@@ -449,32 +451,34 @@ function FinalResultPanel(): JSX.Element | null {
   return (
     <div className="defense-modal-wrap defense-modal-wrap--final">
       <section className={`defense-panel defense-final${result.victory ? ' is-victory' : ' is-defeat'}`} role="dialog" aria-modal="true" aria-labelledby="defense-final-title">
-        <div className="defense-final__sigil" aria-hidden="true">{result.victory ? 'Δ' : '!'}</div>
-        <div className="defense-eyebrow">{result.victory ? 'PROTOCOLO DE DEFESA CONCLUÍDO' : 'INTEGRIDADE ESGOTADA'}</div>
-        <h2 id="defense-final-title">
-          {result.victory ? <>Núcleo <em>preservado.</em></> : <>Defesa <em>rompida.</em></>}
-        </h2>
-        <p>
-          {result.victory
-            ? `${result.primesPassed} números primos atravessaram a triagem; ${result.intercepted} compostos foram provados e neutralizados.`
-            : `Você conteve ${result.intercepted} compostos antes da falha. Recalibre as pistas marcadas em vermelho e tente outra formação.`}
-        </p>
-        <div className="defense-final__score">
-          <span>SCORE FINAL</span><strong>{result.score.toLocaleString('pt-BR')}</strong>
-          {result.isNewBest ? <small>NOVO RECORDE</small> : <small>MELHOR {bestScore.toLocaleString('pt-BR')}</small>}
-        </div>
-        <div className="defense-final__grid">
-          <div><span>ONDAS</span><strong>{result.wavesCleared} / 5</strong></div>
-          <div><span>TEMPO</span><strong>{formatTime(result.elapsedMs)}</strong></div>
-          <div><span>BRECHAS</span><strong>{result.breaches}</strong></div>
-          <div><span>XP RECEBIDO</span><strong>+{result.xp}</strong></div>
-        </div>
-        <div className="defense-final__actions">
-          <button type="button" className="defense-primary" autoFocus onClick={restart}>
-            {result.victory ? 'Defender novamente' : 'Recalibrar defesa'} <span aria-hidden="true">↻</span>
-          </button>
-          <Link className="defense-text-link" to="/jogos">Voltar ao Primeverse</Link>
-        </div>
+        <section className="defense-panel-intern">
+          <div className="defense-final__sigil" aria-hidden="true">{result.victory ? 'Δ' : '!'}</div>
+          <div className="defense-eyebrow">{result.victory ? 'PROTOCOLO DE DEFESA CONCLUÍDO' : 'INTEGRIDADE ESGOTADA'}</div>
+          <h2 id="defense-final-title">
+            {result.victory ? <>Núcleo <em>preservado.</em></> : <>Defesa <em>rompida.</em></>}
+          </h2>
+          <p>
+            {result.victory
+              ? `${result.primesPassed} números primos atravessaram a triagem; ${result.intercepted} compostos foram provados e neutralizados.`
+              : `Você conteve ${result.intercepted} compostos antes da falha. Recalibre as pistas marcadas em vermelho e tente outra formação.`}
+          </p>
+          <div className="defense-final__score">
+            <span>SCORE FINAL</span><strong>{result.score.toLocaleString('pt-BR')}</strong>
+            {result.isNewBest ? <small>NOVO RECORDE</small> : <small>MELHOR {bestScore.toLocaleString('pt-BR')}</small>}
+          </div>
+          <div className="defense-final__grid">
+            <div><span>ONDAS</span><strong>{result.wavesCleared} / 6</strong></div>
+            <div><span>TEMPO</span><strong>{formatTime(result.elapsedMs)}</strong></div>
+            <div><span>BRECHAS</span><strong>{result.breaches}</strong></div>
+            <div><span>XP RECEBIDO</span><strong>+{result.xp}</strong></div>
+          </div>
+          <div className="defense-final__actions">
+            <button type="button" className="defense-primary" autoFocus onClick={restart}>
+              {result.victory ? 'Defender novamente' : 'Recalibrar defesa'} <span aria-hidden="true">↻</span>
+            </button>
+            <Link className="defense-text-link" to="/jogos">Voltar ao Primeverse</Link>
+          </div>
+        </section>
       </section>
     </div>
   )

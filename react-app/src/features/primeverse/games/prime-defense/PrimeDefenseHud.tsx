@@ -404,37 +404,39 @@ function WaveResultPanel({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEv
   return (
     <div className="defense-modal-wrap defense-modal-wrap--result">
       <section className="defense-panel defense-wave-result" role="dialog" aria-modal="true" aria-labelledby="defense-wave-result-title">
-        <div className={`defense-result-mark${summary.perfect ? ' is-perfect' : ''}`} aria-hidden="true">
-          {summary.perfect ? '✓' : '△'}
-        </div>
-        <div className="defense-eyebrow">ONDA {String(waveIndex + 1).padStart(2, '0')} CONTIDA</div>
-        <h2 id="defense-wave-result-title">
-          {summary.perfect ? <>Cobertura <em>integral.</em></> : <>Núcleo ainda <em>operacional.</em></>}
-        </h2>
-        <div className="defense-wave-stats">
-          <div><span>INTERCEPTADOS</span><strong>{summary.intercepted}</strong></div>
-          <div><span>PRIMOS</span><strong>{summary.primesPassed}</strong></div>
-          <div><span>BRECHAS</span><strong>{summary.breaches}</strong></div>
-          <div><span>PONTOS</span><strong>+{summary.points.toLocaleString('pt-BR')}</strong></div>
-        </div>
-        <div className="defense-wave-log" aria-label="Relatório matemático da onda">
-          {outcomes.map((outcome) => (
-            <div key={outcome.enemy.id} className={`is-${outcome.kind}`}>
-              <strong>{outcome.enemy.value}</strong><span>{outcome.explanation}</span>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          className="defense-primary"
-          autoFocus
-          onClick={() => {
-            if (!nextWave()) return
-            onSoundEvent?.('wave-complete')
-          }}
-        >
-          Preparar onda {waveIndex + 2} <span aria-hidden="true">→</span>
-        </button>
+        <section className="defense-panel-intern">
+          <div className={`defense-result-mark${summary.perfect ? ' is-perfect' : ''}`} aria-hidden="true">
+            {summary.perfect ? '✓' : '△'}
+          </div>
+          <div className="defense-eyebrow">ONDA {String(waveIndex + 1).padStart(2, '0')} CONTIDA</div>
+          <h2 id="defense-wave-result-title">
+            {summary.perfect ? <>Cobertura <em>integral.</em></> : <>Núcleo ainda <em>operacional.</em></>}
+          </h2>
+          <div className="defense-wave-stats">
+            <div><span>INTERCEPTADOS</span><strong>{summary.intercepted}</strong></div>
+            <div><span>PRIMOS</span><strong>{summary.primesPassed}</strong></div>
+            <div><span>BRECHAS</span><strong>{summary.breaches}</strong></div>
+            <div><span>PONTOS</span><strong>+{summary.points.toLocaleString('pt-BR')}</strong></div>
+          </div>
+          <div className="defense-wave-log" aria-label="Relatório matemático da onda">
+            {outcomes.map((outcome) => (
+              <div key={outcome.enemy.id} className={`is-${outcome.kind}`}>
+                <strong>{outcome.enemy.value}</strong><span>{outcome.explanation}</span>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="defense-primary"
+            autoFocus
+            onClick={() => {
+              if (!nextWave()) return
+              onSoundEvent?.('wave-complete')
+            }}
+          >
+            Preparar onda {waveIndex + 2} <span aria-hidden="true">→</span>
+          </button>
+        </section>
       </section>
     </div>
   )

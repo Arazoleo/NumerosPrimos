@@ -4,7 +4,7 @@ export const members = [
   { file: 'leo',     name: 'Leonardo',  role: 'Membro',       prime: 3,
     bio: 'Tech Lead do time de desenvolvimento e pesquisador em Inteligência Artificial.' },
   { file: 'abreu',   name: 'Pedro',     role: 'Membro',       prime: 5,
-    bio: 'Membro do time de desenvolvimento e pesquisador em métodos heurísticos para Otimização Combinatória.' },
+    bio: 'Membro do time de desenvolvimento e pesquisador em métodos heurísticos em Otimização Combinatória.' },
   { file: 'ana',     name: 'Ana Beatriz',       role: 'Membro',       prime: 7,
     bio: 'Membro do time de desenvolvimento, engenheira de software e professora de matemática.' },
   { file: 'enrique', name: 'Enrique',   role: 'Membro',       prime: 11,
@@ -32,6 +32,21 @@ export const members = [
   },
   { file: 'enrico', name: 'Enrico', role: 'Membro', prime: 43,
     bio: 'Membro do time de desenvolvimento, fã de enigmas e criptografia.'
+  },
+  { file: 'vinicius', name: 'Vinicius', role: 'Membro', prime: 47,
+    bio: 'Membro do time de desenvolvimento, estudante de engenharia da computação e apaixonado por games.'
+  },
+  { file: 'breno', name: 'Breno', role: 'Membro', prime: 53,
+    bio: 'Membro do time de desenvolvimento, interessado por desenvolvimento, dados e matemática.'
+  },
+  { file: 'felipe', name: 'Felipe', role: 'Membro', prime: 59,
+    bio: 'Membro do projeto e estudante de ciência e tecnologia.'
+  },
+  { file: 'vinicius_cruz', name: 'Vinicius', role: 'Membro', prime: 61,
+    bio: 'Membro do projeto, entusiasta de Machine Learning e métodos computacionais para análise dados.'
+  },
+  { file: 'rafa', name: 'Rafaela', role: 'Membro', prime: 67,
+    bio: 'UI/UX Designer, QA e estudante de ciência da computação.'
   }
 ]
 

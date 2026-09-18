@@ -17,39 +17,39 @@ export interface RsaTutorialCopy {
 
 export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, RsaTutorialCopy>> = {
   1: {
-    target: 'console',
-    title: 'Console de invasão',
-    body: 'Cada cofre tem quatro etapas. Você vai reconstruir a mensagem sem receber a chave privada.',
+    target: 'public-key',
+    title: 'A chave pública',
+    body: 'N é o número do cofre e e é o expoente usado para cifrar. Você pode ver esses valores, mas a chave para abrir o cofre ainda está escondida.',
   },
   2: {
     target: 'stage-rail',
-    title: 'Quatro cofres',
-    body: 'Este indicador mostra o cofre atual e os cofres já abertos durante a incursão.',
+    title: 'A ordem da solução',
+    body: 'Você vai encontrar dois primos, calcular φ(N), descobrir o expoente privado d e só então decifrar a mensagem.',
   },
   3: {
-    target: 'stage-rail',
-    title: 'A sequência RSA',
-    body: 'A ordem é fatorar N, calcular φ(N), encontrar d e decifrar a mensagem.',
+    target: 'factor-p',
+    title: 'Encontre o primeiro primo',
+    body: 'Um número primo só pode ser dividido por 1 e por ele mesmo. Procure um primo que, multiplicado por outro, forme N. Clique no campo p para continuar.',
   },
   4: {
-    target: 'public-key',
-    title: 'A chave pública',
-    body: 'O par (N, e) é público. Comece encontrando os primos p e q cujo produto é N.',
+    target: 'factor-q',
+    title: 'Encontre o segundo primo',
+    body: 'Agora informe q. Os dois valores precisam obedecer a p × q = N. A ordem dos primos não importa.',
   },
   5: {
     target: 'submit',
-    title: 'Envie uma resposta',
-    body: 'Preencha os campos da etapa atual e use o botão do console para validar a resposta.',
+    title: 'Confira a resposta',
+    body: 'Depois de preencher os dois campos, use este botão para conferir. O clique será apenas demonstrativo durante o tutorial; a partida começa quando você o fechar.',
   },
   6: {
     target: 'proof-stack',
-    title: 'Registro do mecanismo',
-    body: 'Cada etapa correta fica registrada. Erros aumentam as tentativas e reduzem o score, mas não encerram a missão.',
+    title: 'Acompanhe suas descobertas',
+    body: 'Este registro mostra as etapas que já foram resolvidas. Use-o para acompanhar a solução sem precisar guardar todas as contas.',
   },
   7: {
     target: 'console',
-    title: 'Sua primeira operação',
-    body: 'O tutorial terminou. Resolva agora o primeiro estágio usando p e q.',
+    title: 'Sua vez',
+    body: 'Agora você já conhece o caminho. Encontre p e q, avance pelas quatro etapas e leia o feedback quando precisar de ajuda.',
   },
 }
 

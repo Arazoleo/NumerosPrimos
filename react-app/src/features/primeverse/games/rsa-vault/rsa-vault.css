@@ -222,8 +222,8 @@
 .rsa-secondary { min-height: 48px; display: inline-grid; place-items: center; min-width: 190px; padding: 0 16px; border: 1px solid var(--rsa-line); color: var(--rsa-muted); font: 600 9px/1 'JetBrains Mono', monospace; }
 .rsa-secondary:hover { color: var(--rsa-cyan); border-color: rgba(98,247,229,.4); }
 
-.rsa-tutorial { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: clamp(16px, 4vw, 52px); pointer-events: auto; }
-.rsa-tutorial__veil { position: absolute; inset: 0; background: rgba(1, 4, 7, .72); }
+.rsa-tutorial { position: absolute; inset: 0; z-index: 20; pointer-events: auto; }
+.rsa-tutorial__veil { position: absolute; inset: 0; z-index: 1; background: rgba(1, 4, 7, .72); backdrop-filter: blur(4px) saturate(.72); -webkit-backdrop-filter: blur(4px) saturate(.72); }
 .rsa-tutorial__panel { position: relative; z-index: 1; width: min(470px, 100%); padding: clamp(22px, 4vw, 36px); border: 1px solid rgba(255, 198, 90, .46); border-left: 3px solid var(--rsa-gold); background: linear-gradient(145deg, rgba(8, 17, 25, .98), rgba(4, 10, 15, .96)); box-shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 32px rgba(255, 198, 90, .12); }
 .rsa-tutorial__counter { margin: 0 0 10px; color: var(--rsa-gold); font: 700 9px/1 'JetBrains Mono', monospace; letter-spacing: .16em; }
 .rsa-tutorial__panel h2 { margin: 0; color: var(--rsa-ink); font: 700 clamp(24px, 4vw, 34px)/1.05 'Space Grotesk', sans-serif; }
@@ -235,8 +235,8 @@
 .rsa-tutorial__skip:hover, .rsa-tutorial__skip:focus-visible { color: var(--rsa-ink); border-color: var(--rsa-cyan); }
 .rsa-tutorial__next:hover, .rsa-tutorial__next:focus-visible { filter: brightness(1.07); }
 .rsa-tutorial__hint { display: block; margin-top: 14px; color: #71858d; font: 500 9px/1.4 'JetBrains Mono', monospace; }
-.rsa-vault .tutorial-highlight { position: relative; z-index: 22; border-color: var(--rsa-gold); box-shadow: 0 0 0 2px rgba(255, 198, 90, .82), 0 0 24px rgba(255, 198, 90, .34); }
-.rsa-vault .tutorial-highlight::after { content: ''; position: absolute; inset: -7px; border: 1px solid rgba(255, 198, 90, .54); pointer-events: none; }
+.rsa-vault .tutorial-highlight { position: relative !important; z-index: 25 !important; border-color: var(--rsa-gold) !important; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 0 22px 7px rgba(255, 198, 90, .48) !important; transform: scale(1.025); transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease; }
+.rsa-vault .tutorial-highlight::after { position: absolute; inset: -7px; border: 1px solid rgba(255, 198, 90, .65); content: ''; pointer-events: none; }
 
 @media (max-width: 760px) {
   .rsa-tutorial { place-items: end center; padding: 14px; }
@@ -246,7 +246,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rsa-tutorial *, .rsa-vault .tutorial-highlight, .rsa-vault .tutorial-highlight::after { animation: none !important; transition: none !important; transform: none !important; }
+  .rsa-vault .tutorial-highlight { transform: none; transition: none; }
+  .rsa-tutorial *,
+  .rsa-tutorial *::before,
+  .rsa-tutorial *::after { animation: none !important; transition: none !important; }
 }
 
 @keyframes rsa-enter { from { opacity: 0; transform: translateY(8px); } }

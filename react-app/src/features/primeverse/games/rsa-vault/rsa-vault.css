@@ -222,6 +222,33 @@
 .rsa-secondary { min-height: 48px; display: inline-grid; place-items: center; min-width: 190px; padding: 0 16px; border: 1px solid var(--rsa-line); color: var(--rsa-muted); font: 600 9px/1 'JetBrains Mono', monospace; }
 .rsa-secondary:hover { color: var(--rsa-cyan); border-color: rgba(98,247,229,.4); }
 
+.rsa-tutorial { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: clamp(16px, 4vw, 52px); pointer-events: auto; }
+.rsa-tutorial__veil { position: absolute; inset: 0; background: rgba(1, 4, 7, .72); }
+.rsa-tutorial__panel { position: relative; z-index: 1; width: min(470px, 100%); padding: clamp(22px, 4vw, 36px); border: 1px solid rgba(255, 198, 90, .46); border-left: 3px solid var(--rsa-gold); background: linear-gradient(145deg, rgba(8, 17, 25, .98), rgba(4, 10, 15, .96)); box-shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 32px rgba(255, 198, 90, .12); }
+.rsa-tutorial__counter { margin: 0 0 10px; color: var(--rsa-gold); font: 700 9px/1 'JetBrains Mono', monospace; letter-spacing: .16em; }
+.rsa-tutorial__panel h2 { margin: 0; color: var(--rsa-ink); font: 700 clamp(24px, 4vw, 34px)/1.05 'Space Grotesk', sans-serif; }
+.rsa-tutorial__panel > p:not(.rsa-tutorial__counter) { margin: 16px 0 24px; color: #b7c7ca; font-size: 13px; line-height: 1.65; }
+.rsa-tutorial__actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.rsa-tutorial__skip, .rsa-tutorial__next { min-height: 44px; padding: 10px 14px; border: 1px solid var(--rsa-line); cursor: pointer; font: 700 9px/1 'JetBrains Mono', monospace !important; letter-spacing: .08em; text-transform: uppercase; }
+.rsa-tutorial__skip { color: var(--rsa-muted); background: transparent; }
+.rsa-tutorial__next { color: #06100f; border-color: var(--rsa-gold); background: linear-gradient(90deg, var(--rsa-gold), #ffe1a1); }
+.rsa-tutorial__skip:hover, .rsa-tutorial__skip:focus-visible { color: var(--rsa-ink); border-color: var(--rsa-cyan); }
+.rsa-tutorial__next:hover, .rsa-tutorial__next:focus-visible { filter: brightness(1.07); }
+.rsa-tutorial__hint { display: block; margin-top: 14px; color: #71858d; font: 500 9px/1.4 'JetBrains Mono', monospace; }
+.rsa-vault .tutorial-highlight { position: relative; z-index: 22; border-color: var(--rsa-gold); box-shadow: 0 0 0 2px rgba(255, 198, 90, .82), 0 0 24px rgba(255, 198, 90, .34); }
+.rsa-vault .tutorial-highlight::after { content: ''; position: absolute; inset: -7px; border: 1px solid rgba(255, 198, 90, .54); pointer-events: none; }
+
+@media (max-width: 760px) {
+  .rsa-tutorial { place-items: end center; padding: 14px; }
+  .rsa-tutorial__panel { width: min(520px, 100%); padding: 20px; }
+  .rsa-tutorial__actions { align-items: stretch; flex-direction: column-reverse; }
+  .rsa-tutorial__skip, .rsa-tutorial__next { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rsa-tutorial *, .rsa-vault .tutorial-highlight, .rsa-vault .tutorial-highlight::after { animation: none !important; transition: none !important; transform: none !important; }
+}
+
 @keyframes rsa-enter { from { opacity: 0; transform: translateY(8px); } }
 @keyframes rsa-blink { to { opacity: .25; } }
 @keyframes rsa-scan { from { transform: scaleX(.35); opacity: .35; } to { transform: scaleX(1); opacity: 1; } }

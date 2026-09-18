@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
@@ -11,12 +11,21 @@ import {
   RSA_VAULT_COUNT,
 } from './rsaVaultLogic'
 import GameIntro from '../../ui/GameIntro'
+import { getRsaTutorialCopy, type RsaTutorialTarget } from './rsaVaultTutorial'
 import { useRsaVaultStore } from './rsaVaultStore'
 import type { RsaInputField, RsaStage, RsaVaultChallenge } from './types'
 
 interface RsaVaultHudProps {
   quality: QualityLevel
   onQualityChange: (quality: QualityLevel) => void
+}
+
+function tutorialClass(
+  base: string,
+  target: RsaTutorialTarget | null,
+  expected: RsaTutorialTarget,
+): string {
+  return `${base}${target === expected ? ' tutorial-highlight' : ''}`
 }
 
 function formatTime(milliseconds: number): string {
@@ -44,6 +53,59 @@ function useMissionClock(): number {
   return (completedAt ?? now) - startedAt
 }
 
+function TutorialOverlay(): JSX.Element | null {
+  const isActive = useRsaVaultStore((state) => state.isTutorialActive)
+  const step = useRsaVaultStore((state) => state.tutorialStep)
+  const nextTutorialStep = useRsaVaultStore((state) => state.nextTutorialStep)
+  const skipTutorial = useRsaVaultStore((state) => state.skipTutorial)
+  const actionRef = useRef<HTMLButtonElement>(null)
+  const copy = getRsaTutorialCopy(step)
+
+  useEffect(() => {
+    if (!isActive) return undefined
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        skipTutorial()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isActive, skipTutorial])
+
+  useEffect(() => {
+    if (isActive) actionRef.current?.focus()
+  }, [isActive, step])
+
+  if (!isActive || !copy) return null
+
+  const isLastStep = step === 7
+  return (
+    <div
+      className="rsa-tutorial"
+      data-position={copy.position}
+      role="region"
+      aria-labelledby="rsa-tutorial-title"
+    >
+      <div className="rsa-tutorial__veil" aria-hidden="true" />
+      <section className="rsa-tutorial__panel">
+        <p className="rsa-tutorial__counter">PASSO {step} DE 7</p>
+        <h2 id="rsa-tutorial-title">{copy.title}</h2>
+        <p id="rsa-tutorial-description" aria-live="polite">{copy.body}</p>
+        <div className="rsa-tutorial__actions">
+          <button className="rsa-tutorial__skip" type="button" onClick={skipTutorial}>
+            Pular tutorial
+          </button>
+          <button ref={actionRef} className="rsa-tutorial__next" type="button" onClick={nextTutorialStep}>
+            {isLastStep ? 'Começar a jogar' : 'Próximo'}
+          </button>
+        </div>
+        <small className="rsa-tutorial__hint">Pressione Esc para pular</small>
+      </section>
+    </div>
+  )
+}
+
 function VaultBrand({ compact = false }: { compact?: boolean }): JSX.Element {
   return (
     <Link className={`rsa-brand${compact ? ' rsa-brand--compact' : ''}`} to="/jogos">
@@ -57,7 +119,6 @@ function VaultBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 }
 
 function IntroPanel({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element {
-
   const start = useRsaVaultStore((state) => state.start)
 
   return (
@@ -100,12 +161,12 @@ function Topbar({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element {
   )
 }
 
-function StageRail(): JSX.Element {
+function StageRail({ tutorialTarget }: { tutorialTarget: RsaTutorialTarget | null }): JSX.Element {
   const stage = useRsaVaultStore((state) => state.stage)
   const completedStages = useRsaVaultStore((state) => state.completedStages)
 
   return (
-    <ol className="rsa-stage-rail" aria-label="Etapas do cofre">
+    <ol className={tutorialClass("rsa-stage-rail", tutorialTarget, 'stage-rail')} aria-label="Etapas do cofre">
       {RSA_STAGES.map((item, index) => {
         const complete = completedStages.includes(item)
         const current = item === stage && !complete
@@ -125,15 +186,22 @@ interface NumericInputProps {
   label: string
   field: RsaInputField
   value: string
-  placeholder?: string
   autoFocus?: boolean
+  tutorialTarget: RsaTutorialTarget | null
+  onTutorialTargetClick: () => void
 }
 
-function NumericInput({ id, label, field, value, placeholder = '?', autoFocus }: NumericInputProps): JSX.Element {
+function NumericInput({ id, label, field, value, autoFocus = false, tutorialTarget, onTutorialTargetClick }: NumericInputProps): JSX.Element {
   const setInput = useRsaVaultStore((state) => state.setInput)
-  const hasError = useRsaVaultStore((state) => state.feedback?.kind === 'error')
+  const expectedTarget = field === 'p'
+    ? 'factor-p'
+    : field === 'q'
+      ? 'factor-q'
+      : null
+  const isTutorialTarget = tutorialTarget === expectedTarget && expectedTarget !== null
+
   return (
-    <label className="rsa-field" htmlFor={id}>
+    <label className={`rsa-field${isTutorialTarget ? ' tutorial-highlight' : ''}`} htmlFor={id}>
       <span>{label}</span>
       <input
         id={id}
@@ -143,18 +211,23 @@ function NumericInput({ id, label, field, value, placeholder = '?', autoFocus }:
         spellCheck="false"
         pattern="[0-9]*"
         maxLength={RSA_INPUT_MAX_DIGITS}
-        placeholder={placeholder}
+        placeholder="?"
         value={value}
-        autoFocus={autoFocus}
-        aria-invalid={hasError || undefined}
-        aria-describedby={hasError ? 'rsa-feedback-detail' : undefined}
-        onChange={(event) => setInput(field, event.target.value)}
+        autoFocus={autoFocus && !tutorialTarget}
+        aria-disabled={isTutorialTarget || undefined}
+        onFocus={() => {
+          if (isTutorialTarget) onTutorialTargetClick()
+        }}
+        onChange={(event) => {
+          if (tutorialTarget) return
+          setInput(field, event.target.value)
+        }}
       />
     </label>
   )
 }
 
-function FactorStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Element {
+function FactorStage({ challenge, tutorialTarget, nextTutorialStep }: { challenge: RsaVaultChallenge; tutorialTarget: RsaTutorialTarget | null; nextTutorialStep: () => void }): JSX.Element {
   const inputs = useRsaVaultStore((state) => state.inputs)
   return (
     <>
@@ -163,15 +236,15 @@ function FactorStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Eleme
       </div>
       <p>Encontre os dois números primos cujo produto forma o módulo público.</p>
       <div className="rsa-fields rsa-fields--pair">
-        <NumericInput id="rsa-factor-p" label="PRIMO p" field="p" value={inputs.p} autoFocus />
-        <NumericInput id="rsa-factor-q" label="PRIMO q" field="q" value={inputs.q} />
+        <NumericInput id="rsa-factor-p" label="PRIMO p" field="p" value={inputs.p} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep}/>
+        <NumericInput id="rsa-factor-q" label="PRIMO q" field="q" value={inputs.q} tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep}/>
       </div>
       <small className="rsa-hint">Teste divisores primos apenas até √{challenge.modulus.toString()}.</small>
     </>
   )
 }
 
-function TotientStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Element {
+function TotientStage({ challenge, tutorialTarget, nextTutorialStep }: { challenge: RsaVaultChallenge; tutorialTarget: RsaTutorialTarget | null; nextTutorialStep: () => void }): JSX.Element {
   const inputs = useRsaVaultStore((state) => state.inputs)
   return (
     <>
@@ -180,14 +253,14 @@ function TotientStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Elem
       </div>
       <p>Remova uma unidade de cada primo e multiplique para medir o ciclo da chave.</p>
       <div className="rsa-fields">
-        <NumericInput id="rsa-totient" label="VALOR DE φ(N)" field="totient" value={inputs.totient} autoFocus />
+        <NumericInput id="rsa-totient" label="VALOR DE φ(N)" field="totient" value={inputs.totient} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
       </div>
       <small className="rsa-hint">Se N = p × q com primos distintos, φ(N) = (p−1)(q−1).</small>
     </>
   )
 }
 
-function InverseStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Element {
+function InverseStage({ challenge, tutorialTarget, nextTutorialStep }: { challenge: RsaVaultChallenge; tutorialTarget: RsaTutorialTarget | null; nextTutorialStep: () => void }): JSX.Element {
   const inputs = useRsaVaultStore((state) => state.inputs)
   return (
     <>
@@ -196,7 +269,7 @@ function InverseStage({ challenge }: { challenge: RsaVaultChallenge }): JSX.Elem
       </div>
       <p>Encontre o expoente privado: ele desfaz a ação do expoente público e.</p>
       <div className="rsa-fields">
-        <NumericInput id="rsa-private-exponent" label="EXPOENTE PRIVADO d" field="privateExponent" value={inputs.privateExponent} autoFocus />
+        <NumericInput id="rsa-private-exponent" label="EXPOENTE PRIVADO d" field="privateExponent" value={inputs.privateExponent} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
       </div>
       <small className="rsa-hint">Encontre o menor d positivo tal que e·d = 1 + k·φ(N), ou use o algoritmo de Euclides.</small>
     </>
@@ -274,29 +347,39 @@ const STAGE_BUTTON_LABEL: Readonly<Record<RsaStage, string>> = {
   decrypt: 'ABRIR COFRE',
 }
 
-function PuzzleConsole(): JSX.Element {
+function PuzzleConsole({ tutorialTarget }: { tutorialTarget: RsaTutorialTarget | null }): JSX.Element {
   const phase = useRsaVaultStore((state) => state.phase)
   const challenge = useRsaVaultStore((state) => state.challenge)
   const stage = useRsaVaultStore((state) => state.stage)
   const submitStage = useRsaVaultStore((state) => state.submitStage)
+  const isTutorialActive = useRsaVaultStore((state) => state.isTutorialActive)
+  const nextTutorialStep = useRsaVaultStore((state) => state.nextTutorialStep)
 
   return (
-    <section className="rsa-console" aria-labelledby="rsa-console-title">
-      <div className="rsa-console__label">COFRE {challenge.level} // {challenge.codename}</div>
+    <section className={tutorialClass("rsa-console", tutorialTarget, 'console')} aria-labelledby="rsa-console-title">
+      <div className="rsa-console__label"> COFRE {challenge.level} // {challenge.codename}</div>
       <h2 id="rsa-console-title">{RSA_STAGE_LABELS[stage]}</h2>
-      <StageRail />
+      <StageRail tutorialTarget={tutorialTarget} />
       <form
         key={`${challenge.id}-${stage}`}
         onSubmit={(event) => {
           event.preventDefault()
+          if (isTutorialActive) {
+            nextTutorialStep()
+            return
+          }
           submitStage()
         }}
       >
-        {stage === 'factor' ? <FactorStage challenge={challenge} /> : null}
-        {stage === 'totient' ? <TotientStage challenge={challenge} /> : null}
-        {stage === 'inverse' ? <InverseStage challenge={challenge} /> : null}
+        {stage === 'factor' ? <FactorStage challenge={challenge} tutorialTarget={tutorialTarget} nextTutorialStep={nextTutorialStep} /> : null}
+        {stage === 'totient' ? <TotientStage challenge={challenge} tutorialTarget={tutorialTarget} nextTutorialStep={nextTutorialStep} /> : null}
+        {stage === 'inverse' ? <InverseStage challenge={challenge} tutorialTarget={tutorialTarget} nextTutorialStep={nextTutorialStep} /> : null}
         {stage === 'decrypt' ? <DecryptStage challenge={challenge} /> : null}
-        <button className="rsa-submit" type="submit" disabled={phase !== 'playing'}>
+        <button
+          className={tutorialClass('rsa-submit', tutorialTarget, 'submit')}
+          type="submit"
+          disabled={phase !== 'playing'}
+        >
           {phase === 'unlocking' ? 'DESTRAVANDO…' : STAGE_BUTTON_LABEL[stage]}
           <span aria-hidden="true">⌁</span>
         </button>
@@ -305,7 +388,7 @@ function PuzzleConsole(): JSX.Element {
   )
 }
 
-function Telemetry(): JSX.Element {
+function Telemetry({ tutorialTarget }: { tutorialTarget: RsaTutorialTarget | null }): JSX.Element {
   const challenge = useRsaVaultStore((state) => state.challenge)
   const completedStages = useRsaVaultStore((state) => state.completedStages)
   const score = useRsaVaultStore((state) => state.score)
@@ -321,12 +404,12 @@ function Telemetry(): JSX.Element {
         <div><span>TEMPO</span><strong>{formatTime(elapsed)}</strong></div>
         <div><span>PRECISÃO</span><strong>{accuracy}%</strong></div>
       </div>
-      <div className="rsa-public-key">
+      <div className={tutorialClass("rsa-public-key", tutorialTarget, 'public-key')}>
         <span>CHAVE PÚBLICA</span>
         <strong>({challenge.modulus.toString()}, {challenge.publicExponent.toString()})</strong>
         <small>N = módulo · e = expoente público</small>
       </div>
-      <div className="rsa-proof-stack">
+      <div className={tutorialClass("rsa-proof-stack", tutorialTarget, 'proof-stack')}>
         <span>REGISTRO DO MECANISMO</span>
         <p className={completedStages.includes('factor') ? 'is-live' : ''}>
           <i /> {completedStages.includes('factor') ? `${challenge.primeP} × ${challenge.primeQ} = ${challenge.modulus}` : 'p × q = N'}
@@ -441,22 +524,27 @@ function ResultPanel(): JSX.Element | null {
 
 export function RsaVaultHud(props: RsaVaultHudProps): JSX.Element {
   const phase = useRsaVaultStore((state) => state.phase)
-  if (phase === 'intro') return <IntroPanel {...props} />
-
+  const isTutorialActive = useRsaVaultStore((state) => state.isTutorialActive)
+  const tutorialStep = useRsaVaultStore((state) => state.tutorialStep)
+  const tutorialCopy = getRsaTutorialCopy(tutorialStep)
+  const tutorialTarget = isTutorialActive ? tutorialCopy?.target ?? null : null
   const missionVisible = phase === 'playing' || phase === 'unlocking'
+
   return (
     <div className="rsa-vault__hud">
+      {phase === 'intro' ? <IntroPanel {...props} /> : null}
       {missionVisible ? (
         <>
-          <Topbar {...props} />
-          <PuzzleConsole />
-          <Telemetry />
+          <Topbar {...props}/>
+          <PuzzleConsole tutorialTarget={tutorialTarget} />
+          <Telemetry tutorialTarget={tutorialTarget} />
           <FeedbackToast />
           {phase === 'unlocking' ? <UnlockingOverlay /> : null}
         </>
       ) : null}
       {phase === 'vault-open' ? <VaultOpenPanel /> : null}
       {phase === 'complete' ? <ResultPanel /> : null}
+      {phase === 'playing' ? <TutorialOverlay /> : null}
     </div>
   )
 }

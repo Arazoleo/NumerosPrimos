@@ -14,6 +14,7 @@ import type {
   RsaFeedback,
   RsaInputField,
   RsaStage,
+  RsaTutorialStep,
   RsaVaultChallenge,
   RsaVaultInputs,
   RsaVaultPhase,
@@ -62,7 +63,14 @@ export interface RsaVaultState {
   restart: () => void
   returnToIntro: () => void
   clearFeedback: (feedbackId: number) => void
+  isTutorialActive: boolean
+  tutorialStep: RsaTutorialStep
+  nextTutorialStep: () => void
+  skipTutorial: () => void
+  startTutorial: () => void
 }
+
+const RSA_TUTORIAL_STEPS = 7 as const
 
 export type RsaVaultStore = UseBoundStore<StoreApi<RsaVaultState>>
 
@@ -126,6 +134,8 @@ function resetRun(
     roundScore: 0,
     startedAt,
     completedAt: null,
+    isTutorialActive: true,
+    tutorialStep: 1,
     feedback: nextFeedback(
       state.feedback,
       'info',
@@ -163,6 +173,8 @@ export function createRsaVaultStore(
     roundScore: 0,
     startedAt: null,
     completedAt: null,
+    isTutorialActive: false,
+    tutorialStep: 0,
     feedback: null,
     lastSound: null,
     roundResults: [],
@@ -180,7 +192,7 @@ export function createRsaVaultStore(
 
     submitStage: () => {
       const state = get()
-      if (state.phase !== 'playing') return false
+      if (state.phase !== 'playing' || state.isTutorialActive) return false
 
       const evaluation = evaluateRsaStage(
         state.challenge,
@@ -377,11 +389,37 @@ export function createRsaVaultStore(
         roundScore: 0,
         startedAt: null,
         completedAt: null,
+        isTutorialActive: false,
+        tutorialStep: 0,
         feedback: null,
         lastSound: null,
         roundResults: [],
         result: null,
       }))
+    },
+
+    startTutorial: () => {
+      if (get().phase !== 'playing') return
+      set({ isTutorialActive: true, tutorialStep: 1 })
+    },
+
+    nextTutorialStep: () => {
+      const state = get()
+      if (!state.isTutorialActive) return
+
+      if (state.tutorialStep >= RSA_TUTORIAL_STEPS) {
+        set({ isTutorialActive: false, tutorialStep: 0 })
+        return
+      }
+
+      set((current) => ({
+        tutorialStep: (current.tutorialStep + 1) as RsaTutorialStep,
+      }))
+    },
+
+    skipTutorial: () => {
+      if (!get().isTutorialActive) return
+      set({ isTutorialActive: false, tutorialStep: 0 })
     },
 
     clearFeedback: (feedbackId) => {

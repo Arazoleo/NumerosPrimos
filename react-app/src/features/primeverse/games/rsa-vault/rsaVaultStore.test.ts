@@ -42,6 +42,14 @@ describe('RSA Vault store', () => {
     const { store } = createTestStore()
     store.getState().start()
 
+    expect(store.getState()).toMatchObject({
+      phase: 'playing',
+      isTutorialActive: true,
+      tutorialStep: 1,
+    })
+
+    store.getState().skipTutorial()
+
     fillCorrectStage(store, 'factor')
     store.getState().submitStage()
     expect(store.getState()).toMatchObject({
@@ -60,6 +68,9 @@ describe('RSA Vault store', () => {
   it('keeps the current stage and penalizes an incorrect submission', () => {
     const { store } = createTestStore()
     store.getState().start()
+
+    store.getState().skipTutorial()
+
     store.getState().setInput('p', '2')
     store.getState().setInput('q', '7')
 
@@ -79,6 +90,8 @@ describe('RSA Vault store', () => {
     let clock = 5_000
     const { store, recordProgress } = createTestStore(() => clock)
     store.getState().start()
+
+    store.getState().skipTutorial()
 
     for (let index = 0; index < RSA_VAULT_CHALLENGES.length; index += 1) {
       solveCurrentVault(store)
@@ -139,5 +152,66 @@ describe('RSA Vault store', () => {
     expect(() => createRsaVaultStore({
       challenges: RSA_VAULT_CHALLENGES.slice(0, 3),
     })).toThrow(/four ordered/)
+  })
+
+  it('advances and closes the tutorial without touching the RSA run', () => {
+    const { store, recordProgress } = createTestStore()
+    store.getState().start()
+    const before = store.getState()
+
+    for (let step = 1; step < 7; step += 1) {
+      store.getState().nextTutorialStep()
+      expect(store.getState().tutorialStep).toBe(step + 1)
+      expect(store.getState().isTutorialActive).toBe(true)
+    }
+
+    store.getState().nextTutorialStep()
+    const after = store.getState()
+    expect(after.isTutorialActive).toBe(false)
+    expect(after.tutorialStep).toBe(0)
+    expect(after.inputs).toBe(before.inputs)
+    expect(after.attempts).toBe(0)
+    expect(after.score).toBe(0)
+    expect(recordProgress).not.toHaveBeenCalled()
+  })
+
+  it('skips and restarts the tutorial without changing puzzle progress', () => {
+    let clock = 1_000
+    const { store } = createTestStore(() => clock)
+    store.getState().start()
+    store.getState().nextTutorialStep()
+    store.getState().skipTutorial()
+
+    expect(store.getState()).toMatchObject({
+      isTutorialActive: false,
+      tutorialStep: 0,
+      attempts: 0,
+      score: 0,
+    })
+
+    clock = 2_000
+    store.getState().restart()
+    expect(store.getState()).toMatchObject({
+      isTutorialActive: true,
+      tutorialStep: 1,
+      attempts: 0,
+      score: 0,
+      startedAt: 2_000,
+    })
+  })
+
+  it('does not submit a stage while the tutorial is active', () => {
+    const { store } = createTestStore()
+    store.getState().start()
+    store.getState().setInput('p', '3')
+    store.getState().setInput('q', '5')
+
+    expect(store.getState().submitStage()).toBe(false)
+    expect(store.getState()).toMatchObject({
+      stage: 'factor',
+      attempts: 0,
+      mistakes: 0,
+      completedStages: [],
+    })
   })
 })

@@ -22,10 +22,10 @@ interface RsaVaultHudProps {
 
 function tutorialClass(
   base: string,
-  activeTarget: RsaTutorialTarget | null,
-  target: RsaTutorialTarget,
+  target: RsaTutorialTarget | null,
+  expected: RsaTutorialTarget,
 ): string {
-  return `${base}${activeTarget === target ? ' turorial-highlight ': ''}`
+  return `${base}${target === expected ? ' tutorial-highlight' : ''}`
 }
 
 function formatTime(milliseconds: number): string {
@@ -138,7 +138,7 @@ function Topbar({ quality, onQualityChange, tutorialTarget }: RsaVaultHudProps &
   const restart = useRsaVaultStore((state) => state.restart)
 
   return (
-    <header className={tutorialClass("rsa-topbar", tutorialTarget, 'progress')}>
+    <header className={tutorialClass("rsa-topbar", tutorialTarget, 'stage-rail')}>
       <VaultBrand compact />
       <div className="rsa-vault-progress" aria-label={`Cofre ${vaultIndex + 1} de ${RSA_VAULT_COUNT}`}>
         {Array.from({ length: RSA_VAULT_COUNT }, (_, index) => (

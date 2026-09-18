@@ -1,12 +1,13 @@
 import type { RsaTutorialStep } from './types'
 
 export type RsaTutorialTarget =
-  | 'console'
-  | 'progress'
-  | 'stage-rail'
   | 'public-key'
-  | 'form'
+  | 'stage-rail'
+  | 'factor-p'
+  | 'factor-q'
+  | 'submit'
   | 'proof-stack'
+  | 'console'
 
 export interface RsaTutorialCopy {
   readonly target: RsaTutorialTarget
@@ -21,7 +22,7 @@ export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, Rsa
     body: 'Cada cofre tem quatro etapas. Você vai reconstruir a mensagem sem receber a chave privada.',
   },
   2: {
-    target: 'progress',
+    target: 'stage-rail',
     title: 'Quatro cofres',
     body: 'Este indicador mostra o cofre atual e os cofres já abertos durante a incursão.',
   },
@@ -36,7 +37,7 @@ export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, Rsa
     body: 'O par (N, e) é público. Comece encontrando os primos p e q cujo produto é N.',
   },
   5: {
-    target: 'form',
+    target: 'submit',
     title: 'Envie uma resposta',
     body: 'Preencha os campos da etapa atual e use o botão do console para validar a resposta.',
   },

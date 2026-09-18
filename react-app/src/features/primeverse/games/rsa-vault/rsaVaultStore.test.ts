@@ -238,4 +238,22 @@ describe('RSA Vault store', () => {
     })
   })
 
+  it('keeps the RSA run unchanged when a guided click is represented', () => {
+    const { store } = createTestStore()
+    store.getState().start()
+    const before = store.getState()
+
+    expect(store.getState().submitStage()).toBe(false)
+    expect(store.getState()).toMatchObject({
+      phase: 'playing',
+      isTutorialActive: true,
+      tutorialStep: 1,
+      inputs: before.inputs,
+      attempts: 0,
+      mistakes: 0,
+      score: 0,
+      completedStages: [],
+    })
+  })
+
 })

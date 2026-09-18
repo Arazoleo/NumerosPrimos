@@ -214,4 +214,28 @@ describe('RSA Vault store', () => {
       completedStages: [],
     })
   })
+
+  it('clears tutorial state when returning to the intro', () => {
+    const { store } = createTestStore()
+    store.getState().start()
+    store.getState().nextTutorialStep()
+    store.getState().returnToIntro()
+
+    expect(store.getState()).toMatchObject({
+      phase: 'intro',
+      isTutorialActive: false,
+      tutorialStep: 0,
+    })
+  })
+
+  it('does not change tutorial state when advancing while inactive', () => {
+    const { store } = createTestStore()
+    store.getState().nextTutorialStep()
+
+    expect(store.getState()).toMatchObject({
+      isTutorialActive: false,
+      tutorialStep: 0,
+    })
+  })
+
 })

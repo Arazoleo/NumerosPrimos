@@ -113,7 +113,6 @@ function nextSound(
 function resetRun(
   state: RsaVaultState,
   challenges: readonly RsaVaultChallenge[],
-  startedAt: number,
 ): Partial<RsaVaultState> {
   return {
     phase: 'playing',
@@ -131,7 +130,7 @@ function resetRun(
     roundMistakes: 0,
     score: 0,
     roundScore: 0,
-    startedAt,
+    startedAt: null,
     completedAt: null,
     isTutorialActive: true,
     tutorialStep: 1,
@@ -181,7 +180,7 @@ export function createRsaVaultStore(
 
     start: () => {
       const state = get()
-      set(resetRun(state, challenges, now()))
+      set(resetRun(state, challenges))
     },
 
     setInput: (field, value) => {
@@ -368,7 +367,7 @@ export function createRsaVaultStore(
 
     restart: () => {
       const state = get()
-      set(resetRun(state, challenges, now()))
+      set(resetRun(state, challenges))
     },
 
     returnToIntro: () => {
@@ -407,7 +406,7 @@ export function createRsaVaultStore(
       if (!state.isTutorialActive) return
 
       if (state.tutorialStep >= RSA_TUTORIAL_LAST_STEP) {
-        set({ isTutorialActive: false, tutorialStep: 0 })
+        set({ isTutorialActive: false, tutorialStep: 0, startedAt: state.startedAt ?? now() })
         return
       }
 
@@ -417,8 +416,9 @@ export function createRsaVaultStore(
     },
 
     skipTutorial: () => {
+      const state = get()
       if (!get().isTutorialActive) return
-      set({ isTutorialActive: false, tutorialStep: 0 })
+      set({ isTutorialActive: false, tutorialStep: 0, startedAt: state.startedAt ?? now() })
     },
 
     clearFeedback: (feedbackId) => {

@@ -81,7 +81,12 @@ function TutorialOverlay(): JSX.Element | null {
 
   const isLastStep = step === 7
   return (
-    <div className="rsa-tutorial" role="region" aria-labelledby="rsa-tutorial-title">
+    <div
+      className="rsa-tutorial"
+      data-position={copy.position}
+      role="region"
+      aria-labelledby="rsa-tutorial-title"
+    >
       <div className="rsa-tutorial__veil" aria-hidden="true" />
       <section className="rsa-tutorial__panel">
         <p className="rsa-tutorial__counter">PASSO {step} DE 7</p>
@@ -114,7 +119,6 @@ function VaultBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 }
 
 function IntroPanel({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element {
-
   const start = useRsaVaultStore((state) => state.start)
 
   return (

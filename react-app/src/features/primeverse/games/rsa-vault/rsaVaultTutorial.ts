@@ -9,48 +9,58 @@ export type RsaTutorialTarget =
   | 'proof-stack'
   | 'console'
 
+export type RsaTutorialPosition = 'left' | 'right' | 'top' | 'bottom' | 'center'
+
 export interface RsaTutorialCopy {
   readonly target: RsaTutorialTarget
+  readonly position: RsaTutorialPosition
   readonly title: string
   readonly body: string
 }
 
 export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, RsaTutorialCopy>> = {
-    1: {
-        target: 'public-key',
-        title: 'A chave pública',
-        body: 'N é o número do cofre e e é o expoente usado para cifrar. Você pode ver esses valores, mas a chave para abrir o cofre ainda está escondida.',
-    },
-    2: {
-        target: 'stage-rail',
-        title: 'A ordem da solução',
-        body: 'Você vai encontrar dois primos, calcular φ(N), descobrir o expoente privado d e só então decifrar a mensagem.',
-    },
-    3: {
-        target: 'factor-p',
-        title: 'Encontre o primeiro primo',
-        body: 'Um número primo só pode ser dividido por 1 e por ele mesmo. Procure um primo que, multiplicado por outro, forme N. Clique no campo p para continuar.',
-    },
-    4: {
-        target: 'factor-q',
-        title: 'Encontre o segundo primo',
-        body: 'Agora informe q. Os dois valores precisam obedecer a p × q = N. A ordem dos primos não importa.',
-    },
-    5: {
-        target: 'submit',
-        title: 'Confira a resposta',
-        body: 'Durante o tutorial, este clique só mostra onde você conferirá uma resposta. Depois, preencha p e q e use o botão para enviar a primeira tentativa.',
-    },
-    6: {
-        target: 'proof-stack',
-        title: 'Acompanhe suas descobertas',
-        body: 'Este registro mostra as etapas que já foram resolvidas. Use-o para acompanhar a solução sem precisar guardar todas as contas.',
-    },
-    7: {
-        target: 'console',
-        title: 'Sua vez',
-        body: 'Agora você já conhece o caminho. Encontre p e q, avance pelas quatro etapas e leia o feedback quando precisar de ajuda.',
-    },
+  1: {
+    target: 'public-key',
+    position: 'left',
+    title: 'O seu desafio',
+    body: 'Esta é a mensagem trancada. Você consegue ver o número N (o cofre) e o valor e (a trava), mas precisa encontrar a chave certa para abrir.',
+  },
+  2: {
+    target: 'stage-rail',
+    position: 'right',
+    title: 'Seu mapa de progresso',
+    body: 'Esta barra mostra o seu caminho. Você vai descobrir dois números secretos, calcular a combinação e, no fim, revelar a mensagem secreta.',
+  },
+  3: {
+    target: 'factor-p',
+    position: 'right',
+    title: 'Primeira pista: valor p',
+    body: 'O cofre N é formado pela multiplicação de dois números. Pense em um número que ajude a formar N. Clique no campo p para continuar.',
+  },
+  4: {
+    target: 'factor-q',
+    position: 'right',
+    title: 'Segunda pista: valor q',
+    body: 'Agora encontre o parceiro dele! A conta é simples: o valor de p multiplicado por q precisa ser igual ao total N.',
+  },
+  5: {
+    target: 'submit',
+    position: 'right',
+    title: 'Testar combinação',
+    body: 'Sempre que preencher os campos, clique neste botão para conferir se a sua resposta está certa e avançar.',
+  },
+  6: {
+    target: 'proof-stack',
+    position: 'left',
+    title: 'Histórico de conquistas',
+    body: 'Tudo o que você resolver aparecerá guardado aqui. Use esta área para consultar seus passos sem precisar anotar nada fora da tela.',
+  },
+  7: {
+    target: 'console',
+    position: 'right',
+    title: 'Hora de jogar!',
+    body: 'O caminho está livre! Encontre p e q para dar o primeiro passo. Se tiver dúvidas, fique de olho nas dicas da tela.',
+  },
 }
 
 export function getRsaTutorialCopy(step: RsaTutorialStep): RsaTutorialCopy | null {

@@ -10,19 +10,20 @@ import {
   RSA_VAULT_CHALLENGES,
   RSA_VAULT_COUNT,
 } from './rsaVaultLogic'
-import type {
-  RsaFeedback,
-  RsaInputField,
-  RsaStage,
-  RsaTutorialStep,
-  RsaVaultChallenge,
-  RsaVaultInputs,
-  RsaVaultPhase,
-  RsaVaultProgressInput,
-  RsaVaultResult,
-  RsaVaultRoundResult,
-  RsaVaultSoundEvent,
-  RsaVaultSoundSignal,
+import {
+  RSA_TUTORIAL_LAST_STEP,
+  type RsaFeedback,
+  type RsaInputField,
+  type RsaStage,
+  type RsaTutorialStep,
+  type RsaVaultChallenge,
+  type RsaVaultInputs,
+  type RsaVaultPhase,
+  type RsaVaultProgressInput,
+  type RsaVaultResult,
+  type RsaVaultRoundResult,
+  type RsaVaultSoundEvent,
+  type RsaVaultSoundSignal,
 } from './types'
 
 const EMPTY_INPUTS: RsaVaultInputs = {
@@ -69,8 +70,6 @@ export interface RsaVaultState {
   skipTutorial: () => void
   startTutorial: () => void
 }
-
-const RSA_TUTORIAL_STEPS = 7 as const
 
 export type RsaVaultStore = UseBoundStore<StoreApi<RsaVaultState>>
 
@@ -407,7 +406,7 @@ export function createRsaVaultStore(
       const state = get()
       if (!state.isTutorialActive) return
 
-      if (state.tutorialStep >= RSA_TUTORIAL_STEPS) {
+      if (state.tutorialStep >= RSA_TUTORIAL_LAST_STEP) {
         set({ isTutorialActive: false, tutorialStep: 0 })
         return
       }

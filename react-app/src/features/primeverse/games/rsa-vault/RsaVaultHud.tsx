@@ -5,6 +5,7 @@ import type { QualityLevel } from '../../graphics/useQualitySettings'
 import QualityControl from '../../ui/QualityControl'
 import {
   modularPower,
+  RSA_INPUT_MAX_DIGITS,
   RSA_STAGE_LABELS,
   RSA_STAGES,
   RSA_VAULT_COUNT,
@@ -131,13 +132,13 @@ function IntroPanel({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element
   )
 }
 
-function Topbar({ quality, onQualityChange, tutorialTarget }: RsaVaultHudProps & { tutorialTarget: RsaTutorialTarget | null }): JSX.Element {
+function Topbar({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element {
   const vaultIndex = useRsaVaultStore((state) => state.vaultIndex)
   const phase = useRsaVaultStore((state) => state.phase)
   const restart = useRsaVaultStore((state) => state.restart)
 
   return (
-    <header className={tutorialClass("rsa-topbar", tutorialTarget, 'stage-rail')}>
+    <header className="rsa-topbar">
       <VaultBrand compact />
       <div className="rsa-vault-progress" aria-label={`Cofre ${vaultIndex + 1} de ${RSA_VAULT_COUNT}`}>
         {Array.from({ length: RSA_VAULT_COUNT }, (_, index) => (
@@ -181,23 +182,37 @@ interface NumericInputProps {
   label: string
   field: RsaInputField
   value: string
+  autoFocus?: boolean
   tutorialTarget: RsaTutorialTarget | null
   onTutorialTargetClick: () => void
 }
 
-function NumericInput({ id, label, field, value, tutorialTarget, onTutorialTargetClick }: NumericInputProps): JSX.Element {
+function NumericInput({ id, label, field, value, autoFocus = false, tutorialTarget, onTutorialTargetClick }: NumericInputProps): JSX.Element {
   const setInput = useRsaVaultStore((state) => state.setInput)
+  const expectedTarget = field === 'p'
+    ? 'factor-p'
+    : field === 'q'
+      ? 'factor-q'
+      : null
+  const isTutorialTarget = tutorialTarget === expectedTarget && expectedTarget !== null
+
   return (
-    <label className="rsa-field" htmlFor={id}>
+    <label className={`rsa-field${isTutorialTarget ? ' tutorial-highlight' : ''}`} htmlFor={id}>
       <span>{label}</span>
       <input
         id={id}
         type="text"
         inputMode="numeric"
+        autoComplete="off"
+        spellCheck="false"
+        pattern="[0-9]*"
+        maxLength={RSA_INPUT_MAX_DIGITS}
+        placeholder="?"
         value={value}
+        autoFocus={autoFocus && !tutorialTarget}
+        aria-disabled={isTutorialTarget || undefined}
         onFocus={() => {
-          const expected = field === 'p' ? 'factor-p' : 'factor-q'
-          if (tutorialTarget === expected) onTutorialTargetClick()
+          if (isTutorialTarget) onTutorialTargetClick()
         }}
         onChange={(event) => {
           if (tutorialTarget) return
@@ -217,7 +232,7 @@ function FactorStage({ challenge, tutorialTarget, nextTutorialStep }: { challeng
       </div>
       <p>Encontre os dois números primos cujo produto forma o módulo público.</p>
       <div className="rsa-fields rsa-fields--pair">
-        <NumericInput id="rsa-factor-p" label="PRIMO p" field="p" value={inputs.p} tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep}/>
+        <NumericInput id="rsa-factor-p" label="PRIMO p" field="p" value={inputs.p} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep}/>
         <NumericInput id="rsa-factor-q" label="PRIMO q" field="q" value={inputs.q} tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep}/>
       </div>
       <small className="rsa-hint">Teste divisores primos apenas até √{challenge.modulus.toString()}.</small>
@@ -234,7 +249,7 @@ function TotientStage({ challenge, tutorialTarget, nextTutorialStep }: { challen
       </div>
       <p>Remova uma unidade de cada primo e multiplique para medir o ciclo da chave.</p>
       <div className="rsa-fields">
-        <NumericInput id="rsa-totient" label="VALOR DE φ(N)" field="totient" value={inputs.totient} tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
+        <NumericInput id="rsa-totient" label="VALOR DE φ(N)" field="totient" value={inputs.totient} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
       </div>
       <small className="rsa-hint">Se N = p × q com primos distintos, φ(N) = (p−1)(q−1).</small>
     </>
@@ -250,7 +265,7 @@ function InverseStage({ challenge, tutorialTarget, nextTutorialStep }: { challen
       </div>
       <p>Encontre o expoente privado: ele desfaz a ação do expoente público e.</p>
       <div className="rsa-fields">
-        <NumericInput id="rsa-private-exponent" label="EXPOENTE PRIVADO d" field="privateExponent" value={inputs.privateExponent} tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
+        <NumericInput id="rsa-private-exponent" label="EXPOENTE PRIVADO d" field="privateExponent" value={inputs.privateExponent} autoFocus tutorialTarget={tutorialTarget} onTutorialTargetClick={nextTutorialStep} />
       </div>
       <small className="rsa-hint">Encontre o menor d positivo tal que e·d = 1 + k·φ(N), ou use o algoritmo de Euclides.</small>
     </>
@@ -338,7 +353,7 @@ function PuzzleConsole({ tutorialTarget }: { tutorialTarget: RsaTutorialTarget |
 
   return (
     <section className={tutorialClass("rsa-console", tutorialTarget, 'console')} aria-labelledby="rsa-console-title">
-      <div className={tutorialClass("rsa-stage-rail", tutorialTarget, 'stage-rail')}>COFRE {challenge.level} // {challenge.codename}</div>
+      <div className="rsa-console__label"> COFRE {challenge.level} // {challenge.codename}</div>
       <h2 id="rsa-console-title">{RSA_STAGE_LABELS[stage]}</h2>
       <StageRail tutorialTarget={tutorialTarget} />
       <form
@@ -516,7 +531,7 @@ export function RsaVaultHud(props: RsaVaultHudProps): JSX.Element {
       {phase === 'intro' ? <IntroPanel {...props} /> : null}
       {missionVisible ? (
         <>
-          <Topbar {...props} tutorialTarget={tutorialTarget} />
+          <Topbar {...props}/>
           <PuzzleConsole tutorialTarget={tutorialTarget} />
           <Telemetry tutorialTarget={tutorialTarget} />
           <FeedbackToast />

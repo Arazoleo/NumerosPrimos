@@ -18,4 +18,11 @@ describe('RSA Vault tutorial copy', () => {
   it('returns no copy for the inactive tutorial step', () => {
     expect(getRsaTutorialCopy(0)).toBeNull()
   })
+
+  it('maps interactive tutorial steps to the intended controls', () => {
+    expect(getRsaTutorialCopy(2)?.target).toBe('stage-rail')
+    expect(getRsaTutorialCopy(3)?.target).toBe('factor-p')
+    expect(getRsaTutorialCopy(4)?.target).toBe('factor-q')
+    expect(getRsaTutorialCopy(5)?.target).toBe('submit')
+  })
 })

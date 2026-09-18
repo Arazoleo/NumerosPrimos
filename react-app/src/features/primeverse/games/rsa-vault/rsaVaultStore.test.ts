@@ -128,14 +128,13 @@ describe('RSA Vault store', () => {
   })
 
   it('restarts with a clean run and a new start time', () => {
-    let clock = 100
+    const clock = 100
     const { store } = createTestStore(() => clock)
     store.getState().start()
     store.getState().setInput('p', '2')
     store.getState().setInput('q', '2')
     store.getState().submitStage()
 
-    clock = 900
     store.getState().restart()
     expect(store.getState()).toMatchObject({
       phase: 'playing',
@@ -144,7 +143,7 @@ describe('RSA Vault store', () => {
       attempts: 0,
       mistakes: 0,
       score: 0,
-      startedAt: 900,
+      startedAt: null,
     })
   })
 
@@ -176,7 +175,7 @@ describe('RSA Vault store', () => {
   })
 
   it('skips and restarts the tutorial without changing puzzle progress', () => {
-    let clock = 1_000
+    const clock = 1_000
     const { store } = createTestStore(() => clock)
     store.getState().start()
     store.getState().nextTutorialStep()
@@ -189,14 +188,13 @@ describe('RSA Vault store', () => {
       score: 0,
     })
 
-    clock = 2_000
     store.getState().restart()
     expect(store.getState()).toMatchObject({
       isTutorialActive: true,
       tutorialStep: 1,
       attempts: 0,
       score: 0,
-      startedAt: 2_000,
+      startedAt: null,
     })
   })
 

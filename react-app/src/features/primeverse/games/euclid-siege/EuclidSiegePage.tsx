@@ -10,6 +10,8 @@ import { createMusicDirector, startMusicOnFirstGesture } from '../../audio/proce
 import { EUCLID_SIEGE_TRACK } from '../../audio/tracks'
 import { useAudioResource } from '../../audio/useAudioResource'
 import GameIntro from '../../ui/GameIntro'
+import EuclidSiegeTutorial from './EuclidSiegeTutorialView'
+import type { EuclidTutorialStep } from './euclidSiegeTutorialCopy'
 import EuclidSiegeHud, { type SiegeMoveDirection } from './EuclidSiegeHud'
 import EuclidSiegeScene, {
   createMutableSiegeControls,
@@ -19,12 +21,13 @@ import EuclidSiegeScene, {
 import {
   createSiegeState,
   formatSiegeTime,
+  spawnSiegeWave,
   type SiegePrime,
   type SiegeState,
 } from './siegeLogic'
 import './euclid-siege.css'
 
-type EuclidSiegePagePhase = 'intro' | 'playing' | 'paused' | 'victory' | 'defeat'
+type EuclidSiegePagePhase = 'intro' | 'tutorial' | 'playing' | 'paused' | 'victory' | 'defeat'
 
 function useReducedMotionPreference(): boolean {
   const [reduced, setReduced] = useState(() => (
@@ -52,6 +55,7 @@ export default function EuclidSiegePage(): JSX.Element {
   const { quality, setQuality, profile } = useQualitySettings()
   const reducedMotion = useReducedMotionPreference()
   const [phase, setPhase] = useState<EuclidSiegePagePhase>('intro')
+  const [tutorialStep, setTutorialStep] = useState<EuclidTutorialStep>(1)
   const [runKey, setRunKey] = useState(0)
   const stateRef = useRef<SiegeState>(createSiegeState())
   const controls = useRef(createMutableSiegeControls())
@@ -143,6 +147,35 @@ export default function EuclidSiegePage(): JSX.Element {
     )
   }, [phase, sendPartyTransform, snapshot.player.position, snapshot.player.yaw])
 
+  const startTutorial = useCallback(() => {
+    const tutorialState = {
+      ...createSiegeState(),
+      phase: 'wave' as const,
+      phaseEndsAtMs: 0,
+      waveIndex: 0,
+      enemies: spawnSiegeWave(0),
+    }
+    stateRef.current = tutorialState
+    clearControls()
+    setSnapshot(tutorialState)
+    setTutorialStep(1)
+    setPhase('tutorial')
+  }, [clearControls])
+
+  const skipTutorial = useCallback(() => {
+    beginSiege()
+  }, [beginSiege])
+
+  const handleTutorialNext = useCallback(() => {
+    if (tutorialStep < 8) {
+      setTutorialStep((current) => (current + 1) as EuclidTutorialStep)
+      return
+    }
+
+    beginSiege()
+  }, [beginSiege, tutorialStep])
+
+
   if (phase === 'intro') {
     return (
       <main className="euclid-siege euclid-siege--intro">
@@ -156,7 +189,7 @@ export default function EuclidSiegePage(): JSX.Element {
           keys="WASD mover · 1–6 escolher primo · F fatorar · J lâmina · Q pulso · E égide"
           backTo="/jogos/primeverse-online"
           backLabel="Primeverse Online"
-          onStart={beginSiege}
+          onStart={startTutorial}
         >
           <label className="euclid-intro__quality">QUALIDADE
             <select value={quality} onChange={(event) => setQuality(event.target.value as typeof quality)}>
@@ -211,6 +244,13 @@ export default function EuclidSiegePage(): JSX.Element {
           onGuardChange={handleGuard}
           onMove={handleMove}
           onPause={togglePause}
+        />
+      )}
+      {phase === 'tutorial' && (
+        <EuclidSiegeTutorial
+          step={tutorialStep}
+          onNext={handleTutorialNext}
+          onSkip={skipTutorial}
         />
       )}
       <ExpeditionPartyHud party={party} className="pep-hud--euclid" />

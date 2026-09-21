@@ -173,7 +173,9 @@ function FilterPalette({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEven
               }}
             >
               <span>{divisor}</span>
-              <div><strong>FILTRO ÷ {divisor}</strong><small>{TOWER_COSTS[divisor]} ENERGIA</small></div>
+              <div>
+              <strong>FILTRO DIVISÍVEL POR {divisor}</strong>
+              <small>CUSTO: {TOWER_COSTS[divisor]} DE ENERGIA</small></div>
               <i aria-hidden="true">{selectedDivisor === divisor ? '✓' : '+'}</i>
             </button>
           )
@@ -499,39 +501,39 @@ function TutorialOverlay(): JSX.Element | null {
 
   switch (tutorialStep) {
     case 1:
-      message = "1 - Aqui você vê quais números vão passar por quais pistas. Números primos em azul passam direto e alimentam o núcleo. Números compostos em vermelho devem ser parados por filtros."
+      message = "Nesta simulação, você verá números avançando pelas pistas. Os números primos (em azul) são seguros, passam direto e alimentam o nosso núcleo. Já os números compostos (em vermelho) são ameaças e devem ser interceptados por filtros."
       showNextButton = true
       break
     case 2:
-      message = "2 - No topo da tela, você acompanha a onda atual e a integridade do seu núcleo. Se você deixar muitos compostos passarem, você perde o jogo!"
+      message = "Observe o painel no topo da tela para acompanhar o progresso da onda atual e a integridade do seu núcleo. Cuidado: se muitos números compostos conseguirem passar, a integridade chegará a zero e você perderá o jogo."
       showNextButton = true
       break
     case 3:
-      message = "3 - Aqui você pode escolher qual filtro usar, cada filtro tem um custo em energia que é exibido nesta mesma seção. Escolha o filtro 2."
+      message = "No Banco de Filtros à esquerda, você seleciona suas defesas. Observe com atenção: cada opção destaca o divisor do filtro e, logo abaixo, o seu respectivo custo em energia. Para começar, selecione o 'Filtro Divisível por 2'."
       break
     case 4:
-      message = "4 - Aqui você pode adicionar os filtros selecionados em S1, S2 ou S3. Adicione o filtro 2 na pista 2."
+      message = "Agora precisamos posicionar a defesa. A regra principal é a divisibilidade: um filtro só consegue parar um número se esse número for divisível pelo valor do filtro. O número 4 está vindo na pista 02, e como 4 é divisível por 2, instale o filtro na pista 02."
       break
     case 5:
-      message = "5 - Quando um número composto vai ser filtrado, ele fica amarelo."
+      message = "Excelente! Repare que o número composto na pista 02 mudou para a cor amarela. Esse é o seu indicador visual de que a ameaça está coberta por um filtro e será neutralizada com sucesso."
       showNextButton = true
       break
     case 6:
-      message = "6 - Aqui você vê uma representação 3D das pistas."
+      message = "No centro da tela, você acompanha a visão tridimensional do tabuleiro. É por esta malha que as ondas numéricas vão se aproximar fisicamente do seu núcleo."
       showNextButton = true
       bgOpacity = 'rgba(0, 0, 0, 0.4)'
       break
     case 7:
-      message = "7 - Coloque um filtro 3 na pista 3 para filtrar o 9."
+      message = "Ainda temos uma ameaça ativa: o número 9 avançando na pista 03. Aplicando a regra da divisibilidade, sabemos que 9 é divisível por 3. Selecione o 'Filtro Divisível por 3' e posicione-o na pista 03 para interceptá-lo."
       showDarkBg = false
       break
     case 8:
-      message = "8 - Todos os compostos estão cobertos! Agora para começar a onda, clique em EXECUTAR ONDA."
+      message = "Perfeito, todos os números compostos estão devidamente cobertos! Com a sua linha de defesa estabelecida, clique no botão 'EXECUTAR ONDA' no canto inferior para iniciar a simulação e finalizar o tutorial."
       break
     default:
       skipTutorial()
       return null
-  }
+}
 
   return (
     <>

@@ -5,6 +5,7 @@ import {
   calculateSharedSecret,
 } from './diffieHellmanLogic'
 import { createDiffieHellmanStore } from './diffieHellmanStore'
+import { DIFFIE_HELLMAN_TUTORIAL_STEPS } from './diffieHellmanTutorialCopy'
 
 function solveCurrentRound(store: ReturnType<typeof createDiffieHellmanStore>): void {
   const initial = store.getState()
@@ -19,6 +20,155 @@ function solveCurrentRound(store: ReturnType<typeof createDiffieHellmanStore>): 
 }
 
 describe('Diffie-Hellman Relay store', () => {
+  it('keeps gameplay actions inactive during every tutorial step', () => {
+    const now = vi.fn(() => 1_000)
+    const recordProgress = vi.fn(() => false)
+    const store = createDiffieHellmanStore({ now, recordProgress })
+    store.getState().startTutorial()
+
+    for (const step of DIFFIE_HELLMAN_TUTORIAL_STEPS) {
+      const state = store.getState()
+      expect(state).toMatchObject({
+        phase: 'tutorial',
+        tutorialStep: step,
+        startedAt: null,
+        runId: 0,
+        score: 0,
+        attempts: 0,
+        mistakes: 0,
+        pendingPacket: null,
+        transmissions: [],
+        result: null,
+      })
+
+      expect(state.selectPrivateExponent(state.challenge.privateOptions[0])).toBe(false)
+      state.setPublicGuess('4')
+      state.setSecretGuess('4')
+      expect(state.submitPublicValue()).toBe(false)
+      expect(state.resolvePublicTransit()).toBe(false)
+      expect(state.submitSharedSecret()).toBe(false)
+      expect(state.resolveSecretTransit()).toBe(false)
+      expect(state.nextRound()).toBe(false)
+      expect(store.getState()).toBe(state)
+      expect(now).not.toHaveBeenCalled()
+      expect(recordProgress).not.toHaveBeenCalled()
+
+      store.getState().nextTutorialStep()
+    }
+
+    expect(store.getState()).toMatchObject({
+      phase: 'select-private',
+      tutorialStep: 0,
+      startedAt: 1_000,
+      runId: 1,
+    })
+    expect(recordProgress).not.toHaveBeenCalled()
+  })
+
+  it.each(['finish', 'skip'] as const)('excludes tutorial time from the result when players %s', (action) => {
+    let clock = 1_000
+    const recordProgress = vi.fn(() => false)
+    const store = createDiffieHellmanStore({ now: () => clock, recordProgress })
+    store.getState().startTutorial()
+    clock += 600_000
+
+    if (action === 'finish') {
+      for (const _step of DIFFIE_HELLMAN_TUTORIAL_STEPS) {
+        store.getState().nextTutorialStep()
+      }
+    } else {
+      store.getState().nextTutorialStep()
+      store.getState().skipTutorial()
+    }
+
+    expect(store.getState()).toMatchObject({
+      phase: 'select-private',
+      tutorialStep: 0,
+      startedAt: clock,
+      runId: 1,
+    })
+    expect(recordProgress).not.toHaveBeenCalled()
+
+    for (let round = 0; round < 4; round += 1) {
+      clock += 1_000
+      solveCurrentRound(store)
+      if (round < 3) store.getState().nextRound()
+    }
+
+    expect(store.getState().result).toMatchObject({ elapsedMs: 4_000, score: 6_700 })
+    expect(recordProgress).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears a previous run when opening the tutorial', () => {
+    const recordProgress = vi.fn(() => false)
+    const store = createDiffieHellmanStore({ recordProgress })
+    store.getState().start()
+    solveCurrentRound(store)
+    store.getState().nextRound()
+    const state = store.getState()
+    state.selectPrivateExponent(state.challenge.privateOptions[0])
+    store.getState().setPublicGuess('-1')
+    store.getState().submitPublicValue()
+    store.getState().setPublicGuess(String(calculatePublicValue(state.challenge, state.challenge.privateOptions[0])))
+    store.getState().submitPublicValue()
+    expect(store.getState().pendingPacket).not.toBeNull()
+
+    store.getState().startTutorial()
+
+    expect(store.getState()).toMatchObject({
+      phase: 'tutorial',
+      tutorialStep: 1,
+      runId: 1,
+      roundIndex: 0,
+      challenge: { round: 1 },
+      privateExponent: null,
+      publicGuess: '',
+      publicValue: null,
+      secretGuess: '',
+      sharedSecret: null,
+      attempts: 0,
+      roundAttempts: 0,
+      mistakes: 0,
+      roundMistakes: 0,
+      score: 0,
+      startedAt: null,
+      completedAt: null,
+      packetSequence: 0,
+      pendingPacket: null,
+      feedback: null,
+      lastSound: null,
+      transmissions: [],
+      result: null,
+    })
+    expect(store.getState().resolvePublicTransit()).toBe(false)
+    expect(recordProgress).not.toHaveBeenCalled()
+  })
+
+  it.each(['start', 'restart', 'returnToIntro'] as const)('clears the tutorial on %s and ignores stale navigation', (action) => {
+    const store = createDiffieHellmanStore({ now: () => 1_000, recordProgress: () => false })
+    const initial = store.getState()
+    initial.nextTutorialStep()
+    initial.skipTutorial()
+    expect(store.getState()).toBe(initial)
+
+    store.getState().startTutorial()
+    store.getState().nextTutorialStep()
+    store.getState()[action]()
+
+    const state = store.getState()
+    expect(state).toMatchObject({
+      phase: action === 'returnToIntro' ? 'intro' : 'select-private',
+      tutorialStep: 0,
+      startedAt: action === 'returnToIntro' ? null : 1_000,
+    })
+    state.nextTutorialStep()
+    state.skipTutorial()
+    expect(store.getState()).toBe(state)
+
+    state.startTutorial()
+    expect(store.getState()).toMatchObject({ phase: 'tutorial', tutorialStep: 1, startedAt: null })
+  })
+
   it('moves through the public and private calculations without leaking the secret packet', () => {
     const store = createDiffieHellmanStore({ now: () => 1_000, recordProgress: () => false })
     store.getState().start()

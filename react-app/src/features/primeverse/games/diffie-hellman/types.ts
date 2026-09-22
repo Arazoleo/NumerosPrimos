@@ -1,5 +1,6 @@
 export type DiffieHellmanPhase =
   | 'intro'
+  | 'tutorial'
   | 'select-private'
   | 'calculate-public'
   | 'public-transit'

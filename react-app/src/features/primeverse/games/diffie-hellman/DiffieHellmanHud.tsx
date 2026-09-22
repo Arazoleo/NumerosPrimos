@@ -10,6 +10,7 @@ import {
   DIFFIE_HELLMAN_ROUNDS,
 } from './diffieHellmanLogic'
 import GameIntro from '../../ui/GameIntro'
+import DiffieHellmanTutorialView from './DiffieHellmanTutorialView'
 import { useDiffieHellmanStore } from './diffieHellmanStore'
 import type { DiffieHellmanPhase } from './types'
 
@@ -59,7 +60,7 @@ function IntroPanel({
   onQualityChange,
 }: DiffieHellmanHudProps): JSX.Element {
 
-  const start = useDiffieHellmanStore((state) => state.start)
+  const startTutorial = useDiffieHellmanStore((state) => state.startTutorial)
 
   return (
     <GameIntro
@@ -69,7 +70,7 @@ function IntroPanel({
       actionLabel="Abrir canal"
       accent="#54e0ff"
       mark="g"
-      onStart={() => start()}
+      onStart={startTutorial}
     >
       <QualityControl value={quality} onChange={onQualityChange} />
     </GameIntro>
@@ -408,15 +409,25 @@ function ResultPanel(): JSX.Element | null {
 }
 
 function phaseIsMission(phase: DiffieHellmanPhase): boolean {
-  return phase !== 'intro' && phase !== 'round-complete' && phase !== 'complete'
+  return phase !== 'intro' && phase !== 'tutorial' && phase !== 'round-complete' && phase !== 'complete'
 }
 
 export function DiffieHellmanHud(props: DiffieHellmanHudProps): JSX.Element {
   const phase = useDiffieHellmanStore((state) => state.phase)
+  const tutorialStep = useDiffieHellmanStore((state) => state.tutorialStep)
+  const nextTutorialStep = useDiffieHellmanStore((state) => state.nextTutorialStep)
+  const skipTutorial = useDiffieHellmanStore((state) => state.skipTutorial)
 
   return (
     <div className="dh-hud">
       {phase === 'intro' ? <IntroPanel {...props} /> : null}
+      {phase === 'tutorial' ? (
+        <DiffieHellmanTutorialView
+          step={tutorialStep}
+          onNext={nextTutorialStep}
+          onSkip={skipTutorial}
+        />
+      ) : null}
       {phaseIsMission(phase) ? <MissionTopbar {...props} /> : null}
       {phaseIsMission(phase) ? <MissionConsole /> : null}
       {phaseIsMission(phase) ? <PrivacyLedger /> : null}

@@ -66,6 +66,84 @@
 .dh-hud select,
 .dh-hud summary { pointer-events: auto; }
 
+.diffie-hellman .dh-tutorial {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  height: min(100%, 100dvh);
+  padding: clamp(16px, 4vw, 40px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: radial-gradient(circle at 50% 30%, rgba(95, 247, 220, .08), transparent 55%), rgba(2, 5, 9, .84);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+  scrollbar-color: rgba(95, 247, 220, .35) transparent;
+}
+.dh-tutorial__card {
+  flex-shrink: 0;
+  width: min(600px, 100%);
+  margin: auto;
+  padding: clamp(22px, 4vw, 40px);
+  border: 1px solid var(--dh-line);
+  border-top: 2px solid var(--dh-cyan);
+  background: linear-gradient(145deg, rgba(95, 247, 220, .06), transparent 40%), var(--dh-panel);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .4);
+  overflow-wrap: anywhere;
+  animation: dh-tutorial-in .25s ease-out both;
+}
+.dh-tutorial__counter {
+  margin: 0 0 20px;
+  color: var(--dh-cyan);
+  font: 600 11px/1.5 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+}
+.dh-tutorial__card h2 {
+  margin: 0 0 18px;
+  color: var(--dh-ink);
+  font: 500 clamp(28px, 4vw, 40px)/1.12 'Space Grotesk', sans-serif;
+  letter-spacing: -.035em;
+}
+.dh-tutorial__card h2:focus-visible { outline: 2px solid var(--dh-amber); outline-offset: 6px; }
+.dh-tutorial__body { margin: 0; color: var(--dh-ink); font-size: 16px; line-height: 1.65; }
+.dh-tutorial__example {
+  margin: 22px 0 0;
+  padding: 16px;
+  border: 1px solid rgba(95, 247, 220, .25);
+  color: var(--dh-cyan);
+  background: var(--dh-cyan-soft);
+  font: 500 14px/1.7 'JetBrains Mono', monospace;
+}
+.dh-tutorial__hint {
+  margin: 20px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid var(--dh-amber);
+  color: var(--dh-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.dh-tutorial__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--dh-line);
+}
+.dh-tutorial__actions button {
+  min-height: 48px;
+  padding: 12px 20px;
+  border: 1px solid var(--dh-line);
+  font: 600 13px/1.4 'JetBrains Mono', monospace;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.dh-tutorial__skip { color: var(--dh-muted); background: transparent; }
+.dh-tutorial__skip:hover { color: var(--dh-ink); border-color: var(--dh-cyan); }
+.dh-tutorial__actions .dh-tutorial__next { min-width: 130px; border-color: var(--dh-cyan); color: #02120f; background: var(--dh-cyan); }
+.dh-tutorial__next:hover { background: #a1ffef; }
+
 .dh-topbar {
   position: absolute;
   z-index: 7;
@@ -390,6 +468,7 @@
 .dh-xp small { padding: 4px 6px; color: #1a1201; background: var(--dh-amber); font-size: 7px; }
 .dh-result__actions { justify-content: center; }
 
+@keyframes dh-tutorial-in { from { opacity: 0; } }
 @keyframes dh-signal { 50% { opacity: .25; transform: scale(.7); } }
 @keyframes dh-packet { 50% { transform: translateY(-5px) scale(.8); box-shadow: 0 0 35px rgba(95, 247, 220, .8); } }
 @keyframes dh-toast-in { from { opacity: 0; transform: translate(-50%, -9px); } }
@@ -433,6 +512,9 @@
 }
 
 @media (max-width: 560px) {
+  .dh-tutorial__card { padding: 22px 18px; }
+  .dh-tutorial__actions { flex-direction: column; }
+  .dh-tutorial__actions button { width: 100%; }
   .dh-topbar__actions .pv-quality { display: none; }
   .dh-rounds span { display: none; }
   .dh-ledger__public,
@@ -483,6 +565,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .dh-tutorial__card { animation: none; }
+  .dh-tutorial__actions button { transition: none; }
   .diffie-hellman *,
   .diffie-hellman *::before,
   .diffie-hellman *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

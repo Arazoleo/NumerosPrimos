@@ -11,6 +11,10 @@ import {
   PUBLIC_STAGE_POINTS,
   SECRET_STAGE_POINTS,
 } from './diffieHellmanLogic'
+import {
+  DIFFIE_HELLMAN_TUTORIAL_STEPS,
+  type DiffieHellmanTutorialStep,
+} from './diffieHellmanTutorialCopy'
 import { recordDiffieHellmanProgress } from './progressionAdapter'
 import type {
   DiffieHellmanChallenge,
@@ -26,6 +30,7 @@ import type {
 
 export interface DiffieHellmanState {
   phase: DiffieHellmanPhase
+  tutorialStep: DiffieHellmanTutorialStep
   runId: number
   roundIndex: number
   challenges: readonly DiffieHellmanChallenge[]
@@ -49,6 +54,9 @@ export interface DiffieHellmanState {
   transmissions: readonly TransmissionRecord[]
   result: DiffieHellmanResult | null
   start: () => void
+  startTutorial: () => void
+  nextTutorialStep: () => void
+  skipTutorial: () => void
   selectPrivateExponent: (value: number) => boolean
   setPublicGuess: (value: string) => void
   submitPublicValue: () => boolean
@@ -89,11 +97,12 @@ function nextSound(
 
 function startState(
   state: DiffieHellmanState,
-  startedAt: number,
+  startedAt: number | null,
 ): Partial<DiffieHellmanState> {
   const challenges = cloneChallenges()
   return {
     phase: 'select-private',
+    tutorialStep: 0,
     runId: state.runId + 1,
     roundIndex: 0,
     challenges,
@@ -147,6 +156,7 @@ export function createDiffieHellmanStore(
 
   return create<DiffieHellmanState>((set, get) => ({
     phase: 'intro',
+    tutorialStep: 0,
     runId: 0,
     roundIndex: 0,
     challenges: INTRO_CHALLENGES,
@@ -171,6 +181,35 @@ export function createDiffieHellmanStore(
     result: null,
 
     start: () => set(startState(get(), now())),
+
+    startTutorial: () => {
+      const state = get()
+      set({
+        ...startState(state, null),
+        phase: 'tutorial',
+        tutorialStep: DIFFIE_HELLMAN_TUTORIAL_STEPS[0],
+        runId: state.runId,
+        feedback: null,
+      })
+    },
+
+    nextTutorialStep: () => {
+      const state = get()
+      if (state.phase !== 'tutorial' || state.tutorialStep === 0) return
+
+      const stepIndex = DIFFIE_HELLMAN_TUTORIAL_STEPS.indexOf(state.tutorialStep)
+      const nextStep = DIFFIE_HELLMAN_TUTORIAL_STEPS[stepIndex + 1]
+      if (nextStep === undefined) {
+        state.start()
+        return
+      }
+      set({ tutorialStep: nextStep })
+    },
+
+    skipTutorial: () => {
+      if (get().phase !== 'tutorial') return
+      get().start()
+    },
 
     selectPrivateExponent: (value) => {
       const state = get()
@@ -427,6 +466,7 @@ export function createDiffieHellmanStore(
       const state = get()
       set({
         phase: 'intro',
+        tutorialStep: 0,
         roundIndex: 0,
         challenge: state.challenges[0],
         privateExponent: null,

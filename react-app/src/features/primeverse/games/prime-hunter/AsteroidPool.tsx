@@ -71,7 +71,7 @@ const AsteroidSlot = forwardRef<AsteroidHandle, AsteroidSlotProps>(function Aste
       impactTimeRef.current = 0
       phaseRef.current = 'alive'
       group.position.set(...position)
-      group.rotation.set(Math.random() * 0.6, Math.random() * 0.6, 0)
+      group.rotation.set(0, 0, 0, 'ZYX')
       group.scale.setScalar(1)
       group.visible = true
       if (coreRef.current) coreRef.current.scale.setScalar(1)
@@ -90,8 +90,8 @@ const AsteroidSlot = forwardRef<AsteroidHandle, AsteroidSlotProps>(function Aste
       travelRef.current += delta
       group.position.z += speedRef.current * delta
       group.position.x = originXRef.current + Math.sin(clock.elapsedTime * 0.8 + originXRef.current) * driftRef.current
-      group.rotation.x += delta * spinRef.current
-      group.rotation.y += delta * spinRef.current * 0.72
+      group.rotation.x += delta * spinRef.current * 2
+      group.rotation.y += delta * spinRef.current * 2
 
       if (group.position.z > 6.2) {
         const escapedValue = valueRef.current
@@ -149,6 +149,9 @@ const AsteroidSlot = forwardRef<AsteroidHandle, AsteroidSlotProps>(function Aste
         <meshBasicMaterial color="#ffe988" transparent opacity={0.18} wireframe />
       </mesh>
       <Text position={[0, 0, 0.74]} fontSize={display.value >= 100 ? 0.3 : 0.38} color="#fffbea" anchorX="center" anchorY="middle">
+        {display.value}
+      </Text>
+      <Text position={[0, 0, -0.74]} rotation={[0, Math.PI, 0]} fontSize={display.value >= 100 ? 0.3 : 0.38} color="#fffbea" anchorX="center" anchorY="middle">
         {display.value}
       </Text>
       <group ref={shardRef} scale={0.01}>

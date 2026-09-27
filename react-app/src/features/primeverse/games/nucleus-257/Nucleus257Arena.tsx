@@ -20,6 +20,12 @@ import {
   type DefeatPresentation,
 } from './defeatPresentation'
 import { canUseNucleusOnlineControls, cinematicLocksArenaControls } from './nucleusMultiplayer'
+import {
+  getNucleusTutorialCopy,
+  NUCLEUS_TUTORIAL_STEPS,
+  type NucleusTutorialStep,
+} from './nucleusTutorialCopy'
+import Nucleus257Tutorial from './Nucleus257TutorialView'
 import Nucleus257Scene, {
   NUCLEUS_MATCH_DURATION_MS,
   createArenaControls,
@@ -29,7 +35,7 @@ import Nucleus257Scene, {
   type ArenaHudSnapshot,
   type ArenaLook,
 } from './Nucleus257Scene'
-import type { AbilityDefinition, AbilitySlot, HeroId } from './types'
+import type { AbilityDefinition, AbilitySlot, HeroId, Vec3 } from './types'
 import { useNucleusMultiplayer } from './useNucleusMultiplayer'
 
 interface Nucleus257ArenaProps {
@@ -39,6 +45,8 @@ interface Nucleus257ArenaProps {
   readonly party: PrimeverseExpeditionParty
   readonly onQualityChange: (quality: QualityLevel) => void
   readonly onExit: () => void
+  readonly tutorialRequested: boolean
+  readonly onTutorialFinished: () => void
 }
 
 interface ArenaResult {
@@ -119,6 +127,8 @@ export default function Nucleus257Arena({
   party,
   onQualityChange,
   onExit,
+  tutorialRequested,
+  onTutorialFinished,
 }: Nucleus257ArenaProps): JSX.Element {
   const multiplayer = useNucleusMultiplayer(party, heroId)
   // A running online match never silently turns into a local bot simulation
@@ -150,6 +160,9 @@ export default function Nucleus257Arena({
   const [paused, setPaused] = useState(false)
   const [engaged, setEngaged] = useState(false)
   const [captured, setCaptured] = useState(false)
+  const tutorialEnabled = tutorialRequested && arenaMode !== 'online'
+  const [tutorialStep, setTutorialStep] = useState<NucleusTutorialStep>(() => (tutorialEnabled ? 1 : 0))
+  const tutorialAnchor = useRef<Vec3 | null>(tutorialEnabled ? snapshot.player.position : null)
   const [result, setResult] = useState<ArenaResult | null>(null)
   const [cinematic, setCinematic] = useState<AbilityDefinition | null>(null)
   const lastAlive = useRef(snapshot.player.alive)
@@ -263,6 +276,40 @@ export default function Nucleus257Arena({
     else if (slot === 'mobility') controls.current.mobilityPulse += 1
     else controls.current.ultimatePulse += 1
   }, [arenaControlsReady, cinematicLocksControls, paused, result, snapshot.player.alive])
+
+  const advanceTutorialStep = useCallback(() => {
+    setTutorialStep((current) => {
+      if (current === 0) return current
+      const next = NUCLEUS_TUTORIAL_STEPS[NUCLEUS_TUTORIAL_STEPS.indexOf(current) + 1]
+      if (next === undefined) {
+        onTutorialFinished()
+        return 0
+      }
+      return next
+    })
+  }, [onTutorialFinished])
+
+  const skipTutorial = useCallback(() => {
+    setTutorialStep(0)
+    onTutorialFinished()
+  }, [onTutorialFinished])
+
+  useEffect(() => {
+    if (tutorialStep === 0) return
+    const copy = getNucleusTutorialCopy(tutorialStep)
+    if (!copy || copy.advance.kind === 'manual') return
+    if (copy.advance.kind === 'moved') {
+      const anchor = tutorialAnchor.current
+      if (!anchor) return
+      const dx = snapshot.player.position.x - anchor.x
+      const dz = snapshot.player.position.z - anchor.z
+      if (Math.hypot(dx, dz) > 1.4) advanceTutorialStep()
+    } else if (copy.advance.kind === 'aim-locked') {
+      if (captured) advanceTutorialStep()
+    } else if (copy.advance.kind === 'ability') {
+      if (snapshot.cooldowns[copy.advance.slot] > 0) advanceTutorialStep()
+    }
+  }, [advanceTutorialStep, captured, snapshot, tutorialStep])
 
   const togglePause = useCallback(() => {
     setPaused((current) => {
@@ -619,6 +666,7 @@ export default function Nucleus257Arena({
               <button
                 key={slot}
                 type="button"
+                data-slot={slot}
                 className={`n257-power${slot === 'ultimate' ? ' is-ultimate' : ''}${ready ? ' is-ready' : ''}${silenceLocked ? ' is-blocked' : ''}`}
                 style={cooldownStyle(remaining, ability.cooldownMs)}
                 onClick={(event) => { event.stopPropagation(); if (slot !== 'primary') queueAbility(slot) }}
@@ -738,6 +786,8 @@ export default function Nucleus257Arena({
           </div>
         )}
       </div>
+
+      <Nucleus257Tutorial step={tutorialStep} onManualNext={advanceTutorialStep} onSkip={skipTutorial} />
 
       {cinematic && (
         <div className="n257-cinematic" aria-live="assertive">

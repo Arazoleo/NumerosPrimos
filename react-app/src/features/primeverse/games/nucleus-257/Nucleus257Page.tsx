@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -26,6 +26,24 @@ const ABILITY_KEY: Readonly<Record<AbilitySlot, string>> = {
   ultimate: 'R',
 }
 
+const TUTORIAL_SEEN_STORAGE_KEY = 'n257-tutorial-seen'
+
+function hasSeenTutorialBefore(): boolean {
+  try {
+    return window.localStorage.getItem(TUTORIAL_SEEN_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markTutorialSeen(): void {
+  try {
+    window.localStorage.setItem(TUTORIAL_SEEN_STORAGE_KEY, '1')
+  } catch {
+    // Armazenamento indisponível (ex.: modo privado); a próxima partida volta a oferecer o tutorial.
+  }
+}
+
 function hexToRgb(hex: string): string {
   const normalized = hex.replace('#', '')
   const value = Number.parseInt(normalized, 16)
@@ -51,9 +69,20 @@ export default function Nucleus257Page(): JSX.Element {
   const { quality, setQuality, profile } = useQualitySettings()
   const [selectedId, setSelectedId] = useState<HeroId>('luma-crivo')
   const [playing, setPlaying] = useState(false)
+  const [tutorialRequested, setTutorialRequested] = useState(() => !hasSeenTutorialBefore())
   const party = usePrimeverseExpeditionParty('nucleus-257')
   const hero = useMemo(() => getHeroKit(selectedId), [selectedId])
   const onlineIntent = supportsNucleusOnlineMode(party.status)
+
+  const handleTutorialFinished = useCallback(() => {
+    setTutorialRequested(false)
+    markTutorialSeen()
+  }, [])
+
+  const replayTutorial = useCallback(() => {
+    setTutorialRequested(true)
+    setPlaying(true)
+  }, [])
 
   if (playing) {
     return (
@@ -65,6 +94,8 @@ export default function Nucleus257Page(): JSX.Element {
           party={party}
           onQualityChange={setQuality}
           onExit={() => setPlaying(false)}
+          tutorialRequested={tutorialRequested}
+          onTutorialFinished={handleTutorialFinished}
         />
         <ExpeditionPartyHud party={party} className="pep-hud--nucleus pep-hud--nucleus-game" />
       </main>
@@ -148,6 +179,11 @@ export default function Nucleus257Page(): JSX.Element {
             <button className="n257-launch" type="button" onClick={() => setPlaying(true)}>
               <span>{onlineIntent ? 'ENTRAR NA BATALHA ONLINE' : 'ENTRAR NA CÂMARA 257'}</span><i>↗</i>
             </button>
+            {!onlineIntent && (
+              <button className="n257-tutorial-replay" type="button" onClick={replayTutorial}>
+                REVER TUTORIAL
+              </button>
+            )}
           </aside>
         </div>
 

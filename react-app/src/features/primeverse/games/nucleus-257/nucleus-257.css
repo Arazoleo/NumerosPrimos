@@ -445,6 +445,26 @@
   transform: translateY(-2px);
 }
 
+.n257-tutorial-replay {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 0;
+  border: 1px solid var(--n257-line);
+  color: var(--n257-muted);
+  background: transparent;
+  cursor: pointer;
+  font: 700 8px/1 'DM Mono', monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.n257-tutorial-replay:hover,
+.n257-tutorial-replay:focus-visible {
+  color: var(--n257-accent);
+  border-color: var(--n257-accent);
+}
+
 .n257-select__footer {
   display: flex;
   align-items: center;
@@ -1394,6 +1414,150 @@
 .n257-mobile-controls {
   display: none;
 }
+
+.n257-tutorial {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.n257-tutorial__backdrop {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+.n257-tutorial__spotlight {
+  position: fixed;
+  z-index: 1;
+  border: 1px solid rgba(var(--n257-accent-rgb), 0.9);
+  border-radius: 6px;
+  /*
+   * Estático de propósito: um box-shadow com espalhamento de 9999px animado
+   * repinta a tela inteira a cada frame. Isso é barato num jogo 2D, mas aqui
+   * concorre pelo mesmo orçamento de frame do canvas 3D e engasgava a arena.
+   */
+  box-shadow:
+    0 0 0 9999px rgba(2, 6, 9, 0.72),
+    0 0 20px rgba(var(--n257-accent-rgb), 0.85),
+    inset 0 0 20px rgba(var(--n257-accent-rgb), 0.2);
+  pointer-events: none;
+}
+
+.n257-tutorial__card {
+  position: fixed;
+  z-index: 2;
+  left: 50%;
+  top: var(--tutorial-card-top, 50%);
+  width: min(30rem, 90%);
+  padding: 22px 22px 16px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--n257-line);
+  background: rgba(4, 12, 17, 0.92);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  animation: n257-tutorial-in 350ms ease both;
+}
+
+.n257-tutorial__eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--n257-muted);
+  font: 700 8px/1 'DM Mono', monospace;
+  letter-spacing: 0.14em;
+}
+
+.n257-tutorial__eyebrow strong {
+  color: var(--n257-accent);
+}
+
+.n257-tutorial__card h2 {
+  margin: 14px 0 8px;
+  font: 700 clamp(20px, 4vw, 30px)/1.05 'Manrope', sans-serif;
+  letter-spacing: -0.02em;
+  color: var(--n257-ink);
+}
+
+.n257-tutorial__card p {
+  margin: 0 0 14px;
+  color: #b6cdc7;
+  font: 400 12px/1.6 'Manrope', sans-serif;
+}
+
+.n257-tutorial__hint {
+  display: block;
+  margin: -8px 0 14px;
+  color: var(--n257-accent);
+  font: 600 8px/1.5 'DM Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.n257-tutorial__progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.n257-tutorial__progress i {
+  width: 20px;
+  height: 2px;
+  background: var(--n257-line);
+}
+
+.n257-tutorial__progress i.is-active {
+  background: var(--n257-accent);
+  box-shadow: 0 0 8px rgba(var(--n257-accent-rgb), 0.7);
+}
+
+.n257-tutorial__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.n257-tutorial__skip {
+  padding: 10px 0;
+  border: 0;
+  color: var(--n257-muted);
+  background: transparent;
+  cursor: pointer;
+  font: 700 8px/1 'DM Mono', monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.n257-tutorial__skip:hover {
+  color: var(--n257-accent);
+}
+
+.n257-tutorial__next {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border: 0;
+  color: #03110d;
+  background: var(--n257-accent);
+  cursor: pointer;
+  font: 800 9px/1 'DM Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.n257-tutorial__next:hover {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+}
+
+@keyframes n257-tutorial-in { from { opacity: 0; } to { opacity: 1; } }
 
 @keyframes n257-orbit { to { transform: rotate(1turn); } }
 

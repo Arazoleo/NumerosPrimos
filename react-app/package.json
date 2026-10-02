@@ -23,7 +23,6 @@
   "dependencies": {
     "@react-three/drei": "^9.122.0",
     "@react-three/fiber": "^8.18.0",
-    "@rolldown/binding-win32-x64-msvc": "^1.2.7",
     "express": "^5.2.1",
     "framer-motion": "^11.11.17",
     "ioredis": "^6.0.0",

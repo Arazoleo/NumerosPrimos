@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "npm run dev:all",
     "dev:web": "vite",
-    "dev:multiplayer": "tsx watch server/primeverse-online/dev.ts",
+    "dev:multiplayer": "tsx watch --env-file-if-exists=.env.local server/primeverse-online/dev.ts",
     "dev:all": "concurrently --kill-others --names WEB,ONLINE --prefix-colors cyan,magenta \"npm:dev:web\" \"npm:dev:multiplayer\"",
     "build": "vite build",
     "build:server": "tsc --noEmit -p tsconfig.server.json",

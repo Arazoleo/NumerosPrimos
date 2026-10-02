@@ -17,16 +17,17 @@ export default function EuclidSiegeTutorial({
   onNext,
   onSkip,
 }: EuclidSiegeTutorialProps): JSX.Element | null {
+  if (step === 0) return null
   const copy = getEuclidTutorialCopy(step)
-  const selector = copy?.selector
+  if (!copy) return null
 
+  const stepIndex = EUCLID_TUTORIAL_STEPS.indexOf(step)
+  const isLastStep = stepIndex === EUCLID_TUTORIAL_STEPS.length - 1
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
 
   useLayoutEffect(() => {
-    if (!selector) return
-
     const updateTargetRect = () => {
-      const target = document.querySelector<HTMLElement>(selector)
+      const target = document.querySelector<HTMLElement>(copy.selector)
       setTargetRect(target?.getBoundingClientRect() ?? null)
     }
 
@@ -37,12 +38,7 @@ export default function EuclidSiegeTutorial({
       window.removeEventListener('resize', updateTargetRect)
       window.removeEventListener('scroll', updateTargetRect, true)
     }
-  }, [selector])
-
-  if (step === 0 || !copy) return null
-
-  const stepIndex = EUCLID_TUTORIAL_STEPS.indexOf(step)
-  const isLastStep = stepIndex === EUCLID_TUTORIAL_STEPS.length - 1
+  }, [copy.selector])
 
   const spotlightStyle = targetRect
     ? {

@@ -1,4 +1,15 @@
+import fs from 'node:fs'
 import { createPrimeverseServer } from './server.js'
+
+for (const envPath of ['.env', '.env.local']) {
+  if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+    try {
+      process.loadEnvFile(envPath)
+    } catch {
+      // Ignora arquivos de ambiente ausentes ou inválidos
+    }
+  }
+}
 
 const port = readPort(process.env.PORT)
 const host = process.env.PRIMEVERSE_HOST?.trim() || '127.0.0.1'

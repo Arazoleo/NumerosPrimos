@@ -1,0 +1,499 @@
+.primeverse-section {
+  position: relative;
+  padding: 120px 0;
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(121, 247, 212, 0.12), transparent 70%),
+    radial-gradient(700px 450px at 80% 60%, rgba(255, 204, 26, 0.10), transparent 75%),
+    var(--cream);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  width: 100%;
+}
+
+.primeverse-header {
+  max-width: 860px;
+  margin-bottom: 44px;
+}
+
+.primeverse-lead-sentence {
+  font-size: clamp(17px, 2.2vw, 20px);
+  color: var(--slate);
+  margin-top: 20px;
+  line-height: 1.6;
+  font-weight: 500;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Barra de métricas rápidas com alinhamento rigoroso */
+.primeverse-metrics-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: start;
+  gap: 32px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 32px 40px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 36px;
+}
+
+.primeverse-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+/* Número das métricas - grande, chamativo e com mesma altura/linha base */
+.primeverse-metric-num {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: clamp(42px, 5vw, 58px);
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.primeverse-metric-title {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.primeverse-metric-label {
+  font-size: 14px;
+  color: var(--slate);
+  line-height: 1.45;
+  display: block;
+}
+
+.primeverse-metric-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+
+@media (max-width: 860px) {
+  .primeverse-metrics-bar {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 20px;
+  }
+  .primeverse-metric-divider {
+    display: none;
+  }
+  .primeverse-metric {
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line2);
+  }
+  .primeverse-metric:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+/* Banner destacando os jogos dentro do Primeverse Online */
+.primeverse-online-banner {
+  background: linear-gradient(135deg, #10151f 0%, #0b0f16 100%);
+  border: 1px solid rgba(121, 247, 212, 0.28);
+  border-radius: 18px;
+  padding: 24px 28px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 56px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
+}
+
+.primeverse-online-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: #79f7d4;
+  box-shadow: 0 0 12px #79f7d4;
+}
+
+.primeverse-online-banner-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #79f7d4;
+  background: rgba(121, 247, 212, 0.12);
+  border: 1px solid rgba(121, 247, 212, 0.28);
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.primeverse-online-banner-content {
+  flex-grow: 1;
+}
+
+.primeverse-online-banner-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.primeverse-online-banner-desc {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.primeverse-online-banner-desc strong {
+  color: #79f7d4;
+}
+
+/* Sem sublinhado para não parecer hyperlink */
+.primeverse-online-banner-desc em {
+  font-style: normal;
+  color: #79f7d4;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.primeverse-online-banner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #10151f;
+  background: #79f7d4;
+  padding: 10px 18px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.primeverse-online-banner-link:hover {
+  transform: translateY(-2px);
+  background: #99ffe1;
+  box-shadow: 0 4px 16px rgba(121, 247, 212, 0.4);
+}
+
+@media (max-width: 860px) {
+  .primeverse-online-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+  .primeverse-online-banner-link {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Showcase de jogos */
+.primeverse-showcase {
+  margin-bottom: 64px;
+}
+
+.primeverse-showcase-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.primeverse-showcase-title {
+  font-size: clamp(22px, 3vw, 30px);
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.primeverse-showcase-sub {
+  font-size: 15px;
+  color: var(--slate);
+  margin: 0;
+  max-width: 580px;
+}
+
+.primeverse-head-cta {
+  white-space: nowrap;
+}
+
+/* Grid de cards (3 itens) */
+.primeverse-grid-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .primeverse-grid-three {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .primeverse-grid-three {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.primeverse-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 26px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.primeverse-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(14, 14, 16, 0.22);
+}
+
+.primeverse-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.primeverse-card-glyph {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 2px solid;
+  background: var(--char);
+  font-family: 'Space Grotesk', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.primeverse-card-category {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bone);
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.primeverse-card-body {
+  flex-grow: 1;
+  margin-bottom: 22px;
+}
+
+.primeverse-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
+.primeverse-card-desc {
+  font-size: 14px;
+  color: var(--slate);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.primeverse-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid var(--line2);
+  padding-top: 16px;
+}
+
+.primeverse-card-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--y-200);
+  padding: 10px 18px;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.primeverse-card-play-btn:hover {
+  background: var(--y-400);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(255, 204, 26, 0.35);
+}
+
+/* Card inferior de chamada de ação */
+.primeverse-bottom-card {
+  background: linear-gradient(135deg, var(--char) 0%, #08080a 100%);
+  border-radius: 24px;
+  padding: clamp(28px, 4vw, 48px);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  flex-wrap: wrap;
+}
+
+.primeverse-bottom-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #79f7d4, var(--y-400), #5fa8ff);
+}
+
+.primeverse-bottom-content {
+  max-width: 620px;
+}
+
+.primeverse-bottom-kicker {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #79f7d4;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.primeverse-bottom-title {
+  font-size: clamp(22px, 3.2vw, 32px);
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 12px;
+}
+
+.primeverse-bottom-desc {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.primeverse-cta-large {
+  background: var(--y-400);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 18px 32px;
+  white-space: nowrap;
+}
+
+.primeverse-cta-large:hover {
+  background: var(--y-300);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 204, 26, 0.35);
+}
+
+/* Responsividade específica e 390x844 */
+@media (max-width: 720px) {
+  .primeverse-section {
+    padding: 72px 0;
+  }
+
+  .primeverse-header {
+    margin-bottom: 32px;
+  }
+
+  .primeverse-showcase-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .primeverse-head-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .primeverse-bottom-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 24px;
+    padding: 24px 20px;
+  }
+
+  .primeverse-cta-large {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .primeverse-card {
+    padding: 18px 16px;
+  }
+
+  .primeverse-card-glyph {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .primeverse-card-category {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .primeverse-card-title {
+    font-size: 18px;
+  }
+
+  .primeverse-card-desc {
+    font-size: 13px;
+  }
+
+  .primeverse-card-footer {
+    justify-content: stretch;
+  }
+
+  .primeverse-card-play-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

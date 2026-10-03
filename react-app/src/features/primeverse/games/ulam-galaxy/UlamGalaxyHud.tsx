@@ -6,10 +6,12 @@ import QualityControl from '../../ui/QualityControl'
 import GameIntro from '../../ui/GameIntro'
 import { getMissionPath, ULAM_ROUNDS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
+import type { UlamCellSelection } from './ulamInput'
 
 interface UlamGalaxyHudProps {
   quality: QualityLevel
   onQualityChange: (quality: QualityLevel) => void
+  selectedCell?: UlamCellSelection | null
 }
 
 function formatTime(milliseconds: number): string {
@@ -46,7 +48,6 @@ function GalaxyBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 }
 
 function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
-
   const start = useUlamGalaxyStore((state) => state.start)
   return (
     <GameIntro
@@ -83,7 +84,7 @@ function Topbar({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
   )
 }
 
-function MissionConsole(): JSX.Element {
+function MissionConsole({ selectedCell }: { selectedCell?: UlamCellSelection | null }): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
   const mission = useUlamGalaxyStore((state) => state.mission)
   const selected = useUlamGalaxyStore((state) => state.selectedDirection)
@@ -96,6 +97,15 @@ function MissionConsole(): JSX.Element {
       <div className="ulam-console__label">REGIÃO 0{mission.difficulty} // MALHA {mission.size} × {mission.size}</div>
       <h2 id="ulam-mission-title">Qual diagonal concentra <em>mais primos?</em></h2>
       <p>Parta da âncora <strong>{mission.anchor.value}</strong> e compare os próximos {mission.pathLength} setores em cada direção.</p>
+
+      {selectedCell ? (
+        <p className="ulam-selected-cell" aria-live="polite">
+          Célula <strong>{selectedCell.value}</strong> · coordenadas ({selectedCell.x}, {selectedCell.y})
+        </p>
+      ) : (
+        <p className="ulam-selected-cell" aria-live="polite">Nenhuma célula selecionada.</p>
+      )}
+
       <div className="ulam-directions">
         {mission.paths.map((path) => (
           <button
@@ -221,7 +231,7 @@ export function UlamGalaxyHud(props: UlamGalaxyHudProps): JSX.Element {
   const showMissionHud = phase === 'playing' || phase === 'scanning'
   return (
     <div className="ulam-hud">
-      {showMissionHud ? <><Topbar {...props} /><MissionConsole /><Telemetry /></> : null}
+      {showMissionHud ? <><Topbar {...props} /><MissionConsole selectedCell={props.selectedCell} /><Telemetry /></> : null}
       {showMissionHud ? <Feedback /> : null}
       <RoundComplete />
       <Result />

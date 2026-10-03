@@ -7,6 +7,7 @@ import type { QualityLevel, QualityProfile } from '../../graphics/useQualitySett
 import { createUlamSpiral, getMissionPath, ULAM_DIRECTIONS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
 import type { UlamCell, UlamDirectionId } from './types'
+import type { UlamCellSelection } from './ulamInput'
 
 const CYAN = '#5df4df'
 const VIOLET = '#a58cff'
@@ -17,6 +18,8 @@ interface UlamGalaxySceneProps {
   quality: QualityLevel
   profile: QualityProfile
   reducedMotion: boolean
+  selectedCell: UlamCellSelection | null
+  onSelectCell: (cell: UlamCell) => void
 }
 
 function cellPoint(cell: Pick<UlamCell, 'x' | 'y' | 'value' | 'prime'>, spacing: number): THREE.Vector3 {
@@ -66,6 +69,48 @@ function InstancedCells({
         opacity={prime ? (scannerEnabled ? 0.94 : 0.28) : 0.2}
         depthWrite={false}
       />
+    </instancedMesh>
+  )
+}
+
+function CellHitTargets({
+  cells,
+  spacing,
+  onSelect,
+}: {
+  cells: readonly UlamCell[]
+  spacing: number
+  onSelect: (cell: UlamCell) => void
+}): JSX.Element {
+  const meshRef = useRef<THREE.InstancedMesh>(null)
+  const matrix = useMemo(() => new THREE.Matrix4(), [])
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current
+    if (!mesh) return
+    cells.forEach((cell, index) => {
+      const point = cellPoint(cell, spacing)
+      const hitRadius = Math.max(0.115, cell.prime ? 0.11 : 0.115)
+      matrix.compose(point, new THREE.Quaternion(), new THREE.Vector3(hitRadius, hitRadius, hitRadius))
+      mesh.setMatrixAt(index, matrix)
+    })
+    mesh.instanceMatrix.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [cells, matrix, spacing])
+
+  return (
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, cells.length]}
+      frustumCulled={false}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+        const cell = event.instanceId === undefined ? undefined : cells[event.instanceId]
+        if (cell) onSelect(cell)
+      }}
+    >
+      <sphereGeometry args={[1, 6, 4]} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
     </instancedMesh>
   )
 }
@@ -192,7 +237,17 @@ function SelectedPath({
   )
 }
 
-function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDetail: boolean }): JSX.Element {
+function SpiralMap({
+  reducedMotion,
+  lowDetail,
+  selectedCell,
+  onSelectCell,
+}: {
+  reducedMotion: boolean
+  lowDetail: boolean
+  selectedCell: UlamCellSelection | null
+  onSelectCell: (cell: UlamCell) => void
+}): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
   const mission = useUlamGalaxyStore((state) => state.mission)
   const selectedDirection = useUlamGalaxyStore((state) => state.selectedDirection)
@@ -217,6 +272,7 @@ function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDe
       )}
       <InstancedCells cells={cells} spacing={spacing} prime={false} scannerEnabled={scannerEnabled} lowDetail={lowDetail} />
       <InstancedCells cells={cells} spacing={spacing} prime scannerEnabled={scannerEnabled} lowDetail={lowDetail} />
+      <CellHitTargets cells={cells} spacing={spacing} onSelect={onSelectCell} />
 
       {mission.paths.map((path) => (
         <DirectionRay
@@ -248,6 +304,18 @@ function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDe
           reducedMotion={reducedMotion}
         />
       ) : null}
+
+      {selectedCell ? (
+        <group position={[selectedCell.x * spacing, selectedCell.y * spacing, 0.24]}>
+          <mesh>
+            <ringGeometry args={[0.14, 0.19, 20]} />
+            <meshBasicMaterial color={AMBER} transparent opacity={0.95} />
+          </mesh>
+          <Text position={[0, 0.25, 0.03]} fontSize={0.11} color={AMBER} anchorX="center">
+            {selectedCell.value}
+          </Text>
+        </group>
+      ) : null}
     </group>
   )
 }
@@ -272,7 +340,13 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }): null {
   return null
 }
 
-export function UlamGalaxyScene({ quality, profile, reducedMotion }: UlamGalaxySceneProps): JSX.Element {
+export function UlamGalaxyScene({
+  quality,
+  profile,
+  reducedMotion,
+  selectedCell,
+  onSelectCell,
+}: UlamGalaxySceneProps): JSX.Element {
   const width = useThree((state) => state.size.width)
   const viewportWidth = useThree((state) => state.viewport.width)
   const viewportHeight = useThree((state) => state.viewport.height)
@@ -303,7 +377,12 @@ export function UlamGalaxyScene({ quality, profile, reducedMotion }: UlamGalaxyS
         speed={reducedMotion ? 0 : 0.15}
       />
       <group position={[0, phase === 'intro' && width < 800 ? 0.75 : 0, 0]} scale={fitScale}>
-        <SpiralMap reducedMotion={reducedMotion} lowDetail={quality === 'low'} />
+        <SpiralMap
+          reducedMotion={reducedMotion}
+          lowDetail={quality === 'low'}
+          selectedCell={selectedCell}
+          onSelectCell={onSelectCell}
+        />
       </group>
       <CameraRig reducedMotion={reducedMotion} />
     </>

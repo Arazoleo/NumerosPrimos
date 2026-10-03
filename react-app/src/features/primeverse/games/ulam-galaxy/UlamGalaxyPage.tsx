@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
 import { audioBus, type AudioCue } from '../../audio/audioBus'
 import { useQualitySettings } from '../../graphics/useQualitySettings'
@@ -8,8 +8,10 @@ import { useDocumentTitle } from '../../useDocumentTitle'
 import '../../primeverse.css'
 import { UlamGalaxyHud } from './UlamGalaxyHud'
 import { UlamGalaxyScene } from './UlamGalaxyScene'
+import { createUlamSpiral } from './ulamLogic'
+import { selectCell, type UlamCellSelection } from './ulamInput'
 import { useUlamGalaxyStore } from './ulamStore'
-import type { UlamSoundEvent } from './types'
+import type { UlamCell, UlamSoundEvent } from './types'
 import './ulam-galaxy.css'
 
 const SOUND_CUES: Readonly<Record<UlamSoundEvent, AudioCue>> = {
@@ -65,6 +67,16 @@ export default function UlamGalaxyPage(): JSX.Element {
     audioBus.play(SOUND_CUES[lastSound.event])
   }, [lastSound])
 
+  const [selectedCell, setSelectedCell] = useState<UlamCellSelection | null>(null)
+
+  const handleSelectCell = useCallback((cell: UlamCell) => {
+    setSelectedCell(selectCell(createUlamSpiral(useUlamGalaxyStore.getState().mission.size), cell.value))
+  }, [])
+
+  useEffect(() => {
+    if (phase === 'intro' || phase === 'complete') setSelectedCell(null)
+  }, [phase])
+
   return (
     <main className="ulam-galaxy" data-quality={quality}>
       <div className="ulam-canvas">
@@ -77,12 +89,18 @@ export default function UlamGalaxyPage(): JSX.Element {
             fallback={<div className="ulam-fallback" role="alert">Cena 3D indisponível. Use a leitura tabular para continuar a missão.</div>}
           >
             <Suspense fallback={null}>
-              <UlamGalaxyScene quality={quality} profile={profile} reducedMotion={reducedMotion} />
+              <UlamGalaxyScene
+                quality={quality}
+                profile={profile}
+                reducedMotion={reducedMotion}
+                selectedCell={selectedCell}
+                onSelectCell={handleSelectCell}
+              />
             </Suspense>
           </Canvas>
         </SceneBoundary>
       </div>
-      <UlamGalaxyHud quality={quality} onQualityChange={setQuality} />
+      <UlamGalaxyHud quality={quality} onQualityChange={setQuality} selectedCell={selectedCell} />
     </main>
   )
 }

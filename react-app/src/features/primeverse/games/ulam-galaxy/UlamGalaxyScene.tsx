@@ -192,7 +192,11 @@ function SelectedPath({
 
   useFrame(({ clock }) => {
     if (!pulseRef.current || points.length === 0) return
-    const progress = reducedMotion ? 1 : (clock.elapsedTime * 0.62) % 1
+    if (reducedMotion) {
+      pulseRef.current.position.copy(points[points.length - 1] ?? points[0])
+      return
+    }
+    const progress = (clock.elapsedTime * 0.62) % 1
     const scaled = progress * Math.max(1, points.length - 1)
     const index = Math.min(points.length - 2, Math.floor(scaled))
     if (points.length === 1) pulseRef.current.position.copy(points[0])
@@ -345,7 +349,9 @@ function SpiralMap({
 
   const handleWheel = (event: ThreeEvent<WheelEvent>) => {
     if (!isInteractivePhase) return
-    if ('pointerType' in event.nativeEvent && (event.nativeEvent as unknown as PointerEvent).pointerType === 'touch') return
+    if ('pointerType' in event.nativeEvent && (event.nativeEvent as unknown as PointerEvent).pointerType === 'touch') {
+      return
+    }
     event.stopPropagation()
     const delta = event.deltaY < 0 ? ULAM_ZOOM.step : -ULAM_ZOOM.step
     onZoom(delta)
@@ -434,7 +440,14 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }): null {
 
   useFrame((_, delta) => {
     const offset = width > 980 ? (phase === 'intro' ? 1.8 : 0.8) : 0
-    desired.set(offset + (reducedMotion ? 0 : pointer.x * 0.18), reducedMotion ? 0 : pointer.y * 0.12, 11.6)
+    if (reducedMotion) {
+      desired.set(offset, 0, 11.6)
+      camera.position.copy(desired)
+      target.set(offset * 0.18, 0, 0)
+      camera.lookAt(target)
+      return
+    }
+    desired.set(offset + pointer.x * 0.18, pointer.y * 0.12, 11.6)
     camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.2, delta)
     camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.2, delta)
     camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.2, delta)

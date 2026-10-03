@@ -10,6 +10,7 @@ export interface UlamCellSelection {
   readonly value: number
   readonly x: number
   readonly y: number
+  readonly prime: boolean
 }
 
 export const ULAM_ZOOM = {
@@ -18,7 +19,7 @@ export const ULAM_ZOOM = {
   step: 0.12,
 } as const
 
-export const INITIAL_ULAM_VIEWPORT: UlamViewport = {
+export const DEFAULT_VIEWPORT: UlamViewport = {
   panX: 0,
   panY: 0,
   zoom: 1,
@@ -33,7 +34,7 @@ export function changeZoom(viewport: UlamViewport, delta: number): UlamViewport 
 }
 
 export function resetViewport(): UlamViewport {
-  return INITIAL_ULAM_VIEWPORT
+  return DEFAULT_VIEWPORT
 }
 
 export function clampPan(value: number, limit = 1.65): number {
@@ -54,7 +55,7 @@ export function moveViewport(
 
 export function selectCell(cells: readonly UlamCell[], value: number): UlamCellSelection | null {
   const cell = cells.find((candidate) => candidate.value === value)
-  return cell ? { value: cell.value, x: cell.x, y: cell.y } : null
+  return cell ? { value: cell.value, x: cell.x, y: cell.y, prime: cell.prime } : null
 }
 
 export function moveCellSelection(

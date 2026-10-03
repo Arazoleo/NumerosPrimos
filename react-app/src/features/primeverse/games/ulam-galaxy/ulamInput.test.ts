@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createUlamSpiral } from './ulamLogic'
 import {
-  INITIAL_ULAM_VIEWPORT,
+  DEFAULT_VIEWPORT,
   actionFromKey,
   changeZoom,
   moveCellSelection,
@@ -25,9 +25,9 @@ describe('Ulam input contract', () => {
   })
 
   it('clamps zoom and pan without changing the initial viewport contract', () => {
-    expect(changeZoom(INITIAL_ULAM_VIEWPORT, 99).zoom).toBe(1.85)
-    expect(changeZoom(INITIAL_ULAM_VIEWPORT, -99).zoom).toBe(0.72)
-    expect(moveViewport(INITIAL_ULAM_VIEWPORT, 99, -99)).toMatchObject({ panX: 1.65, panY: -1.65 })
+    expect(changeZoom(DEFAULT_VIEWPORT, 99).zoom).toBe(1.85)
+    expect(changeZoom(DEFAULT_VIEWPORT, -99).zoom).toBe(0.72)
+    expect(moveViewport(DEFAULT_VIEWPORT, 99, -99)).toMatchObject({ panX: 1.65, panY: -1.65 })
   })
 
   it('maps keyboard commands without requiring a browser', () => {

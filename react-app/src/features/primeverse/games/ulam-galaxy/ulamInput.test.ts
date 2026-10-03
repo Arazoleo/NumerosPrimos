@@ -37,4 +37,18 @@ describe('Ulam input contract', () => {
     expect(actionFromKey('Escape')).toEqual({ type: 'clear-cell' })
     expect(actionFromKey('Tab')).toBeNull()
   })
+
+  it('keeps keyboard navigation independent from form fields', () => {
+    expect(actionFromKey('ArrowUp')).toEqual({ type: 'move-cell', dx: 0, dy: 1 })
+    expect(actionFromKey('Enter')).toEqual({ type: 'confirm' })
+    expect(actionFromKey(' ')).toBeNull()
+  })
+
+  it('does not let zoom escape its supported range after repeated gestures', () => {
+    let viewport = DEFAULT_VIEWPORT
+    for (let index = 0; index < 50; index += 1) viewport = changeZoom(viewport, 0.12)
+    expect(viewport.zoom).toBe(1.85)
+    for (let index = 0; index < 100; index += 1) viewport = changeZoom(viewport, -0.12)
+    expect(viewport.zoom).toBe(0.72)
+  })
 })

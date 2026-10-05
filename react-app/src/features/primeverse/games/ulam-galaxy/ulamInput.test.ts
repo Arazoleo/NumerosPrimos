@@ -51,4 +51,27 @@ describe('Ulam input contract', () => {
     for (let index = 0; index < 100; index += 1) viewport = changeZoom(viewport, -0.12)
     expect(viewport.zoom).toBe(0.72)
   })
+
+  it('clamps the viewport through the public helper used by the page', () => {
+    let viewport = DEFAULT_VIEWPORT
+
+    for (let index = 0; index < 100; index += 1) {
+      viewport = moveViewport(viewport, 1, -1)
+    }
+
+    expect(viewport.panX).toBe(1.65)
+    expect(viewport.panY).toBe(-1.65)
+
+    for (let index = 0; index < 100; index += 1) {
+      viewport = moveViewport(viewport, -1, 1)
+    }
+
+    expect(viewport.panX).toBe(-1.65)
+    expect(viewport.panY).toBe(1.65)
+  })
+
+  it('does not map Tab or Space to a custom game action', () => {
+    expect(actionFromKey('Tab')).toBeNull()
+    expect(actionFromKey(' ')).toBeNull()
+  })
 })

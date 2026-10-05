@@ -1,57 +1,148 @@
 import { Canvas } from '@react-three/fiber'
-import { useCallback, useEffect, useState } from 'react'
-
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { audioBus, type AudioCue } from '../../audio/audioBus'
 import { useQualitySettings } from '../../graphics/useQualitySettings'
+import { SceneBoundary } from '../../ui/SceneBoundary'
+import { useDocumentTitle } from '../../useDocumentTitle'
+import '../../primeverse.css'
+import { UlamGalaxyHud } from './UlamGalaxyHud'
 import { UlamGalaxyScene } from './UlamGalaxyScene'
+import {
+  actionFromKey,
+  changeZoom,
+  DEFAULT_VIEWPORT,
+  moveCellSelection,
+  moveViewport,
+  resetViewport,
+  type UlamCellSelection,
+  type UlamInputAction,
+  type UlamViewport,
+} from './ulamInput'
+import { createUlamSpiral } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
-import { DEFAULT_VIEWPORT, ULAM_ZOOM, type UlamCellSelection, type UlamViewport } from './ulamInput'
-import type { UlamCell } from './types'
+import type { UlamCell, UlamSoundEvent } from './types'
 import './ulam-galaxy.css'
 
-export function UlamGalaxyPage(): JSX.Element {
-  const { quality, profile, setQuality } = useQualitySettings()
-  const [reducedMotion, setReducedMotion] = useState(false)
+const SOUND_CUES: Readonly<Record<UlamSoundEvent, AudioCue>> = {
+  select: 'impact',
+  scan: 'laser',
+  error: 'error',
+  correct: 'correct',
+  complete: 'complete',
+}
+
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setReduced(media.matches)
+    update()
+
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', update)
+      return () => media.removeEventListener('change', update)
+    }
+
+    media.addListener(update)
+    return () => media.removeListener(update)
+  }, [])
+
+  return reduced
+}
+
+function useUlamKeyboard(
+  enabled: boolean,
+  onAction: (action: UlamInputAction) => void,
+): void {
+  useEffect(() => {
+    if (!enabled) return undefined
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        return
+      }
+
+      const action = actionFromKey(event.key)
+      if (!action) return
+
+      if (action.type !== 'confirm') event.preventDefault()
+      onAction(action)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [enabled, onAction])
+}
+
+export default function UlamGalaxyPage(): JSX.Element {
+  useDocumentTitle('Ulam Galaxy · Primeverse')
+
+  const { quality, setQuality, profile } = useQualitySettings()
+  const reducedMotion = useReducedMotion()
+  const phase = useUlamGalaxyStore((state) => state.phase)
+  const mission = useUlamGalaxyStore((state) => state.mission)
+  const pendingScan = useUlamGalaxyStore((state) => state.pendingScan)
+  const lastSound = useUlamGalaxyStore((state) => state.lastSound)
+  const playedSound = useRef(0)
+
   const [selectedCell, setSelectedCell] = useState<UlamCellSelection | null>(null)
   const [viewport, setViewport] = useState<UlamViewport>(DEFAULT_VIEWPORT)
 
-  const phase = useUlamGalaxyStore((state) => state.phase)
-  const scanPath = useUlamGalaxyStore((state) => state.scanPath)
-  const resetGame = useUlamGalaxyStore((state) => state.resetGame)
+  const cells = useMemo(() => createUlamSpiral(mission.size), [mission.size])
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handleChange = (e: MediaQueryListEvent) => {
-      setReducedMotion(e.matches)
-    }
-
-    setReducedMotion(mediaQuery.matches)
-
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange)
-      return () => mediaQuery.removeEventListener('change', handleChange)
-    } else {
-      mediaQuery.addListener(handleChange)
-      return () => mediaQuery.removeListener(handleChange)
-    }
+    const reset = useUlamGalaxyStore.getState().returnToIntro
+    reset()
+    return reset
   }, [])
 
+  useEffect(() => {
+    if (phase !== 'scanning' || !pendingScan) return undefined
+
+    const timer = window.setTimeout(
+      () => useUlamGalaxyStore.getState().resolveScan(),
+      reducedMotion ? 180 : 1_050,
+    )
+
+    return () => window.clearTimeout(timer)
+  }, [pendingScan, phase, reducedMotion])
+
+  useEffect(() => {
+    if (!lastSound) {
+      playedSound.current = 0
+      return
+    }
+    if (lastSound.id === playedSound.current) return
+
+    playedSound.current = lastSound.id
+    audioBus.play(SOUND_CUES[lastSound.event])
+  }, [lastSound])
+
+  useEffect(() => {
+    if (phase === 'intro' || phase === 'round-complete' || phase === 'complete') {
+      setSelectedCell(null)
+      setViewport(resetViewport())
+    }
+  }, [phase])
+
   const handlePan = useCallback((dx: number, dy: number) => {
-    setViewport((prev) => ({
-      ...prev,
-      panX: prev.panX + dx,
-      panY: prev.panY + dy,
-    }))
+    setViewport((previous) => moveViewport(previous, dx, dy))
   }, [])
 
   const handleZoom = useCallback((delta: number) => {
-    setViewport((prev) => ({
-      ...prev,
-      zoom: Math.min(ULAM_ZOOM.max, Math.max(ULAM_ZOOM.min, prev.zoom + delta)),
-    }))
+    setViewport((previous) => changeZoom(previous, delta))
   }, [])
 
   const handleResetViewport = useCallback(() => {
-    setViewport(DEFAULT_VIEWPORT)
+    setViewport(resetViewport())
   }, [])
 
   const handleSelectCell = useCallback((cell: UlamCell) => {
@@ -63,102 +154,76 @@ export function UlamGalaxyPage(): JSX.Element {
     })
   }, [])
 
+  const handleKeyboardAction = useCallback(
+    (action: UlamInputAction) => {
+      switch (action.type) {
+        case 'move-cell':
+          setSelectedCell((previous) =>
+            moveCellSelection(cells, previous, action.dx, action.dy),
+          )
+          return
+        case 'zoom':
+          handleZoom(action.delta)
+          return
+        case 'reset-viewport':
+          handleResetViewport()
+          return
+        case 'clear-cell':
+          setSelectedCell(null)
+          return
+        case 'confirm':
+          return
+      }
+    },
+    [cells, handleResetViewport, handleZoom],
+  )
+
+  useUlamKeyboard(phase === 'playing' || phase === 'scanning', handleKeyboardAction)
+
   return (
     <main className="ulam-galaxy" data-quality={quality}>
       <div className="ulam-canvas">
-        <Canvas gl={{ antialias: quality !== 'low', powerPreference: 'high-performance' }}>
-          <UlamGalaxyScene
-            quality={quality}
-            profile={profile}
-            reducedMotion={reducedMotion}
-            selectedCell={selectedCell}
-            onSelectCell={handleSelectCell}
-            viewport={viewport}
-            onPan={handlePan}
-            onZoom={handleZoom}
-          />
-        </Canvas>
-      </div>
-
-      <div className="ulam-hud">
-        <header className="ulam-topbar">
-          <a href="#" className="ulam-brand">
-            <span className="ulam-brand__mark">U</span>
-            <span>
-              <strong>GALÁXIA DE ULAM</strong>
-              <small>RECONHECIMENTO DE PADRÕES</small>
-            </span>
-          </a>
-
-          <div className="ulam-progress">
-            <i className="done" />
-            <i className="current" />
-            <i />
-            <span>FASE DE EXPLORAÇÃO</span>
-          </div>
-
-          <div className="ulam-topbar__actions">
-            <div className="pv-quality">
-              <select value={quality} onChange={(e) => setQuality(e.target.value as typeof quality)}>
-                <option value="low">Baixo</option>
-                <option value="medium">Médio</option>
-                <option value="high">Alto</option>
-              </select>
-            </div>
-            <button type="button" onClick={resetGame}>
-              Reiniciar
-            </button>
-          </div>
-        </header>
-
-        <section className="ulam-console">
-          <span className="ulam-console__label">CONSOLA DE NAVEGAÇÃO</span>
-          <h2>
-            Espiral Primária <em>Análise Numérica</em>
-          </h2>
-          <p>
-            Selecione uma direção orbital para analisar densidades numéricas e padrões de primos.
-          </p>
-
-          <button
-            type="button"
-            className="ulam-primary ulam-scan"
-            disabled={phase !== 'playing'}
-            onClick={() => scanPath()}
+        <SceneBoundary>
+          <Canvas
+            aria-label="Mapa tridimensional interativo da espiral de Ulam"
+            camera={{ position: [0, 0, 11.6], fov: 44, near: 0.1, far: 60 }}
+            dpr={profile.dpr}
+            gl={{
+              antialias: profile.antialias,
+              alpha: false,
+              powerPreference: quality === 'low' ? 'low-power' : 'high-performance',
+            }}
+            fallback={
+              <div className="ulam-fallback" role="alert">
+                Cena 3D indisponível. Use a leitura tabular para continuar a missão.
+              </div>
+            }
           >
-            Analisar Trajetória
-          </button>
-
-          {selectedCell && (
-            <div className="ulam-selected-cell">
-              Célula focada: <strong>#{selectedCell.value}</strong> ({selectedCell.x}, {selectedCell.y}) -{' '}
-              {selectedCell.prime ? 'Primo' : 'Composto'}
-            </div>
-          )}
-
-          <div className="ulam-viewport-controls">
-            <span>ZOOM</span>
-            <output>{Math.round(viewport.zoom * 100)}%</output>
-            <button type="button" onClick={() => handleZoom(ULAM_ZOOM.step)}>
-              +
-            </button>
-            <button type="button" onClick={() => handleZoom(-ULAM_ZOOM.step)}>
-              -
-            </button>
-            <button type="button" onClick={handleResetViewport}>
-              Reset
-            </button>
-          </div>
-
-          <div className="ulam-device-hint">
-            <span className="ulam-device-hint__mouse">
-              Arraste para mover o mapa. Roda do mouse para zoom.
-            </span>
-            <span className="ulam-device-hint__touch">Arraste para mover. Toque nas células.</span>
-            <span className="ulam-device-hint__keyboard">Teclas direcionais para atalhos.</span>
-          </div>
-        </section>
+            <Suspense fallback={null}>
+              <UlamGalaxyScene
+                quality={quality}
+                profile={profile}
+                reducedMotion={reducedMotion}
+                selectedCell={selectedCell}
+                onSelectCell={handleSelectCell}
+                viewport={viewport}
+                onPan={handlePan}
+                onZoom={handleZoom}
+              />
+            </Suspense>
+          </Canvas>
+        </SceneBoundary>
       </div>
+
+      <UlamGalaxyHud
+        quality={quality}
+        onQualityChange={setQuality}
+        selectedCell={selectedCell}
+        viewport={viewport}
+        onZoom={handleZoom}
+        onPan={handlePan}
+        onResetViewport={handleResetViewport}
+      />
     </main>
   )
 }

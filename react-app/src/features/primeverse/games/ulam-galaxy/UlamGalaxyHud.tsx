@@ -160,8 +160,8 @@ function MissionConsole({ selectedCell }: { selectedCell?: UlamCellSelection | n
       </div>
 
       <p className="ulam-device-hint">
-        <span className="ulam-device-hint__touch">Toque: selecione uma célula · arraste: navegue · pinça ou +/-: zoom</span>
-        <span className="ulam-device-hint__keyboard">Teclado: setas/WASD navegam · Enter confirma · +/- ajusta · 0 restaura · Esc limpa</span>
+        <span className="ulam-device-hint__touch">Toque: selecione uma célula · arraste: navegue · use +/-: zoom</span>
+        <span className="ulam-device-hint__keyboard">Teclado: setas/WASD navegam · Tab percorre controles · +/- ajusta · 0 restaura · Esc limpa</span>
         <span className="ulam-device-hint__mouse">Mouse: clique seleciona · arraste move · roda ajusta zoom</span>
       </p>
 

@@ -116,9 +116,25 @@
 .ulam-viewport-controls {
   display: grid;
   grid-template-columns: repeat(4, minmax(36px, 1fr));
+  grid-template-areas:
+    "title title title title"
+    ".     up    .     zin"
+    "left  reset right zval"
+    ".     down  .     zout";
   gap: 5px;
   margin-top: 10px;
 }
+
+.ulam-viewport-controls .vc-title { grid-area: title; }
+.ulam-viewport-controls .vc-up { grid-area: up; }
+.ulam-viewport-controls .vc-left { grid-area: left; }
+.ulam-viewport-controls .vc-reset { grid-area: reset; }
+.ulam-viewport-controls .vc-right { grid-area: right; }
+.ulam-viewport-controls .vc-down { grid-area: down; }
+.ulam-viewport-controls .vc-zin { grid-area: zin; }
+.ulam-viewport-controls .vc-zval { grid-area: zval; text-align: center; }
+.ulam-viewport-controls .vc-zout { grid-area: zout; }
+
 .ulam-viewport-controls span,
 .ulam-viewport-controls output {
   grid-column: span 2;
@@ -128,7 +144,7 @@
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-.ulam-viewport-controls output { color: var(--ulam-cyan); text-align: right; }
+.ulam-viewport-controls output { color: var(--ulam-cyan); }
 .ulam-viewport-controls button {
   min-width: 44px;
   min-height: 44px;

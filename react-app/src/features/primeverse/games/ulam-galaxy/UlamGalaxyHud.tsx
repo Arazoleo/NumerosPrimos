@@ -82,16 +82,16 @@ function ViewportControls({
   return (
     <div className="ulam-viewport-controls" aria-label="Controles da espiral">
       <span>ESPIRAL</span>
-      <button type="button" aria-label="Mover espiral para cima" onClick={() => onPan(0, 0.18)}>↑</button>
-      <button type="button" aria-label="Mover espiral para a esquerda" onClick={() => onPan(-0.18, 0)}>←</button>
-      <button type="button" aria-label="Mover espiral para a direita" onClick={() => onPan(0.18, 0)}>→</button>
-      <button type="button" aria-label="Mover espiral para baixo" onClick={() => onPan(0, -0.18)}>↓</button>
-      <button type="button" aria-label="Aumentar zoom" onClick={() => onZoom(ULAM_ZOOM.step)}>+</button>
+      <button type="button" className="vc-up" aria-label="Mover espiral para cima" onClick={() => onPan(0, -0.18)}>↑</button>
+      <button type="button" className="vc-left" aria-label="Mover espiral para a esquerda" onClick={() => onPan(0.18, 0)}>←</button>
+      <button type="button" className="vc-reset" aria-label="Restaurar posição e zoom" onClick={onReset}>0</button>
+      <button type="button" className="vc-right" aria-label="Mover espiral para a direita" onClick={() => onPan(-0.18, 0)}>→</button>
+      <button type="button" className="vc-down" aria-label="Mover espiral para baixo" onClick={() => onPan(0, 0.18)}>↓</button>
+      <button type="button" className="vc-zin" aria-label="Aumentar zoom" onClick={() => onZoom(ULAM_ZOOM.step)}>+</button>
       <output aria-label={`Zoom ${Math.round(viewport.zoom * 100)} por cento`}>
         {Math.round(viewport.zoom * 100)}%
       </output>
-      <button type="button" aria-label="Reduzir zoom" onClick={() => onZoom(-ULAM_ZOOM.step)}>−</button>
-      <button type="button" aria-label="Restaurar posição e zoom" onClick={onReset}>0</button>
+      <button type="button" className="vc-zout" aria-label="Reduzir zoom" onClick={() => onZoom(-ULAM_ZOOM.step)}>−</button>
     </div>
   )
 }
@@ -128,6 +128,18 @@ function MissionConsole({ selectedCell }: { selectedCell?: UlamCellSelection | n
     ? createUlamSpiral(mission.size).find((c) => c.value === selectedCell.value)?.prime
     : false
 
+  const sortedPaths = [...mission.paths].sort((a, b) => {
+    const aIsTop = a.direction.dy > 0;
+    const aIsRight = a.direction.dx > 0;
+    const aScore = (aIsTop ? 0 : 2) + (aIsRight ? 1 : 0);
+
+    const bIsTop = b.direction.dy > 0;
+    const bIsRight = b.direction.dx > 0;
+    const bScore = (bIsTop ? 0 : 2) + (bIsRight ? 1 : 0);
+
+    return aScore - bScore;
+  });
+
   return (
     <section className="ulam-console" aria-labelledby="ulam-mission-title">
       <div className="ulam-console__label">REGIÃO 0{mission.difficulty} // MALHA {mission.size} × {mission.size}</div>
@@ -144,7 +156,7 @@ function MissionConsole({ selectedCell }: { selectedCell?: UlamCellSelection | n
       )}
 
       <div className="ulam-directions">
-        {mission.paths.map((path) => (
+        {sortedPaths.map((path) => (
           <button
             type="button"
             key={path.direction.id}

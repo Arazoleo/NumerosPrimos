@@ -1,5 +1,5 @@
 import { Line, Sparkles, Stars, Text } from '@react-three/drei'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
@@ -7,6 +7,7 @@ import type { QualityLevel, QualityProfile } from '../../graphics/useQualitySett
 import { createUlamSpiral, getMissionPath, ULAM_DIRECTIONS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
 import type { UlamCell, UlamDirectionId } from './types'
+import { ULAM_ZOOM, type UlamCellSelection, type UlamViewport } from './ulamInput'
 
 const CYAN = '#5df4df'
 const VIOLET = '#a58cff'
@@ -17,6 +18,11 @@ interface UlamGalaxySceneProps {
   quality: QualityLevel
   profile: QualityProfile
   reducedMotion: boolean
+  selectedCell: UlamCellSelection | null
+  onSelectCell: (cell: UlamCell) => void
+  viewport: UlamViewport
+  onPan: (dx: number, dy: number) => void
+  onZoom: (delta: number) => void
 }
 
 function cellPoint(cell: Pick<UlamCell, 'x' | 'y' | 'value' | 'prime'>, spacing: number): THREE.Vector3 {
@@ -66,6 +72,48 @@ function InstancedCells({
         opacity={prime ? (scannerEnabled ? 0.94 : 0.28) : 0.2}
         depthWrite={false}
       />
+    </instancedMesh>
+  )
+}
+
+function CellHitTargets({
+  cells,
+  spacing,
+  onPointerDownCell,
+}: {
+  cells: readonly UlamCell[]
+  spacing: number
+  onPointerDownCell: (event: ThreeEvent<PointerEvent>, cell: UlamCell) => void
+}): JSX.Element {
+  const meshRef = useRef<THREE.InstancedMesh>(null)
+  const matrix = useMemo(() => new THREE.Matrix4(), [])
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current
+    if (!mesh) return
+    cells.forEach((cell, index) => {
+      const point = cellPoint(cell, spacing)
+      const hitRadius = Math.max(0.115, cell.prime ? 0.11 : 0.115)
+      matrix.compose(point, new THREE.Quaternion(), new THREE.Vector3(hitRadius, hitRadius, hitRadius))
+      mesh.setMatrixAt(index, matrix)
+    })
+    mesh.instanceMatrix.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [cells, matrix, spacing])
+
+  return (
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, cells.length]}
+      frustumCulled={false}
+      onPointerDown={(event) => {
+        event.stopPropagation()
+        const cell = event.instanceId === undefined ? undefined : cells[event.instanceId]
+        if (cell) onPointerDownCell(event, cell)
+      }}
+    >
+      <sphereGeometry args={[1, 6, 4]} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
     </instancedMesh>
   )
 }
@@ -144,7 +192,11 @@ function SelectedPath({
 
   useFrame(({ clock }) => {
     if (!pulseRef.current || points.length === 0) return
-    const progress = reducedMotion ? 1 : (clock.elapsedTime * 0.62) % 1
+    if (reducedMotion) {
+      pulseRef.current.position.copy(points[points.length - 1] ?? points[0])
+      return
+    }
+    const progress = (clock.elapsedTime * 0.62) % 1
     const scaled = progress * Math.max(1, points.length - 1)
     const index = Math.min(points.length - 2, Math.floor(scaled))
     if (points.length === 1) pulseRef.current.position.copy(points[0])
@@ -192,18 +244,118 @@ function SelectedPath({
   )
 }
 
-function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDetail: boolean }): JSX.Element {
+function SpiralMap({
+  reducedMotion,
+  lowDetail,
+  selectedCell,
+  onSelectCell,
+  viewport,
+  onPan,
+  onZoom,
+}: {
+  reducedMotion: boolean
+  lowDetail: boolean
+  selectedCell: UlamCellSelection | null
+  onSelectCell: (cell: UlamCell) => void
+  viewport: UlamViewport
+  onPan: (dx: number, dy: number) => void
+  onZoom: (delta: number) => void
+}): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
   const mission = useUlamGalaxyStore((state) => state.mission)
   const selectedDirection = useUlamGalaxyStore((state) => state.selectedDirection)
   const scannerEnabled = useUlamGalaxyStore((state) => state.scannerEnabled)
   const selectDirection = useUlamGalaxyStore((state) => state.selectDirection)
   const groupRef = useRef<THREE.Group>(null)
+
   const cells = useMemo(() => createUlamSpiral(mission.size), [mission.size])
   const spacing = 7.9 / (mission.size - 1)
   const anchorPoint = useMemo(() => cellPoint(mission.anchor, spacing), [mission.anchor, spacing])
   const spiralPoints = useMemo(() => cells.map((cell) => cellPoint(cell, spacing)), [cells, spacing])
   const selectedPath = selectedDirection ? getMissionPath(mission, selectedDirection) : null
+
+  const dragRef = useRef<{
+    isDown: boolean
+    startX: number
+    startY: number
+    lastX: number
+    lastY: number
+    moved: boolean
+    targetCell: UlamCell | null
+    targetElement: HTMLElement | null
+    pointerId: number | null
+  }>({
+    isDown: false,
+    startX: 0,
+    startY: 0,
+    lastX: 0,
+    lastY: 0,
+    moved: false,
+    targetCell: null,
+    targetElement: null,
+    pointerId: null,
+  })
+
+  const isInteractivePhase = phase !== 'intro' && phase !== 'complete' && phase !== 'round-complete'
+
+  const handlePointerDown = (event: ThreeEvent<PointerEvent>, cell?: UlamCell) => {
+    if (!isInteractivePhase) return
+    const targetEl = (event.nativeEvent.target ?? null) as HTMLElement | null
+    dragRef.current = {
+      isDown: true,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastX: event.clientX,
+      lastY: event.clientY,
+      moved: false,
+      targetCell: cell ?? null,
+      targetElement: targetEl,
+      pointerId: event.pointerId,
+    }
+    if (targetEl && 'setPointerCapture' in targetEl) {
+      targetEl.setPointerCapture(event.pointerId)
+    }
+  }
+
+  const handlePointerMove = (event: ThreeEvent<PointerEvent>) => {
+    if (!dragRef.current.isDown || !isInteractivePhase) return
+    const dx = event.clientX - dragRef.current.lastX
+    const dy = event.clientY - dragRef.current.lastY
+    const dist = Math.hypot(event.clientX - dragRef.current.startX, event.clientY - dragRef.current.startY)
+
+    if (dist > 6) {
+      dragRef.current.moved = true
+      onPan(dx * 0.012, -dy * 0.012)
+      dragRef.current.lastX = event.clientX
+      dragRef.current.lastY = event.clientY
+    }
+  }
+
+  const handlePointerUp = () => {
+    if (!dragRef.current.isDown) return
+    const { moved, targetCell, targetElement, pointerId } = dragRef.current
+    if (!moved && targetCell) {
+      onSelectCell(targetCell)
+    }
+    if (targetElement && pointerId !== null && 'releasePointerCapture' in targetElement) {
+      try {
+        targetElement.releasePointerCapture(pointerId)
+      } catch {
+        // Ignora caso a captura já tenha sido liberada pelo navegador
+      }
+    }
+    dragRef.current.isDown = false
+  }
+
+  const handleWheel = (event: ThreeEvent<WheelEvent>) => {
+    if (!isInteractivePhase) return
+    if ('pointerType' in event.nativeEvent && (event.nativeEvent as unknown as PointerEvent).pointerType === 'touch') {
+      return
+    }
+    event.stopPropagation()
+    const delta = event.deltaY < 0 ? ULAM_ZOOM.step : -ULAM_ZOOM.step
+    onZoom(delta)
+  }
 
   useFrame(({ clock }) => {
     if (!groupRef.current) return
@@ -211,12 +363,26 @@ function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDe
   })
 
   return (
-    <group ref={groupRef}>
+    <group
+      ref={groupRef}
+      position={[viewport.panX, viewport.panY, 0]}
+      scale={[viewport.zoom, viewport.zoom, viewport.zoom]}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onWheel={handleWheel}
+    >
+      <mesh position={[0, 0, -0.1]} onPointerDown={(e) => handlePointerDown(e)}>
+        <planeGeometry args={[60, 60]} />
+        <meshBasicMaterial visible={false} />
+      </mesh>
+
       {lowDetail ? null : (
         <Line points={spiralPoints} color="#7f8ca0" transparent opacity={0.07} lineWidth={0.35} depthWrite={false} />
       )}
       <InstancedCells cells={cells} spacing={spacing} prime={false} scannerEnabled={scannerEnabled} lowDetail={lowDetail} />
       <InstancedCells cells={cells} spacing={spacing} prime scannerEnabled={scannerEnabled} lowDetail={lowDetail} />
+      <CellHitTargets cells={cells} spacing={spacing} onPointerDownCell={(e, cell) => handlePointerDown(e, cell)} />
 
       {mission.paths.map((path) => (
         <DirectionRay
@@ -248,6 +414,18 @@ function SpiralMap({ reducedMotion, lowDetail }: { reducedMotion: boolean; lowDe
           reducedMotion={reducedMotion}
         />
       ) : null}
+
+      {selectedCell ? (
+        <group position={[selectedCell.x * spacing, selectedCell.y * spacing, 0.24]}>
+          <mesh>
+            <ringGeometry args={[0.14, 0.19, 20]} />
+            <meshBasicMaterial color={AMBER} transparent opacity={0.95} />
+          </mesh>
+          <Text position={[0, 0.25, 0.03]} fontSize={0.11} color={AMBER} anchorX="center">
+            {selectedCell.value}
+          </Text>
+        </group>
+      ) : null}
     </group>
   )
 }
@@ -262,7 +440,14 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }): null {
 
   useFrame((_, delta) => {
     const offset = width > 980 ? (phase === 'intro' ? 1.8 : 0.8) : 0
-    desired.set(offset + (reducedMotion ? 0 : pointer.x * 0.18), reducedMotion ? 0 : pointer.y * 0.12, 11.6)
+    if (reducedMotion) {
+      desired.set(offset, 0, 11.6)
+      camera.position.copy(desired)
+      target.set(offset * 0.18, 0, 0)
+      camera.lookAt(target)
+      return
+    }
+    desired.set(offset + pointer.x * 0.18, pointer.y * 0.12, 11.6)
     camera.position.x = THREE.MathUtils.damp(camera.position.x, desired.x, 3.2, delta)
     camera.position.y = THREE.MathUtils.damp(camera.position.y, desired.y, 3.2, delta)
     camera.position.z = THREE.MathUtils.damp(camera.position.z, desired.z, 3.2, delta)
@@ -272,7 +457,16 @@ function CameraRig({ reducedMotion }: { reducedMotion: boolean }): null {
   return null
 }
 
-export function UlamGalaxyScene({ quality, profile, reducedMotion }: UlamGalaxySceneProps): JSX.Element {
+export function UlamGalaxyScene({
+  quality,
+  profile,
+  reducedMotion,
+  selectedCell,
+  onSelectCell,
+  viewport,
+  onPan,
+  onZoom,
+}: UlamGalaxySceneProps): JSX.Element {
   const width = useThree((state) => state.size.width)
   const viewportWidth = useThree((state) => state.viewport.width)
   const viewportHeight = useThree((state) => state.viewport.height)
@@ -303,7 +497,15 @@ export function UlamGalaxyScene({ quality, profile, reducedMotion }: UlamGalaxyS
         speed={reducedMotion ? 0 : 0.15}
       />
       <group position={[0, phase === 'intro' && width < 800 ? 0.75 : 0, 0]} scale={fitScale}>
-        <SpiralMap reducedMotion={reducedMotion} lowDetail={quality === 'low'} />
+        <SpiralMap
+          reducedMotion={reducedMotion}
+          lowDetail={quality === 'low'}
+          selectedCell={selectedCell}
+          onSelectCell={onSelectCell}
+          viewport={viewport}
+          onPan={onPan}
+          onZoom={onZoom}
+        />
       </group>
       <CameraRig reducedMotion={reducedMotion} />
     </>

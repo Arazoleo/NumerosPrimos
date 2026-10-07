@@ -42,10 +42,12 @@ export interface UlamGalaxyState {
   start: () => void
   selectDirection: (direction: UlamDirectionId) => boolean
   scan: () => boolean
+  scanPath: () => void
   resolveScan: () => boolean
   nextRound: () => boolean
   toggleScanner: () => void
   restart: () => void
+  resetGame: () => void
   returnToIntro: () => void
   clearFeedback: (feedbackId: number) => void
 }
@@ -216,6 +218,10 @@ export function createUlamGalaxyStore(
       return true
     },
 
+    scanPath: () => {
+      get().scan()
+    },
+
     resolveScan: () => {
       const state = get()
       if (state.phase !== 'scanning' || !state.pendingScan) return false
@@ -335,6 +341,10 @@ export function createUlamGalaxyStore(
     restart: () => {
       const state = get()
       set(runState(missions, state.runId + 1, now(), state.feedback))
+    },
+
+    resetGame: () => {
+      get().restart()
     },
 
     returnToIntro: () => {

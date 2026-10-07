@@ -64,10 +64,10 @@ const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze
     body: '#12291f',
     bodyDark: '#061410',
     secondary: '#7dff8f',
-    torsoRadius: 0.31,
-    torsoLength: 0.82,
-    headRadius: 0.29,
-    shoulder: 0.4,
+    torsoRadius: 0.26,
+    torsoLength: 0.92,
+    headRadius: 0.27,
+    shoulder: 0.35,
   },
 })
 
@@ -255,25 +255,29 @@ function DiffieArchitecture({ accent, secondary, quality, glitchRef }: {
   )
 }
 
-function MersenneArchitecture({ accent, secondary, quality }: {
+function MersenneArchitecture({ accent, secondary, quality, rifleRef }: {
   readonly accent: string
   readonly secondary: string
   readonly quality: QualityLevel
+  readonly rifleRef: React.RefObject<THREE.Group>
 }): JSX.Element {
-  const radial = quality === 'low' ? 6 : 10
+  const low = quality === 'low'
+  const radial = low ? 6 : 10
   return (
     <group name="mersenne-architecture">
       {/* Long rifle over the right shoulder, muzzle raised: the longest element of any operator. */}
-      <group position={[0.34, 1.66, 0.2]} rotation={[-0.14, 0, 0]}>
+      <group ref={rifleRef} position={[0.3, 1.66, 0.2]} rotation={[-0.14, 0, 0]}>
         {/* Stock and pistol grip: the thick rear is what separates a rifle from a staff. */}
         <mesh position={[0, -0.04, -0.58]}>
           <boxGeometry args={[0.13, 0.26, 0.56]} />
           <meshBasicMaterial color="#2c3d40" toneMapped={false} />
         </mesh>
-        <mesh position={[0, -0.18, -0.14]} rotation={[0.3, 0, 0]}>
-          <boxGeometry args={[0.07, 0.2, 0.08]} />
-          <meshBasicMaterial color="#2c3d40" toneMapped={false} />
-        </mesh>
+        {!low && (
+          <mesh position={[0, -0.18, -0.14]} rotation={[0.3, 0, 0]}>
+            <boxGeometry args={[0.07, 0.2, 0.08]} />
+            <meshBasicMaterial color="#2c3d40" toneMapped={false} />
+          </mesh>
+        )}
         <mesh position={[0, 0, 0]}>
           <boxGeometry args={[0.14, 0.2, 0.62]} />
           <meshBasicMaterial color="#7f9498" toneMapped={false} />
@@ -292,23 +296,29 @@ function MersenneArchitecture({ accent, secondary, quality }: {
           <cylinderGeometry args={[0.085, 0.085, 0.62, radial]} />
           <meshBasicMaterial color="#9fb3b6" toneMapped={false} />
         </mesh>
-        <mesh position={[0, 0.2, 0.38]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.125, 0.085, 0.14, radial]} />
-          <meshBasicMaterial color="#9fb3b6" toneMapped={false} />
-        </mesh>
-        <mesh position={[0, 0.2, 0.455]}>
+        {!low && (
+          <mesh position={[0, 0.2, 0.38]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.125, 0.085, 0.14, radial]} />
+            <meshBasicMaterial color="#9fb3b6" toneMapped={false} />
+          </mesh>
+        )}
+        <mesh position={[0, 0.2, low ? 0.315 : 0.455]}>
           <circleGeometry args={[0.105, radial]} />
           <meshBasicMaterial color={secondary} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
-        <mesh position={[0, 0.2, -0.315]}>
-          <circleGeometry args={[0.07, radial]} />
-          <meshBasicMaterial color={secondary} side={THREE.DoubleSide} toneMapped={false} />
-        </mesh>
+        {!low && (
+          <mesh position={[0, 0.2, -0.315]}>
+            <circleGeometry args={[0.07, radial]} />
+            <meshBasicMaterial color={secondary} side={THREE.DoubleSide} toneMapped={false} />
+          </mesh>
+        )}
         {/* Glowing handguard block: the hand that holds the rifle. */}
-        <mesh position={[0, -0.04, 0.62]}>
-          <boxGeometry args={[0.1, 0.1, 0.22]} />
-          <meshBasicMaterial color={accent} toneMapped={false} />
-        </mesh>
+        {!low && (
+          <mesh position={[0, -0.04, 0.62]}>
+            <boxGeometry args={[0.1, 0.1, 0.22]} />
+            <meshBasicMaterial color={accent} toneMapped={false} />
+          </mesh>
+        )}
       </group>
 
       {/* Tall spine antenna: reads as lean and vertical against the horizontal rifle. */}
@@ -321,7 +331,7 @@ function MersenneArchitecture({ accent, secondary, quality }: {
           <octahedronGeometry args={[1, 0]} />
           <meshBasicMaterial color={secondary} toneMapped={false} />
         </mesh>
-        {[0.55, 0.95, 1.3].map((y) => (
+        {!low && [0.55, 0.95, 1.3].map((y) => (
           <mesh key={y} position={[0, y, 0]}>
             <boxGeometry args={[0.1, 0.022, 0.05]} />
             <meshBasicMaterial color={accent} toneMapped={false} />
@@ -332,7 +342,7 @@ function MersenneArchitecture({ accent, secondary, quality }: {
       {/* Single monocle lens instead of a wide visor. */}
       <group position={[0.1, 2.2, 0.27]}>
         <mesh>
-          <torusGeometry args={[0.085, 0.02, 5, quality === 'low' ? 10 : 16]} />
+          <torusGeometry args={[0.085, 0.02, 5, low ? 10 : 16]} />
           <meshBasicMaterial color={accent} toneMapped={false} />
         </mesh>
         <mesh position={[0, 0, 0.01]}>
@@ -344,7 +354,7 @@ function MersenneArchitecture({ accent, secondary, quality }: {
   )
 }
 
-function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef }: {
+function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef, rifleRef }: {
   readonly heroId: HeroId
   readonly accent: string
   readonly secondary: string
@@ -353,6 +363,7 @@ function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, ech
   readonly echoARef: React.RefObject<THREE.Group>
   readonly echoBRef: React.RefObject<THREE.Group>
   readonly glitchRef: React.RefObject<THREE.Group>
+  readonly rifleRef: React.RefObject<THREE.Group>
 }): JSX.Element {
   switch (heroId) {
     case 'luma-crivo':
@@ -362,7 +373,7 @@ function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, ech
     case 'teo-gemeos':
       return <TwinsArchitecture accent={accent} secondary={secondary} echoARef={echoARef} echoBRef={echoBRef} />
     case 'iris-mersenne':
-      return <MersenneArchitecture accent={accent} secondary={secondary} quality={quality} />
+      return <MersenneArchitecture accent={accent} secondary={secondary} quality={quality} rifleRef={rifleRef} />
     case 'yara-diffie':
       return <DiffieArchitecture accent={accent} secondary={secondary} quality={quality} glitchRef={glitchRef} />
     default:
@@ -388,6 +399,7 @@ export default function Nucleus257CombatantAvatar({
   const echoA = useRef<THREE.Group>(null)
   const echoB = useRef<THREE.Group>(null)
   const glitch = useRef<THREE.Group>(null)
+  const rifle = useRef<THREE.Group>(null)
   const health = useRef<THREE.Mesh>(null)
   const shield = useRef<THREE.Mesh>(null)
   const aura = useRef<THREE.MeshStandardMaterial>(null)
@@ -428,6 +440,11 @@ export default function Nucleus257CombatantAvatar({
       glitch.current.position.x = reducedMotion ? 0 : Math.sin(step * 5.71) * 0.045
       glitch.current.position.y = reducedMotion ? 0 : Math.cos(step * 8.13) * 0.025
       glitch.current.rotation.y = reducedMotion ? 0 : Math.sin(step * 3.17) * 0.025
+    }
+    if (rifle.current) {
+      const kick = reducedMotion ? 0 : castKick
+      rifle.current.position.z = 0.2 - kick * 0.12
+      rifle.current.rotation.x = -0.14 - kick * 0.07
     }
     if (health.current) {
       const ratio = Math.max(0.001, current.health / current.maxHealth)
@@ -484,6 +501,7 @@ export default function Nucleus257CombatantAvatar({
           echoARef={echoA}
           echoBRef={echoB}
           glitchRef={glitch}
+          rifleRef={rifle}
         />
 
         <mesh position={[0, 1.35, 0]}>

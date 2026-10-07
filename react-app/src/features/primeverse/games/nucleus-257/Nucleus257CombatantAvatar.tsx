@@ -23,7 +23,7 @@ interface CombatantModelStyle {
   readonly shoulder: number
 }
 
-const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze({
+export const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze({
   'luma-crivo': {
     body: '#132b2d',
     bodyDark: '#07191e',
@@ -354,7 +354,7 @@ function MersenneArchitecture({ accent, secondary, quality, rifleRef }: {
   )
 }
 
-function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef, rifleRef }: {
+export function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef, rifleRef }: {
   readonly heroId: HeroId
   readonly accent: string
   readonly secondary: string

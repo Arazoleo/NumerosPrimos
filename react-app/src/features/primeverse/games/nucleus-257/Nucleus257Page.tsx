@@ -122,7 +122,7 @@ export default function Nucleus257Page(): JSX.Element {
             <h1 id="n257-title">NÚCLEO <em>257</em></h1>
           </div>
           <p className="n257-select__intro">
-            Quatro operadores transformam famílias primas e criptografia em estilos de luta totalmente diferentes.
+            {HERO_KIT_LIST.length} operadores transformam famílias primas e criptografia em estilos de luta totalmente diferentes.
             {onlineIntent
               ? ' Entre com até 12 pessoas da sua sala, forme equipes e batalhe com dano validado pelo servidor.'
               : ' Domine os pylons na ordem correta enquanto enfrenta uma equipe de rivais adaptativos.'}
@@ -143,7 +143,7 @@ export default function Nucleus257Page(): JSX.Element {
                   style={heroStyle(candidate)}
                   onClick={() => setSelectedId(candidate.id)}
                 >
-                  <span className="n257-hero-card__index">0{index + 1} / 04</span>
+                  <span className="n257-hero-card__index">0{index + 1} / 0{HERO_KIT_LIST.length}</span>
                   <span className="n257-hero-portrait"><i /></span>
                   <span className="n257-hero-card__copy">
                     <small>{candidate.affinity}</small>

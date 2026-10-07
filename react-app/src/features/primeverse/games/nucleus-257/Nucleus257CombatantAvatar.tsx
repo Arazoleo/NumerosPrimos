@@ -7,6 +7,7 @@ import type { QualityLevel } from '../../graphics/useQualitySettings'
 import type { NucleusTeamId } from '../primeverse-online/shared/protocol'
 import { isStatusActive } from './arenaLogic'
 import { getHeroKit } from './classKits'
+import { assertNever } from './effects/effectCore'
 import { CIPHER_TEAM_COLOR, FRACTURE_TEAM_COLOR } from './Nucleus257Effects'
 import type { CombatantState, HeroId } from './types'
 
@@ -254,6 +255,32 @@ function DiffieArchitecture({ accent, secondary, quality, glitchRef }: {
   )
 }
 
+function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef }: {
+  readonly heroId: HeroId
+  readonly accent: string
+  readonly secondary: string
+  readonly quality: QualityLevel
+  readonly identityRef: React.RefObject<THREE.Group>
+  readonly echoARef: React.RefObject<THREE.Group>
+  readonly echoBRef: React.RefObject<THREE.Group>
+  readonly glitchRef: React.RefObject<THREE.Group>
+}): JSX.Element {
+  switch (heroId) {
+    case 'luma-crivo':
+      return <group ref={identityRef}><CrivoArchitecture accent={accent} secondary={secondary} quality={quality} /></group>
+    case 'raul-rsa':
+      return <group ref={identityRef}><RsaArchitecture accent={accent} secondary={secondary} quality={quality} /></group>
+    case 'teo-gemeos':
+      return <TwinsArchitecture accent={accent} secondary={secondary} echoARef={echoARef} echoBRef={echoBRef} />
+    // iris ainda usa arquitetura da Yara
+    case 'iris-mersenne':
+    case 'yara-diffie':
+      return <DiffieArchitecture accent={accent} secondary={secondary} quality={quality} glitchRef={glitchRef} />
+    default:
+      return assertNever(heroId)
+  }
+}
+
 export default function Nucleus257CombatantAvatar({
   id,
   heroId,
@@ -359,15 +386,16 @@ export default function Nucleus257CombatantAvatar({
           </group>
         ))}
 
-        {heroId === 'luma-crivo' ? (
-          <group ref={identity}><CrivoArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} /></group>
-        ) : heroId === 'raul-rsa' ? (
-          <group ref={identity}><RsaArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} /></group>
-        ) : heroId === 'teo-gemeos' ? (
-          <TwinsArchitecture accent={kit.accent} secondary={style.secondary} echoARef={echoA} echoBRef={echoB} />
-        ) : (
-          <DiffieArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} glitchRef={glitch} />
-        )}
+        <HeroArchitecture
+          heroId={heroId}
+          accent={kit.accent}
+          secondary={style.secondary}
+          quality={quality}
+          identityRef={identity}
+          echoARef={echoA}
+          echoBRef={echoB}
+          glitchRef={glitch}
+        />
 
         <mesh position={[0, 1.35, 0]}>
           <sphereGeometry args={[heroId === 'raul-rsa' ? 0.82 : 0.74, 14, 9]} />

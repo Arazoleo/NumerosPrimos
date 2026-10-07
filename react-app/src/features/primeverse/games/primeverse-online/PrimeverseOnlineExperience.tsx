@@ -17,6 +17,7 @@ import {
   type PrimeverseOnlineClient,
 } from './network/PrimeverseOnlineClient'
 import OnlineHud from './OnlineHud'
+import { primeverseOnlineProgress } from './progressionAdapter'
 import PrimeverseOnlineScene from './scene/PrimeverseOnlineScene'
 import { usePrimeverseSession } from './session/PrimeverseSessionProvider'
 import { type PortalId, type RealmId } from './shared/realms'
@@ -128,6 +129,7 @@ function PrimeverseOnlineExperienceConnected({
 
   const handleSecret = useCallback((id: string) => {
     const result = discover(id)
+    if (result.outcome === 'new' || result.outcome === 'completed') primeverseOnlineProgress.recordSecret(id)
     showToast(describeDiscovery(result))
     if (result.outcome === 'completed') {
       setDiscoveryCelebration(true)
@@ -358,6 +360,19 @@ function PrimeverseOnlineExperienceConnected({
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [debug])
+
+  useEffect(() => {
+    if (!sequence || snapshot.playerId === null || sequence.votesByPlayer[snapshot.playerId] === undefined) return
+    primeverseOnlineProgress.recordVote(sequence.round)
+    if (sequence.phase === 'revealed') {
+      primeverseOnlineProgress.recordSequenceRound({
+        round: sequence.round,
+        success: sequence.success === true,
+        playerId: snapshot.playerId,
+        votesByPlayer: sequence.votesByPlayer,
+      })
+    }
+  }, [sequence, snapshot.playerId])
 
   useEffect(() => {
     if (!showNexusWorldEvent) return

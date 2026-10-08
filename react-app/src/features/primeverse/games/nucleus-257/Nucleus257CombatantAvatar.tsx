@@ -7,6 +7,7 @@ import type { QualityLevel } from '../../graphics/useQualitySettings'
 import type { NucleusTeamId } from '../primeverse-online/shared/protocol'
 import { isStatusActive } from './arenaLogic'
 import { getHeroKit } from './classKits'
+import { assertNever } from './effects/effectCore'
 import { CIPHER_TEAM_COLOR, FRACTURE_TEAM_COLOR } from './Nucleus257Effects'
 import type { CombatantState, HeroId } from './types'
 
@@ -22,7 +23,7 @@ interface CombatantModelStyle {
   readonly shoulder: number
 }
 
-const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze({
+export const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze({
   'luma-crivo': {
     body: '#132b2d',
     bodyDark: '#07191e',
@@ -63,10 +64,10 @@ const MODEL_STYLE: Readonly<Record<HeroId, CombatantModelStyle>> = Object.freeze
     body: '#12291f',
     bodyDark: '#061410',
     secondary: '#7dff8f',
-    torsoRadius: 0.31,
-    torsoLength: 0.82,
-    headRadius: 0.29,
-    shoulder: 0.4,
+    torsoRadius: 0.26,
+    torsoLength: 0.92,
+    headRadius: 0.27,
+    shoulder: 0.35,
   },
 })
 
@@ -254,6 +255,132 @@ function DiffieArchitecture({ accent, secondary, quality, glitchRef }: {
   )
 }
 
+function MersenneArchitecture({ accent, secondary, quality, rifleRef }: {
+  readonly accent: string
+  readonly secondary: string
+  readonly quality: QualityLevel
+  readonly rifleRef: React.RefObject<THREE.Group>
+}): JSX.Element {
+  const low = quality === 'low'
+  const radial = low ? 6 : 10
+  return (
+    <group name="mersenne-architecture">
+      {/* Long rifle over the right shoulder, muzzle raised: the longest element of any operator. */}
+      <group ref={rifleRef} position={[0.3, 1.66, 0.2]} rotation={[-0.14, 0, 0]}>
+        {/* Stock and pistol grip: the thick rear is what separates a rifle from a staff. */}
+        <mesh position={[0, -0.04, -0.58]}>
+          <boxGeometry args={[0.13, 0.26, 0.56]} />
+          <meshBasicMaterial color="#2c3d40" toneMapped={false} />
+        </mesh>
+        {!low && (
+          <mesh position={[0, -0.18, -0.14]} rotation={[0.3, 0, 0]}>
+            <boxGeometry args={[0.07, 0.2, 0.08]} />
+            <meshBasicMaterial color="#2c3d40" toneMapped={false} />
+          </mesh>
+        )}
+        <mesh position={[0, 0, 0]}>
+          <boxGeometry args={[0.14, 0.2, 0.62]} />
+          <meshBasicMaterial color="#7f9498" toneMapped={false} />
+        </mesh>
+        {/* Barrel tapers toward the muzzle (top of the cylinder is the front after rotation). */}
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0.88]}>
+          <cylinderGeometry args={[0.028, 0.055, 1.14, radial]} />
+          <meshBasicMaterial color="#5f7478" toneMapped={false} />
+        </mesh>
+        <mesh position={[0, 0.01, 1.5]}>
+          <boxGeometry args={[0.09, 0.09, 0.16]} />
+          <meshBasicMaterial color={secondary} toneMapped={false} />
+        </mesh>
+        {/* Oversized scope on top: the clearest "sniper" cue at distance. */}
+        <mesh position={[0, 0.2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.085, 0.085, 0.62, radial]} />
+          <meshBasicMaterial color="#9fb3b6" toneMapped={false} />
+        </mesh>
+        {!low && (
+          <mesh position={[0, 0.2, 0.38]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.125, 0.085, 0.14, radial]} />
+            <meshBasicMaterial color="#9fb3b6" toneMapped={false} />
+          </mesh>
+        )}
+        <mesh position={[0, 0.2, low ? 0.315 : 0.455]}>
+          <circleGeometry args={[0.105, radial]} />
+          <meshBasicMaterial color={secondary} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+        {!low && (
+          <mesh position={[0, 0.2, -0.315]}>
+            <circleGeometry args={[0.07, radial]} />
+            <meshBasicMaterial color={secondary} side={THREE.DoubleSide} toneMapped={false} />
+          </mesh>
+        )}
+        {/* Glowing handguard block: the hand that holds the rifle. */}
+        {!low && (
+          <mesh position={[0, -0.04, 0.62]}>
+            <boxGeometry args={[0.1, 0.1, 0.22]} />
+            <meshBasicMaterial color={accent} toneMapped={false} />
+          </mesh>
+        )}
+      </group>
+
+      {/* Tall spine antenna: reads as lean and vertical against the horizontal rifle. */}
+      <group position={[0, 1.2, -0.34]} rotation={[-0.12, 0, 0]}>
+        <mesh position={[0, 0.8, 0]}>
+          <boxGeometry args={[0.03, 1.6, 0.03]} />
+          <meshBasicMaterial color="#163326" toneMapped={false} />
+        </mesh>
+        <mesh position={[0, 1.66, 0]} scale={[0.07, 0.15, 0.07]}>
+          <octahedronGeometry args={[1, 0]} />
+          <meshBasicMaterial color={secondary} toneMapped={false} />
+        </mesh>
+        {!low && [0.55, 0.95, 1.3].map((y) => (
+          <mesh key={y} position={[0, y, 0]}>
+            <boxGeometry args={[0.1, 0.022, 0.05]} />
+            <meshBasicMaterial color={accent} toneMapped={false} />
+          </mesh>
+        ))}
+      </group>
+
+      {/* Single monocle lens instead of a wide visor. */}
+      <group position={[0.1, 2.2, 0.27]}>
+        <mesh>
+          <torusGeometry args={[0.085, 0.02, 5, low ? 10 : 16]} />
+          <meshBasicMaterial color={accent} toneMapped={false} />
+        </mesh>
+        <mesh position={[0, 0, 0.01]}>
+          <sphereGeometry args={[0.045, 6, 5]} />
+          <meshBasicMaterial color={secondary} toneMapped={false} />
+        </mesh>
+      </group>
+    </group>
+  )
+}
+
+export function HeroArchitecture({ heroId, accent, secondary, quality, identityRef, echoARef, echoBRef, glitchRef, rifleRef }: {
+  readonly heroId: HeroId
+  readonly accent: string
+  readonly secondary: string
+  readonly quality: QualityLevel
+  readonly identityRef: React.RefObject<THREE.Group>
+  readonly echoARef: React.RefObject<THREE.Group>
+  readonly echoBRef: React.RefObject<THREE.Group>
+  readonly glitchRef: React.RefObject<THREE.Group>
+  readonly rifleRef: React.RefObject<THREE.Group>
+}): JSX.Element {
+  switch (heroId) {
+    case 'luma-crivo':
+      return <group ref={identityRef}><CrivoArchitecture accent={accent} secondary={secondary} quality={quality} /></group>
+    case 'raul-rsa':
+      return <group ref={identityRef}><RsaArchitecture accent={accent} secondary={secondary} quality={quality} /></group>
+    case 'teo-gemeos':
+      return <TwinsArchitecture accent={accent} secondary={secondary} echoARef={echoARef} echoBRef={echoBRef} />
+    case 'iris-mersenne':
+      return <MersenneArchitecture accent={accent} secondary={secondary} quality={quality} rifleRef={rifleRef} />
+    case 'yara-diffie':
+      return <DiffieArchitecture accent={accent} secondary={secondary} quality={quality} glitchRef={glitchRef} />
+    default:
+      return assertNever(heroId)
+  }
+}
+
 export default function Nucleus257CombatantAvatar({
   id,
   heroId,
@@ -272,6 +399,7 @@ export default function Nucleus257CombatantAvatar({
   const echoA = useRef<THREE.Group>(null)
   const echoB = useRef<THREE.Group>(null)
   const glitch = useRef<THREE.Group>(null)
+  const rifle = useRef<THREE.Group>(null)
   const health = useRef<THREE.Mesh>(null)
   const shield = useRef<THREE.Mesh>(null)
   const aura = useRef<THREE.MeshStandardMaterial>(null)
@@ -313,6 +441,11 @@ export default function Nucleus257CombatantAvatar({
       glitch.current.position.y = reducedMotion ? 0 : Math.cos(step * 8.13) * 0.025
       glitch.current.rotation.y = reducedMotion ? 0 : Math.sin(step * 3.17) * 0.025
     }
+    if (rifle.current) {
+      const kick = reducedMotion ? 0 : castKick
+      rifle.current.position.z = 0.2 - kick * 0.12
+      rifle.current.rotation.x = -0.14 - kick * 0.07
+    }
     if (health.current) {
       const ratio = Math.max(0.001, current.health / current.maxHealth)
       health.current.scale.x = ratio
@@ -343,7 +476,7 @@ export default function Nucleus257CombatantAvatar({
           <meshStandardMaterial color={style.bodyDark} emissive={kit.accent} emissiveIntensity={0.13} metalness={0.76} roughness={0.25} />
         </mesh>
         <mesh position={[0, 2.17, style.headRadius * 0.93]}>
-          <boxGeometry args={[heroId === 'yara-diffie' ? 0.36 : heroId === 'raul-rsa' ? 0.54 : 0.46, 0.075, 0.035]} />
+          <boxGeometry args={[heroId === 'iris-mersenne' ? 0.2 : heroId === 'yara-diffie' ? 0.36 : heroId === 'raul-rsa' ? 0.54 : 0.46, 0.075, 0.035]} />
           <meshBasicMaterial color={teamColor} toneMapped={false} />
         </mesh>
         {[-1, 1].map((side) => (
@@ -359,15 +492,17 @@ export default function Nucleus257CombatantAvatar({
           </group>
         ))}
 
-        {heroId === 'luma-crivo' ? (
-          <group ref={identity}><CrivoArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} /></group>
-        ) : heroId === 'raul-rsa' ? (
-          <group ref={identity}><RsaArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} /></group>
-        ) : heroId === 'teo-gemeos' ? (
-          <TwinsArchitecture accent={kit.accent} secondary={style.secondary} echoARef={echoA} echoBRef={echoB} />
-        ) : (
-          <DiffieArchitecture accent={kit.accent} secondary={style.secondary} quality={quality} glitchRef={glitch} />
-        )}
+        <HeroArchitecture
+          heroId={heroId}
+          accent={kit.accent}
+          secondary={style.secondary}
+          quality={quality}
+          identityRef={identity}
+          echoARef={echoA}
+          echoBRef={echoB}
+          glitchRef={glitch}
+          rifleRef={rifle}
+        />
 
         <mesh position={[0, 1.35, 0]}>
           <sphereGeometry args={[heroId === 'raul-rsa' ? 0.82 : 0.74, 14, 9]} />

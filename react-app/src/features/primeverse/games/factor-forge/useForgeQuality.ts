@@ -64,7 +64,7 @@ export const QUALITY_SETTINGS: Record<
     shadows: boolean
   }
 > = {
-  low: { dpr: [0.75, 1], stars: 450, particles: 8, shadows: false },
+  low: { dpr: [1, 1.5], stars: 450, particles: 8, shadows: false },
   medium: { dpr: [1, 1.5], stars: 850, particles: 14, shadows: true },
   high: { dpr: [1, 2], stars: 1_350, particles: 24, shadows: true },
 }

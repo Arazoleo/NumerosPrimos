@@ -857,6 +857,19 @@
 }
 
 @media (max-width: 680px) {
+  .factor-forge button,
+  .factor-forge a,
+  .factor-forge input,
+  .factor-forge select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .factor-forge[data-phase='playing'] .factor-forge__canvas {
+    bottom: calc(43svh + 10px);
+    top: 118px;
+  }
+
   .factor-forge__modal-wrap {
     align-items: flex-end;
     padding: 10px;

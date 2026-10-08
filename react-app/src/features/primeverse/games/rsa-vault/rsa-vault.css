@@ -26,7 +26,7 @@
 .rsa-vault *,
 .rsa-vault *::before,
 .rsa-vault *::after { box-sizing: border-box; }
-.rsa-vault section { padding: 0; }
+.rsa-vault :where(section:not(.game-intro):not(.rsa-tutorial__panel)) { padding: 0; }
 .rsa-vault button,
 .rsa-vault input,
 .rsa-vault select { font: inherit; }
@@ -39,6 +39,47 @@
 .rsa-vault select,
 .rsa-vault a { min-width: 44px; min-height: 44px; }
 .rsa-vault .game-intro__back { display: inline-flex; align-items: center; }
+.rsa-vault .game-intro__action {
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--intro-accent) 54%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--intro-accent) 12%, transparent), rgba(255, 198, 90, .035));
+  box-shadow: inset 0 0 18px rgba(255, 198, 90, .045), 0 8px 28px rgba(255, 198, 90, .06);
+  color: #fff5df;
+  font: 700 10px/1 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.rsa-vault .game-intro__action i {
+  position: relative;
+  width: 20px;
+  background: var(--intro-accent);
+  transition: width .2s ease;
+}
+.rsa-vault .game-intro__action i::after {
+  position: absolute;
+  top: -3px;
+  right: 0;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--intro-accent);
+  border-right: 1px solid var(--intro-accent);
+  content: '';
+  transform: rotate(45deg);
+}
+.rsa-vault .game-intro__action:hover {
+  transform: translateY(-2px);
+  border-color: var(--intro-accent);
+  background: color-mix(in srgb, var(--intro-accent) 16%, rgba(8, 12, 14, .92));
+  box-shadow: inset 0 0 22px rgba(255, 198, 90, .08), 0 12px 34px rgba(255, 198, 90, .12);
+}
+.rsa-vault .game-intro__action:hover i,
+.rsa-vault .game-intro__action:focus-visible i { width: 28px; }
+.rsa-vault .game-intro__action:focus-visible { outline: 2px solid var(--intro-accent); outline-offset: 4px; }
+.rsa-vault .game-intro__action:active { transform: translateY(0); }
 
 .rsa-vault__canvas,
 .rsa-vault__canvas > div,
@@ -282,6 +323,7 @@
   .rsa-tutorial { place-items: end center; padding: 14px; }
   .rsa-tutorial[data-position="left"] { place-items: center center; }
   .rsa-tutorial[data-position="left"] .rsa-tutorial__panel { transform: translateY(28px); }
+  .rsa-tutorial[data-position="left"][data-step="6"] .rsa-tutorial__panel { transform: translateY(52px); }
   .rsa-vault .rsa-tutorial__panel { width: min(520px, 100%); max-height: calc(100dvh - 28px); padding: 20px; }
   .rsa-tutorial[data-position="right"] .rsa-tutorial__panel { transform: translateY(-12px); }
   .rsa-tutorial[data-position="right"][data-step="2"] .rsa-tutorial__panel { transform: translateY(-48px); }

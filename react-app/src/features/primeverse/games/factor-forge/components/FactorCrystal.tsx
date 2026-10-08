@@ -72,7 +72,7 @@ export function FactorCrystal({
       <mesh
         ref={crystalRef}
         castShadow={quality !== 'low'}
-        onClick={(event) => {
+        onPointerDown={(event) => {
           event.stopPropagation()
           onSelect(node.id)
         }}

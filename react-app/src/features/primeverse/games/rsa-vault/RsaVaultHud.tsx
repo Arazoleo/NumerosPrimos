@@ -11,7 +11,12 @@ import {
   RSA_VAULT_COUNT,
 } from './rsaVaultLogic'
 import GameIntro from '../../ui/GameIntro'
-import { getRsaTutorialCopy, type RsaTutorialTarget } from './rsaVaultTutorial'
+import {
+  getRsaTutorialCopy,
+  isRsaTouchDevice,
+  RSA_TOUCH_MEDIA_QUERY,
+  type RsaTutorialTarget,
+} from './rsaVaultTutorial'
 import { useRsaVaultStore } from './rsaVaultStore'
 import type { RsaInputField, RsaStage, RsaVaultChallenge } from './types'
 
@@ -53,13 +58,29 @@ function useMissionClock(): number {
   return (completedAt ?? now) - startedAt
 }
 
-function TutorialOverlay(): JSX.Element | null {
+function useTouchDevice(): boolean {
+  const [isTouchDevice, setIsTouchDevice] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
+
+    const mediaQuery = window.matchMedia(RSA_TOUCH_MEDIA_QUERY)
+    const update = () => setIsTouchDevice(isRsaTouchDevice())
+    update()
+    mediaQuery.addEventListener('change', update)
+    return () => mediaQuery.removeEventListener('change', update)
+  }, [])
+
+  return isTouchDevice
+}
+
+function TutorialOverlay({ isTouchDevice }: { isTouchDevice: boolean }): JSX.Element | null {
   const isActive = useRsaVaultStore((state) => state.isTutorialActive)
   const step = useRsaVaultStore((state) => state.tutorialStep)
   const nextTutorialStep = useRsaVaultStore((state) => state.nextTutorialStep)
   const skipTutorial = useRsaVaultStore((state) => state.skipTutorial)
   const actionRef = useRef<HTMLButtonElement>(null)
-  const copy = getRsaTutorialCopy(step)
+  const copy = getRsaTutorialCopy(step, isTouchDevice)
 
   useEffect(() => {
     if (!isActive) return undefined
@@ -75,6 +96,11 @@ function TutorialOverlay(): JSX.Element | null {
 
   useEffect(() => {
     if (isActive) actionRef.current?.focus()
+  }, [isActive])
+
+  useEffect(() => {
+    if (!isActive) return
+    document.querySelector('.tutorial-highlight')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [isActive, step])
 
   if (!isActive || !copy) return null
@@ -84,6 +110,7 @@ function TutorialOverlay(): JSX.Element | null {
     <div
       className="rsa-tutorial"
       data-position={copy.position}
+      data-step={step}
       role="region"
       aria-labelledby="rsa-tutorial-title"
     >
@@ -100,7 +127,9 @@ function TutorialOverlay(): JSX.Element | null {
             {isLastStep ? 'Começar a jogar' : 'Próximo'}
           </button>
         </div>
-        <small className="rsa-tutorial__hint">Pressione Esc para pular</small>
+        <small className="rsa-tutorial__hint">
+          {isTouchDevice ? 'Toque em "Pular tutorial" para sair' : 'Pressione Esc para pular'}
+        </small>
       </section>
     </div>
   )
@@ -215,6 +244,9 @@ function NumericInput({ id, label, field, value, autoFocus = false, tutorialTarg
         value={value}
         autoFocus={autoFocus && !tutorialTarget}
         aria-disabled={isTutorialTarget || undefined}
+        onPointerDown={(event) => {
+          if (event.pointerType === 'touch') event.currentTarget.focus()
+        }}
         onFocus={() => {
           if (isTutorialTarget) onTutorialTargetClick()
         }}
@@ -523,10 +555,11 @@ function ResultPanel(): JSX.Element | null {
 }
 
 export function RsaVaultHud(props: RsaVaultHudProps): JSX.Element {
+  const isTouchDevice = useTouchDevice()
   const phase = useRsaVaultStore((state) => state.phase)
   const isTutorialActive = useRsaVaultStore((state) => state.isTutorialActive)
   const tutorialStep = useRsaVaultStore((state) => state.tutorialStep)
-  const tutorialCopy = getRsaTutorialCopy(tutorialStep)
+  const tutorialCopy = getRsaTutorialCopy(tutorialStep, isTouchDevice)
   const tutorialTarget = isTutorialActive ? tutorialCopy?.target ?? null : null
   const missionVisible = phase === 'playing' || phase === 'unlocking'
 
@@ -544,7 +577,7 @@ export function RsaVaultHud(props: RsaVaultHudProps): JSX.Element {
       ) : null}
       {phase === 'vault-open' ? <VaultOpenPanel /> : null}
       {phase === 'complete' ? <ResultPanel /> : null}
-      {phase === 'playing' ? <TutorialOverlay /> : null}
+      {phase === 'playing' ? <TutorialOverlay isTouchDevice={isTouchDevice} /> : null}
     </div>
   )
 }

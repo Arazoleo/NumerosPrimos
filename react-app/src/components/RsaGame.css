@@ -149,6 +149,95 @@
   margin-bottom: 24px;
 }
 
+.tutorial-progress {
+  display: flex;
+  width: 100%;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.tutorial-progress-step {
+  height: 4px;
+  flex: 1;
+  border-radius: 99px;
+  background: var(--line);
+}
+
+.tutorial-progress-step.active {
+  background: var(--y-500);
+}
+
+.game-state .tutorial-description {
+  max-width: 380px;
+  margin: 0 0 12px;
+  text-align: left;
+  font-size: 15px;
+}
+
+.tutorial-target {
+  margin-bottom: 16px;
+  padding: 18px 36px;
+}
+
+.tutorial-target .shield-number {
+  font-size: 34px;
+}
+
+.tutorial-time-badge {
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.game-state .tutorial-hint {
+  max-width: 320px;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+
+.game-state .tutorial-feedback {
+  margin: -8px 0 14px;
+  color: #B42318;
+  font-size: 13px;
+  text-align: left;
+}
+
+.tutorial-example {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 380px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--cream);
+  text-align: left;
+}
+
+.tutorial-example strong {
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+}
+
+.tutorial-example span {
+  color: var(--slate);
+  font-size: 13px;
+}
+
+.tutorial-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.tutorial-actions .btn {
+  justify-content: center;
+  padding: 12px 20px;
+}
+
 .shield-icon {
   font-size: 64px;
   line-height: 1;

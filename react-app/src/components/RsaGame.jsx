@@ -27,6 +27,12 @@ const LEVELS = [
   ]
 ]
 
+const TUTORIAL_STEPS = [
+  { n: 15, hint: 'Dica: teste os menores números primos.' },
+  { n: 21, hint: 'Dica: procure um primo que divida 21 sem deixar resto.' },
+  { n: 35, hint: 'Agora tente descobrir os fatores sem uma dica.' }
+]
+
 const TIME_LIMIT = 80
 
 function isPrime(num) {
@@ -39,8 +45,17 @@ function isPrime(num) {
   return true;
 }
 
+function arePrimeFactors(n, pInput, qInput) {
+  const p = Number(pInput)
+  const q = Number(qInput)
+  return Number.isInteger(p) && Number.isInteger(q) && p * q === n && isPrime(p) && isPrime(q)
+}
+
 export default function RsaGame() {
   const [status, setStatus] = useState('idle') // idle, intro, playing, won, lost
+  const [tutorialStep, setTutorialStep] = useState(0)
+  const [tutorialComplete, setTutorialComplete] = useState(false)
+  const [tutorialFeedback, setTutorialFeedback] = useState('')
   const [level, setLevel] = useState(0)
   const [variationIndex, setVariationIndex] = useState(0)
   const [timeLeft, setTimeLeft] = useState(TIME_LIMIT)
@@ -67,7 +82,43 @@ export default function RsaGame() {
   }, [status, timeLeft])
 
   const startIntro = () => {
+    setTutorialStep(0)
+    setTutorialComplete(false)
+    setTutorialFeedback('')
+    setInputP('')
+    setInputQ('')
     setStatus('intro')
+  }
+
+  const handleTutorialCheck = (e) => {
+    e.preventDefault()
+    const current = TUTORIAL_STEPS[tutorialStep]
+
+    if (arePrimeFactors(current.n, inputP, inputQ)) {
+      setTutorialFeedback('')
+      setTutorialComplete(true)
+      return
+    }
+
+    if (!inputP || !inputQ) {
+      setTutorialFeedback('Preencha os dois campos para testar sua resposta.')
+    } else if (!isPrime(Number(inputP)) || !isPrime(Number(inputQ))) {
+      setTutorialFeedback('Cada fator precisa ser um número primo. Tente novamente.')
+    } else {
+      setTutorialFeedback('Esses primos não resultam na chave. Tente outra combinação.')
+    }
+  }
+
+  const advanceTutorial = () => {
+    if (tutorialStep === TUTORIAL_STEPS.length - 1) {
+      startGame()
+      return
+    }
+    setTutorialStep(step => step + 1)
+    setInputP('')
+    setInputQ('')
+    setTutorialComplete(false)
+    setTutorialFeedback('')
   }
 
   const startGame = () => {
@@ -83,11 +134,9 @@ export default function RsaGame() {
     e.preventDefault()
     if (status !== 'playing') return
 
-    const p = parseInt(inputP, 10)
-    const q = parseInt(inputQ, 10)
     const current = LEVELS[level][variationIndex]
 
-    if (!isNaN(p) && !isNaN(q) && p * q === current.n && isPrime(p) && isPrime(q)) {
+    if (arePrimeFactors(current.n, inputP, inputQ)) {
       // Success
       if (level === LEVELS.length - 1) {
         setStatus('won')
@@ -142,10 +191,18 @@ export default function RsaGame() {
           <div className="rsa-game-card">
             
             <div className="rsa-game-header">
-              <div className="level-badge">Nível {level + 1} / {LEVELS.length}</div>
-              <div className={`time-badge ${timeLeft <= 10 && status === 'playing' ? 'danger' : ''}`}>
-                00:{timeLeft.toString().padStart(2, '0')}
+              <div className="level-badge">
+                {status === 'intro'
+                  ? `Tutorial · Etapa ${tutorialStep + 1} / ${TUTORIAL_STEPS.length}`
+                  : `Nível ${level + 1} / ${LEVELS.length}`}
               </div>
+              {status === 'intro' ? (
+                <div className="time-badge tutorial-time-badge">Sem tempo</div>
+              ) : (
+                <div className={`time-badge ${timeLeft <= 10 && status === 'playing' ? 'danger' : ''}`}>
+                  00:{timeLeft.toString().padStart(2, '0')}
+                </div>
+              )}
             </div>
 
             <div className="rsa-game-body">
@@ -154,19 +211,89 @@ export default function RsaGame() {
                   <motion.div key="idle" className="game-state idle" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
                     <div className="shield-icon">🛡️</div>
                     <h3>Pronto para fatorar?</h3>
-                    <button className="btn btn-primary" onClick={startIntro}>Iniciar Invasão</button>
+                    <button className="btn btn-primary" onClick={startIntro}>Iniciar tutorial</button>
                   </motion.div>
                 )}
 
                 {status === 'intro' && (
                   <motion.div key="intro" className="game-state intro" initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} exit={{opacity:0}}>
-                    <h3>Como Funciona</h3>
-                    <p style={{ textAlign: 'left', margin: '0 0 24px 0', fontSize: '15px' }}>
-                      Nós geramos uma <strong>Chave Pública (N)</strong>.<br/><br/>Sua missão é descobrir os dois números primos secretos que, multiplicados, resultam em N.<br/><br/>
-                      Exemplo: Se N = 15, os primos são 3 e 5.<br/><br/>
-                      Você tem {TIME_LIMIT} segundos para quebrar {LEVELS.length} cadeados.
+                    <div
+                      className="tutorial-progress"
+                      role="progressbar"
+                      aria-label="Progresso do tutorial"
+                      aria-valuemin={1}
+                      aria-valuemax={TUTORIAL_STEPS.length}
+                      aria-valuenow={tutorialStep + 1}
+                    >
+                      {TUTORIAL_STEPS.map((step, index) => (
+                        <span
+                          key={step.n}
+                          className={`tutorial-progress-step ${index < tutorialStep || (index === tutorialStep && tutorialComplete) ? 'active' : ''}`}
+                        />
+                      ))}
+                    </div>
+                    <h3>{tutorialComplete ? 'Fatores encontrados!' : 'Forje os fatores'}</h3>
+                    <p className="tutorial-description">
+                      {tutorialComplete
+                        ? 'Correto! Você encontrou dois primos cujo produto é a chave.'
+                        : 'Jogue como no desafio: encontre os dois primos que, multiplicados, formam a chave.'}
                     </p>
-                    <button className="btn btn-primary" onClick={startGame}>Começar Desafio</button>
+                    <div className="target-shield tutorial-target">
+                      <span className="shield-label">CHAVE DE TREINO (N)</span>
+                      <span className="shield-number">{TUTORIAL_STEPS[tutorialStep].n}</span>
+                    </div>
+
+                    {tutorialComplete ? (
+                      <>
+                        <div className="tutorial-example">
+                          <strong>{inputP} × {inputQ} = {TUTORIAL_STEPS[tutorialStep].n}</strong>
+                          <span>Os dois fatores são primos. Etapa concluída!</span>
+                        </div>
+                        <div className="tutorial-actions">
+                          <button className="btn btn-primary" onClick={advanceTutorial}>
+                            {tutorialStep === TUTORIAL_STEPS.length - 1 ? 'Começar desafio' : 'Próxima chave'}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="tutorial-hint">{TUTORIAL_STEPS[tutorialStep].hint}</p>
+                        <form className="factor-form" onSubmit={handleTutorialCheck}>
+                          <div className="inputs-row">
+                            <div className="input-group">
+                              <label htmlFor="tutorial-prime-p">Primo (p)</label>
+                              <input
+                                id="tutorial-prime-p"
+                                type="number"
+                                min="2"
+                                step="1"
+                                value={inputP}
+                                onChange={e => setInputP(e.target.value)}
+                                placeholder="ex: 3"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="multiply-sign">×</div>
+                            <div className="input-group">
+                              <label htmlFor="tutorial-prime-q">Primo (q)</label>
+                              <input
+                                id="tutorial-prime-q"
+                                type="number"
+                                min="2"
+                                step="1"
+                                value={inputQ}
+                                onChange={e => setInputQ(e.target.value)}
+                                placeholder="ex: 5"
+                              />
+                            </div>
+                          </div>
+                          {tutorialFeedback && (
+                            <p className="tutorial-feedback" role="status">{tutorialFeedback}</p>
+                          )}
+                          <button type="submit" className="btn btn-primary btn-block">Testar fatores</button>
+                        </form>
+                      </>
+                    )}
                   </motion.div>
                 )}
 

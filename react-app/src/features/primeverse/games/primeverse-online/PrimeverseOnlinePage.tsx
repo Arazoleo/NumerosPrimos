@@ -11,11 +11,7 @@ import {
   AVATAR_ACCENT_COLORS,
   AVATAR_BODY_COLORS,
   MAX_NICKNAME_LENGTH,
-  CHARACTER_MODELS,
-  ENERGY_TYPES,
   type AvatarAppearance,
-  type CharacterModel,
-  type EnergyType,
   sanitizeNickname,
 } from './shared/protocol'
 import type { SessionIdentity } from './session/sessionStorage'

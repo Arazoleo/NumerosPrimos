@@ -1,0 +1,316 @@
+/**
+ * Energy animation styles for Primeverse Online.
+ * 
+ * Four energy types with distinct visual effects:
+ * - Prime Ring: orbiting rings with prime numbers (2, 3, 5, 7, 11)
+ * - Crypto Matrix: 4x4 grid of pixels that flicker and reveal
+ * - Factor Net: SVG network of connected nodes
+ * - Cipher Lock: rotating geometric rings with a keyhole
+ * 
+ * Each animation has idle (ambient) and active (triggered) states.
+ */
+
+.energy-anim {
+  --energy-color: #5ceee5;
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+/* Prime Ring */
+.energy-anim--prime-ring {
+  animation: energy-pulse 3s ease-in-out infinite;
+}
+
+.prime-ring__orbit {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--energy-color) 35%, transparent);
+  border-radius: 50%;
+  animation: prime-orbit-spin 8s linear infinite;
+}
+
+.prime-ring__orbit--1 {
+  width: 90px;
+  height: 90px;
+}
+
+.prime-ring__orbit--2 {
+  width: 130px;
+  height: 130px;
+  animation-duration: 12s;
+  animation-direction: reverse;
+}
+
+.prime-ring__orbit--3 {
+  width: 170px;
+  height: 170px;
+  animation-duration: 16s;
+}
+
+.prime-ring__prime {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--energy-color);
+  background: color-mix(in srgb, var(--energy-color) 15%, transparent);
+  font: 700 10px/1 'JetBrains Mono', monospace;
+  box-shadow: 0 0 12px var(--energy-color);
+}
+
+.prime-ring__orbit--1 .prime-ring__prime:nth-child(1) {
+  top: -11px;
+  left: 10px;
+}
+
+.prime-ring__orbit--1 .prime-ring__prime:nth-child(2) {
+  bottom: -11px;
+  right: 10px;
+}
+
+.prime-ring__orbit--2 .prime-ring__prime:nth-child(1) {
+  top: 10px;
+  right: -11px;
+}
+
+.prime-ring__orbit--2 .prime-ring__prime:nth-child(2) {
+  bottom: 10px;
+  left: -11px;
+}
+
+.prime-ring__orbit--3 .prime-ring__prime {
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.energy-anim--prime-ring.active .prime-ring__orbit {
+  border-width: 2px;
+  border-color: var(--energy-color);
+  animation-duration: 2s;
+}
+
+.energy-anim--prime-ring.active .prime-ring__prime {
+  animation: prime-pulse 0.6s ease-out;
+}
+
+/* Crypto Matrix */
+.energy-anim--crypto-matrix {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 120px;
+  height: 120px;
+}
+
+.matrix__pixel {
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--energy-color) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--energy-color) 40%, transparent);
+  animation: matrix-flicker 2s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.energy-anim--crypto-matrix.active .matrix__pixel {
+  animation: matrix-reveal 0.8s ease-out forwards;
+}
+
+/* Factor Net */
+.energy-anim--factor-net {
+  width: 140px;
+  height: 140px;
+}
+
+.factor-net__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.factor-net__line {
+  stroke: color-mix(in srgb, var(--energy-color) 40%, transparent);
+  stroke-width: 1;
+  animation: factor-line-pulse 2.5s ease-in-out infinite;
+}
+
+.factor-net__node {
+  fill: var(--energy-color);
+  filter: drop-shadow(0 0 4px var(--energy-color));
+}
+
+.factor-net__node--center {
+  animation: factor-node-pulse 2s ease-in-out infinite;
+}
+
+.energy-anim--factor-net.active .factor-net__line {
+  stroke: var(--energy-color);
+  stroke-width: 2;
+  animation: factor-connect 0.6s ease-out forwards;
+}
+
+.energy-anim--factor-net.active .factor-net__node {
+  animation: factor-expand 0.5s ease-out;
+}
+
+/* Cipher Lock */
+.cipher-lock__ring {
+  position: absolute;
+  border: 2px solid color-mix(in srgb, var(--energy-color) 45%, transparent);
+  border-radius: 50%;
+}
+
+.cipher-lock__ring--1 {
+  width: 100px;
+  height: 100px;
+  border-style: dashed;
+  animation: cipher-rotate 6s linear infinite;
+}
+
+.cipher-lock__ring--2 {
+  width: 140px;
+  height: 140px;
+  animation: cipher-rotate 8s linear infinite reverse;
+}
+
+.cipher-lock__ring--3 {
+  width: 180px;
+  height: 180px;
+  border-style: dashed;
+  animation: cipher-rotate 10s linear infinite;
+}
+
+.cipher-lock__keyhole {
+  position: absolute;
+  font-size: 32px;
+  color: var(--energy-color);
+  filter: drop-shadow(0 0 12px var(--energy-color));
+}
+
+.energy-anim--cipher-lock.active .cipher-lock__ring {
+  border-color: var(--energy-color);
+  border-width: 3px;
+  animation-duration: 1.5s;
+}
+
+.energy-anim--cipher-lock.active .cipher-lock__keyhole {
+  animation: cipher-unlock 1s ease-out;
+}
+
+/* Animations */
+@keyframes prime-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes energy-pulse {
+  0%, 100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes prime-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+    box-shadow: 0 0 24px var(--energy-color);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes matrix-flicker {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes matrix-reveal {
+  0% {
+    background: color-mix(in srgb, var(--energy-color) 20%, transparent);
+  }
+  50% {
+    background: var(--energy-color);
+    border-color: var(--energy-color);
+    box-shadow: 0 0 16px var(--energy-color);
+  }
+  100% {
+    background: color-mix(in srgb, var(--energy-color) 50%, transparent);
+    border-color: var(--energy-color);
+  }
+}
+
+@keyframes factor-line-pulse {
+  0%, 100% {
+    stroke-opacity: 0.3;
+  }
+  50% {
+    stroke-opacity: 0.7;
+  }
+}
+
+@keyframes factor-node-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+@keyframes factor-connect {
+  0% {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes factor-expand {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cipher-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cipher-unlock {
+  0% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5) rotate(90deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(180deg);
+    opacity: 0.8;
+  }
+}

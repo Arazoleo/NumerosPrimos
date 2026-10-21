@@ -1,0 +1,223 @@
+/**
+ * Character Customization — Primeverse Online
+ * 
+ * Estilos para seleção de personagem e energia dentro do entry card.
+ * Mantém a estrutura original da landing page e apenas estende o card direito.
+ */
+
+/* Entry Card: habilita scroll para acomodar novos campos */
+.pvo-entry-card--enhanced {
+  max-height: calc(100dvh - 180px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(101, 239, 255, .3) rgba(3, 8, 18, .2);
+}
+
+.pvo-entry-card--enhanced::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pvo-entry-card--enhanced::-webkit-scrollbar-track {
+  background: rgba(3, 8, 18, .2);
+}
+
+.pvo-entry-card--enhanced::-webkit-scrollbar-thumb {
+  background: rgba(101, 239, 255, .3);
+  border-radius: 3px;
+}
+
+/* Avatar Preview: mostra nome e modelo do personagem escolhido */
+.pvo-avatar-preview__name {
+  position: absolute;
+  right: 17px;
+  bottom: 28px;
+  color: var(--accent);
+  font: 600 7px/1 'JetBrains Mono', monospace;
+  letter-spacing: .15em;
+}
+
+.pvo-avatar-preview__model {
+  position: absolute;
+  right: 17px;
+  bottom: 16px;
+  color: #607287;
+  font: 500 6px/1 'Inter', sans-serif;
+  letter-spacing: .05em;
+}
+
+/* Character Select: 4 botões compactos (Primo, Lúmina, Zeta, Orion) */
+.pvo-char-select {
+  margin: 18px 20px 15px;
+}
+
+.pvo-char-select__label {
+  display: block;
+  margin-bottom: 9px;
+  color: #93a2b4;
+  font: 600 8px/1 'JetBrains Mono', monospace;
+  letter-spacing: .14em;
+}
+
+.pvo-char-select__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.pvo-char-btn {
+  --char-accent: #5FA8FF;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(134, 195, 236, .15);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 5%, transparent), transparent),
+              rgba(3, 8, 18, .4);
+  transition: all .2s;
+}
+
+.pvo-char-btn:hover {
+  border-color: var(--char-accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 10%, transparent), transparent),
+              rgba(3, 8, 18, .6);
+  transform: scale(1.05);
+}
+
+.pvo-char-btn.active {
+  border-color: var(--char-accent);
+  border-width: 2px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 15%, transparent), transparent),
+              rgba(3, 8, 18, .7);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--char-accent) 25%, transparent);
+}
+
+.pvo-char-btn > span {
+  color: var(--char-accent);
+  font: 700 18px/1 'Space Grotesk', sans-serif;
+  filter: drop-shadow(0 0 8px var(--char-accent));
+}
+
+/* Energy Select: 4 botões compactos (Anel, Matriz, Rede, Cifra) */
+.pvo-energy-select {
+  margin: 18px 20px 15px;
+}
+
+.pvo-energy-select__label {
+  display: block;
+  margin-bottom: 9px;
+  color: #93a2b4;
+  font: 600 8px/1 'JetBrains Mono', monospace;
+  letter-spacing: .14em;
+}
+
+.pvo-energy-select__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.pvo-energy-btn {
+  --energy-accent: #5ceee5;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(134, 195, 236, .15);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 5%, transparent), transparent),
+              rgba(3, 8, 18, .4);
+  transition: all .2s;
+}
+
+.pvo-energy-btn:hover {
+  border-color: var(--energy-accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 10%, transparent), transparent),
+              rgba(3, 8, 18, .6);
+  transform: scale(1.05);
+}
+
+.pvo-energy-btn.active {
+  border-color: var(--energy-accent);
+  border-width: 2px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 15%, transparent), transparent),
+              rgba(3, 8, 18, .7);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--energy-accent) 25%, transparent);
+}
+
+.pvo-energy-btn > span {
+  color: var(--energy-accent);
+  font-size: 20px;
+  filter: drop-shadow(0 0 8px var(--energy-accent));
+}
+
+/* Power Info: card educativo mostrando o poder da energia selecionada */
+.pvo-power-info {
+  --energy-accent: #5ceee5;
+  margin: 18px 20px 15px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--energy-accent) 20%, transparent);
+  border-left: 2px solid var(--energy-accent);
+  background: linear-gradient(120deg, 
+              color-mix(in srgb, var(--energy-accent) 6%, transparent), 
+              color-mix(in srgb, var(--energy-accent) 2%, transparent));
+}
+
+.pvo-power-info__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pvo-power-info__icon {
+  font-size: 22px;
+  color: var(--energy-accent);
+  filter: drop-shadow(0 0 10px var(--energy-accent));
+}
+
+.pvo-power-info__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pvo-power-info__header strong {
+  color: #eafaff;
+  font: 700 10px/1 'Space Grotesk', sans-serif;
+  letter-spacing: .02em;
+}
+
+.pvo-power-info__header small {
+  color: var(--energy-accent);
+  font: 600 6px/1 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+}
+
+.pvo-power-info > p {
+  margin: 0 0 9px;
+  color: #adc5d8;
+  font: 500 8px/1.5 'Inter', sans-serif;
+}
+
+.pvo-power-test {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--energy-accent);
+  color: #031019;
+  background: linear-gradient(100deg, var(--energy-accent), color-mix(in srgb, var(--energy-accent) 75%, #fff));
+  font: 700 7px/1 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--energy-accent) 25%, transparent);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.pvo-power-test:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--energy-accent) 35%, transparent);
+}
+
+/* Responsive: botões em 2 colunas em telas pequenas */
+@media (max-width: 768px) {
+  .pvo-char-select__grid,
+  .pvo-energy-select__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

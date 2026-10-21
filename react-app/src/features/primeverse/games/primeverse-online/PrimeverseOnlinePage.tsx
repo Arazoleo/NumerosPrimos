@@ -11,19 +11,30 @@ import {
   AVATAR_ACCENT_COLORS,
   AVATAR_BODY_COLORS,
   MAX_NICKNAME_LENGTH,
+  CHARACTER_MODELS,
+  ENERGY_TYPES,
   type AvatarAppearance,
+  type CharacterModel,
+  type EnergyType,
   sanitizeNickname,
 } from './shared/protocol'
 import type { SessionIdentity } from './session/sessionStorage'
+import { CHARACTERS, ENERGIES, EnergyAnimation, getCharacter, getEnergy } from './customization'
 import './primeverse-online.css'
+import './customization/character-customization.css'
 
 export default function PrimeverseOnlinePage(): JSX.Element {
   useDocumentTitle('Primeverse Online · Mundo compartilhado')
   const { savedIdentity, activeIdentity, startSession, endSession } = usePrimeverseSession()
   const { quality, setQuality, profile } = useQualitySettings()
   const [nickname, setNickname] = useState(savedIdentity.nickname)
-  const [appearance, setAppearance] = useState<AvatarAppearance>(savedIdentity.appearance)
+  const [appearance, setAppearance] = useState<AvatarAppearance>({
+    ...savedIdentity.appearance,
+    characterModel: savedIdentity.appearance.characterModel ?? 'primo',
+    energyType: savedIdentity.appearance.energyType ?? 'prime-ring',
+  })
   const [nicknameError, setNicknameError] = useState<string | null>(null)
+  const [testingPower, setTestingPower] = useState(false)
 
   if (activeIdentity) {
     return (
@@ -47,6 +58,14 @@ export default function PrimeverseOnlinePage(): JSX.Element {
     const identity: SessionIdentity = { nickname: safeNickname.value, appearance }
     setNicknameError(null)
     startSession(identity)
+  }
+
+  const currentCharacter = getCharacter(appearance.characterModel ?? 'primo')
+  const currentEnergy = getEnergy(appearance.energyType ?? 'prime-ring')
+
+  const handleTestPower = () => {
+    setTestingPower(true)
+    setTimeout(() => setTestingPower(false), 2000)
   }
 
   return (
@@ -83,16 +102,20 @@ export default function PrimeverseOnlinePage(): JSX.Element {
           </nav>
         </div>
 
-        <form className="pvo-entry-card" onSubmit={(event) => { event.preventDefault(); enterWorld() }}>
+        <form className="pvo-entry-card pvo-entry-card--enhanced" onSubmit={(event) => { event.preventDefault(); enterWorld() }}>
           <div className="pvo-entry-card__head">
-            <span>IDENTIDADE DO EXPLORADOR</span><b>01 / 01</b>
+            <span>PERSONALIZE SEU EXPLORADOR</span><b>01 / 01</b>
           </div>
+          
+          {/* Preview do personagem */}
           <div className="pvo-avatar-preview" style={{ '--body': appearance.bodyColor, '--accent': appearance.accentColor, '--visor': appearance.visorColor } as React.CSSProperties} aria-hidden="true">
-            <div className="pvo-avatar-preview__orbit"><i /><i /><i /></div>
+            <EnergyAnimation type={appearance.energyType ?? 'prime-ring'} color={appearance.accentColor} active={testingPower} />
             <div className="pvo-avatar-preview__bot"><i className="head" /><i className="visor" /><i className="body" /><i className="core" /><i className="arm left" /><i className="arm right" /><i className="leg left" /><i className="leg right" /></div>
-            <span>{nickname.trim() || 'SEU NOME'}</span>
+            <span className="pvo-avatar-preview__name">{nickname.trim() || 'SEU NOME'}</span>
+            <small className="pvo-avatar-preview__model">{currentCharacter.name}</small>
           </div>
 
+          {/* Nome */}
           <label className="pvo-field">
             <span>CODINOME <b>{Array.from(nickname).length}/{MAX_NICKNAME_LENGTH}</b></span>
             <input
@@ -108,13 +131,87 @@ export default function PrimeverseOnlinePage(): JSX.Element {
             {nicknameError && <small id="pvo-name-error" role="alert">{nicknameError}</small>}
           </label>
 
+          {/* Escolha de Personagem */}
+          <div className="pvo-char-select">
+            <span className="pvo-char-select__label">EXPLORADOR</span>
+            <div className="pvo-char-select__grid">
+              {CHARACTERS.map((char) => (
+                <button
+                  key={char.id}
+                  type="button"
+                  className={`pvo-char-btn ${appearance.characterModel === char.id ? 'active' : ''}`}
+                  style={{ '--char-accent': char.accent } as React.CSSProperties}
+                  onClick={() => setAppearance((current) => ({ ...current, characterModel: char.id }))}
+                  aria-label={char.name}
+                  title={`${char.name} — ${char.theme}`}
+                >
+                  <span>{char.symbol}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Escolha de Energia */}
+          <div className="pvo-energy-select">
+            <span className="pvo-energy-select__label">ENERGIA</span>
+            <div className="pvo-energy-select__grid">
+              {ENERGIES.map((energy) => (
+                <button
+                  key={energy.id}
+                  type="button"
+                  className={`pvo-energy-btn ${appearance.energyType === energy.id ? 'active' : ''}`}
+                  style={{ '--energy-accent': energy.accent } as React.CSSProperties}
+                  onClick={() => setAppearance((current) => ({ ...current, energyType: energy.id, accentColor: energy.accent, visorColor: energy.accent }))}
+                  aria-label={energy.name}
+                  title={`${energy.name} — ${energy.powerName}`}
+                >
+                  <span>{energy.icon}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Info do Poder Atual */}
+          <div className="pvo-power-info" style={{ '--energy-accent': currentEnergy.accent } as React.CSSProperties}>
+            <div className="pvo-power-info__header">
+              <span className="pvo-power-info__icon">{currentEnergy.icon}</span>
+              <div>
+                <strong>{currentEnergy.powerName}</strong>
+                <small>{currentEnergy.concept}</small>
+              </div>
+            </div>
+            <p>{currentEnergy.powerDescription}</p>
+            <button type="button" className="pvo-power-test" onClick={handleTestPower}>
+              <span>TESTAR</span>
+            </button>
+          </div>
+
+          {/* Cores */}
           <fieldset className="pvo-swatches">
             <legend>CORPO</legend>
-            {AVATAR_BODY_COLORS.map((color) => <button key={color} type="button" className={appearance.bodyColor === color ? 'active' : ''} style={{ '--swatch': color } as React.CSSProperties} onClick={() => setAppearance((current) => ({ ...current, bodyColor: color }))} aria-label={`Cor do corpo ${color}`} />)}
+            {AVATAR_BODY_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={appearance.bodyColor === color ? 'active' : ''}
+                style={{ '--swatch': color } as React.CSSProperties}
+                onClick={() => setAppearance((current) => ({ ...current, bodyColor: color }))}
+                aria-label={`Cor do corpo ${color}`}
+              />
+            ))}
           </fieldset>
           <fieldset className="pvo-swatches">
             <legend>ENERGIA</legend>
-            {AVATAR_ACCENT_COLORS.map((color) => <button key={color} type="button" className={appearance.accentColor === color ? 'active' : ''} style={{ '--swatch': color } as React.CSSProperties} onClick={() => setAppearance((current) => ({ ...current, accentColor: color, visorColor: color }))} aria-label={`Cor da energia ${color}`} />)}
+            {AVATAR_ACCENT_COLORS.map((color) => (
+              <button
+                key={color}
+                type="button"
+                className={appearance.accentColor === color ? 'active' : ''}
+                style={{ '--swatch': color } as React.CSSProperties}
+                onClick={() => setAppearance((current) => ({ ...current, accentColor: color, visorColor: color }))}
+                aria-label={`Cor da energia ${color}`}
+              />
+            ))}
           </fieldset>
 
           <button className="pvo-enter" type="submit"><span>ENTRAR NO PRIMEVERSE</span><i>↗</i></button>

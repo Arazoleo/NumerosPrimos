@@ -32,6 +32,26 @@ Abra `http://localhost:5173/jogos/primeverse-online`. O endpoint de diagnóstico
 
 Primeverse Online é um hub social 3D para até 20 exploradores por sala. O navegador simula o jogador local imediatamente e envia snapshots a 15 Hz. O servidor valida e distribui movimento, emotes, interações do Nexus e presença nas expedições; outros avatares são renderizados com um pequeno buffer de interpolação. Não existe chat, autenticação ou inventário.
 
+### Personalização de personagem
+
+Na entrada, o jogador personaliza seu explorador escolhendo:
+
+1. **Modelo de personagem** — quatro exploradores baseados em temas matemáticos:
+   - **Primo** (azul): O Explorador — conceitos de números primos
+   - **Lúmina** (roxo): A Decifradora — códigos e padrões
+   - **Zeta** (verde): O Caçador de Primos — sequências numéricas
+   - **Orion** (dourado): O Guardião da Chave — criptografia e proteção
+
+2. **Tipo de energia** — quatro energias com poderes educativos:
+   - **Anel dos Primos** (ciano): Escudo Primo — anéis orbitando com números primos 2, 3, 5, 7, 11
+   - **Matriz Criptográfica** (roxo): Decifra-Pista — grid de pixels que revela padrões
+   - **Rede de Fatores** (verde): Visão dos Fatores — rede geométrica mostrando decomposição
+   - **Cifra Dourada** (dourado): Chave Secreta — anéis que se encaixam como fechadura
+
+3. **Cores personalizadas** — seis opções de cor para corpo e energia, escolhidas separadamente
+
+Cada energia possui uma animação visual única que pode ser testada antes de entrar. Os poderes são apresentados de forma educativa, explicando seus conceitos matemáticos em linguagem acessível para o público infantil. A personalização preserva a estrutura visual da landing page, estendendo apenas o card de entrada no canto direito.
+
 ### Nexus e expedições da sala
 
 - **Nexus Primo:** reúne presença, avatares, Códice de descobertas e o evento cooperativo da sequência prima.

@@ -875,6 +875,8 @@ function copyAppearance(appearance: AvatarAppearance): AvatarAppearance {
     ...(appearance.visorStyle === undefined ? {} : { visorStyle: appearance.visorStyle }),
     ...(appearance.auraStyle === undefined ? {} : { auraStyle: appearance.auraStyle }),
     ...(appearance.accentStyle === undefined ? {} : { accentStyle: appearance.accentStyle }),
+    ...(appearance.characterModel === undefined ? {} : { characterModel: appearance.characterModel }),
+    ...(appearance.energyType === undefined ? {} : { energyType: appearance.energyType }),
   }
 }
 

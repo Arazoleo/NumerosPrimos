@@ -1,11 +1,24 @@
 /**
  * Character Customization — Primeverse Online
- * 
- * Estilos para seleção de personagem e energia dentro do entry card.
- * Mantém a estrutura original da landing page e apenas estende o card direito.
+ *
+ * Estilos do cartão "Personalize seu explorador" na landing page.
+ * O cartão é dividido em etapas numeradas que seguem sempre o mesmo padrão:
+ *
+ *   ┌ cabeçalho da etapa (.pvo-custom-step__head): número · título
+ *   ├ grade de opções (.pvo-choice-grid / .pvo-choice): ícone + nome
+ *   └ ficha de detalhes (.pvo-detail-card): o que a opção escolhida faz
+ *
+ * Etapas: 01 Codinome · 02 Explorador · 03 Energia · 04 Cores.
+ * A parte final do arquivo estiliza a arte SVG dos personagens (CharacterArt.tsx).
+ *
+ * Os estilos base do cartão (.pvo-entry-card, .pvo-field, .pvo-swatches,
+ * .pvo-avatar-preview e o codinome na prévia) ficam em ../primeverse-online.css;
+ * aqui só os estendemos.
  */
 
-/* Entry Card: habilita scroll para acomodar novos campos */
+/* ───────────────────────── Cartão com rolagem ───────────────────────── */
+
+/* O cartão ganhou mais campos, então rola por dentro em vez de crescer além da tela. */
 .pvo-entry-card--enhanced {
   max-height: calc(100dvh - 180px);
   overflow-y: auto;
@@ -26,198 +39,306 @@
   border-radius: 3px;
 }
 
-/* Avatar Preview: mostra nome e modelo do personagem escolhido */
-.pvo-avatar-preview__name {
-  position: absolute;
-  right: 17px;
-  bottom: 28px;
-  color: var(--accent);
-  font: 600 7px/1 'JetBrains Mono', monospace;
-  letter-spacing: .15em;
+/* ───────────────────────── Etapas (01–04) ───────────────────────── */
+
+/* Cada etapa tem o mesmo recuo e é separada da anterior por uma linha fina. */
+.pvo-custom-step {
+  padding: 18px 20px;
 }
 
-.pvo-avatar-preview__model {
-  position: absolute;
-  right: 17px;
-  bottom: 16px;
-  color: #607287;
-  font: 500 6px/1 'Inter', sans-serif;
-  letter-spacing: .05em;
+.pvo-custom-step + .pvo-custom-step {
+  border-top: 1px solid var(--pvo-line);
 }
 
-/* Character Select: 4 botões compactos (Primo, Lúmina, Zeta, Orion) */
-.pvo-char-select {
-  margin: 18px 20px 15px;
-}
-
-.pvo-char-select__label {
-  display: block;
-  margin-bottom: 9px;
-  color: #93a2b4;
-  font: 600 8px/1 'JetBrains Mono', monospace;
-  letter-spacing: .14em;
-}
-
-.pvo-char-select__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-}
-
-.pvo-char-btn {
-  --char-accent: #5FA8FF;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(134, 195, 236, .15);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 5%, transparent), transparent),
-              rgba(3, 8, 18, .4);
-  transition: all .2s;
-}
-
-.pvo-char-btn:hover {
-  border-color: var(--char-accent);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 10%, transparent), transparent),
-              rgba(3, 8, 18, .6);
-  transform: scale(1.05);
-}
-
-.pvo-char-btn.active {
-  border-color: var(--char-accent);
-  border-width: 2px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--char-accent) 15%, transparent), transparent),
-              rgba(3, 8, 18, .7);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--char-accent) 25%, transparent);
-}
-
-.pvo-char-btn > span {
-  color: var(--char-accent);
-  font: 700 18px/1 'Space Grotesk', sans-serif;
-  filter: drop-shadow(0 0 8px var(--char-accent));
-}
-
-/* Energy Select: 4 botões compactos (Anel, Matriz, Rede, Cifra) */
-.pvo-energy-select {
-  margin: 18px 20px 15px;
-}
-
-.pvo-energy-select__label {
-  display: block;
-  margin-bottom: 9px;
-  color: #93a2b4;
-  font: 600 8px/1 'JetBrains Mono', monospace;
-  letter-spacing: .14em;
-}
-
-.pvo-energy-select__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-}
-
-.pvo-energy-btn {
-  --energy-accent: #5ceee5;
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(134, 195, 236, .15);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 5%, transparent), transparent),
-              rgba(3, 8, 18, .4);
-  transition: all .2s;
-}
-
-.pvo-energy-btn:hover {
-  border-color: var(--energy-accent);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 10%, transparent), transparent),
-              rgba(3, 8, 18, .6);
-  transform: scale(1.05);
-}
-
-.pvo-energy-btn.active {
-  border-color: var(--energy-accent);
-  border-width: 2px;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--energy-accent) 15%, transparent), transparent),
-              rgba(3, 8, 18, .7);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--energy-accent) 25%, transparent);
-}
-
-.pvo-energy-btn > span {
-  color: var(--energy-accent);
-  font-size: 20px;
-  filter: drop-shadow(0 0 8px var(--energy-accent));
-}
-
-/* Power Info: card educativo mostrando o poder da energia selecionada */
-.pvo-power-info {
-  --energy-accent: #5ceee5;
-  margin: 18px 20px 15px;
-  padding: 12px;
-  border: 1px solid color-mix(in srgb, var(--energy-accent) 20%, transparent);
-  border-left: 2px solid var(--energy-accent);
-  background: linear-gradient(120deg, 
-              color-mix(in srgb, var(--energy-accent) 6%, transparent), 
-              color-mix(in srgb, var(--energy-accent) 2%, transparent));
-}
-
-.pvo-power-info__header {
+/* Cabeçalho padrão: [número] TÍTULO, com altura fixa e tudo centralizado na vertical. */
+.pvo-custom-step__head {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  height: 24px;
+  margin-bottom: 12px;
+  color: #c9d8e6;
+  font: 600 11px/1 'JetBrains Mono', monospace;
+  letter-spacing: .14em;
 }
 
-.pvo-power-info__icon {
-  font-size: 22px;
-  color: var(--energy-accent);
-  filter: drop-shadow(0 0 10px var(--energy-accent));
+.pvo-custom-step__head > b {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  border: 1px solid rgba(101, 239, 255, .35);
+  color: var(--pvo-cyan);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .04em;
 }
 
-.pvo-power-info__header > div {
+.pvo-custom-step__head > label {
+  cursor: pointer;
+}
+
+/* Contador de caracteres do codinome, alinhado à direita. */
+.pvo-custom-step__head > small {
+  margin-left: auto;
+  color: #7d8fa4;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+/* Os campos herdados da página não precisam das margens próprias dentro de uma etapa. */
+.pvo-custom-step .pvo-field {
+  margin: 0;
+}
+
+.pvo-custom-step .pvo-swatches {
+  margin: 0;
+}
+
+.pvo-custom-step .pvo-swatches + .pvo-swatches {
+  margin-top: 8px;
+}
+
+/* ───────────────────────── Grade de opções ───────────────────────── */
+
+/* Usada tanto para personagens quanto para energias: 4 opções lado a lado. */
+.pvo-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+/* Botão de opção: ilustração em cima, nome embaixo. --choice-accent vem de cada item. */
+.pvo-choice {
+  --choice-accent: #5ceee5;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 8px 4px 7px;
+  border: 1px solid rgba(134, 195, 236, .15);
+  color: #8fa0b6;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--choice-accent) 5%, transparent), transparent),
+              rgba(3, 8, 18, .4);
+  transition: border-color .2s, background .2s, box-shadow .2s, transform .2s;
 }
 
-.pvo-power-info__header strong {
+.pvo-choice:hover {
+  border-color: color-mix(in srgb, var(--choice-accent) 70%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--choice-accent) 10%, transparent), transparent),
+              rgba(3, 8, 18, .6);
+  transform: translateY(-1px);
+}
+
+.pvo-choice:focus-visible {
+  outline: 2px solid var(--choice-accent);
+  outline-offset: 2px;
+}
+
+/* Opção escolhida: borda e nome na cor da opção, com um brilho suave. */
+.pvo-choice.active {
+  border-color: var(--choice-accent);
+  color: var(--choice-accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--choice-accent) 15%, transparent), transparent),
+              rgba(3, 8, 18, .7);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--choice-accent) 25%, transparent),
+              inset 0 0 0 1px var(--choice-accent);
+}
+
+/* Área quadrada fixa para o ícone, para que todas as opções tenham a mesma altura. */
+.pvo-choice__art {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+/* Variante para energias, que usam um símbolo de texto em vez de SVG. */
+.pvo-choice__art--glyph {
+  color: var(--choice-accent);
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px var(--choice-accent));
+}
+
+.pvo-choice__name {
+  max-width: 100%;
+  font: 600 7px/1.25 'JetBrains Mono', monospace;
+  letter-spacing: .06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Ícone SVG dos personagens (CharacterIcon) ocupa toda a área de arte. */
+.pvo-char-icon {
+  width: 100%;
+  height: 100%;
+  color: var(--char-accent);
+}
+
+/* ───────────────────────── Ficha de detalhes ───────────────────────── */
+
+/* Explica a opção escolhida; a borda esquerda usa a cor do personagem/energia. */
+.pvo-detail-card {
+  --detail-accent: #5ceee5;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--detail-accent) 20%, transparent);
+  border-left: 2px solid var(--detail-accent);
+  background: linear-gradient(120deg,
+              color-mix(in srgb, var(--detail-accent) 7%, transparent),
+              color-mix(in srgb, var(--detail-accent) 2%, transparent));
+}
+
+.pvo-detail-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.pvo-detail-card__head strong {
   color: #eafaff;
-  font: 700 10px/1 'Space Grotesk', sans-serif;
+  font: 700 11px/1.2 'Space Grotesk', sans-serif;
   letter-spacing: .02em;
 }
 
-.pvo-power-info__header small {
-  color: var(--energy-accent);
-  font: 600 6px/1 'JetBrains Mono', monospace;
+.pvo-detail-card__head small {
+  color: var(--detail-accent);
+  font: 600 7px/1 'JetBrains Mono', monospace;
   letter-spacing: .12em;
+  text-align: right;
+  text-transform: uppercase;
 }
 
-.pvo-power-info > p {
-  margin: 0 0 9px;
+.pvo-detail-card > p {
+  margin: 0;
   color: #adc5d8;
-  font: 500 8px/1.5 'Inter', sans-serif;
+  font: 500 10px/1.5 'Inter', sans-serif;
 }
 
+/* Botão "Testar poder": compacto, contornado na cor da energia, dentro da ficha. */
 .pvo-power-test {
-  width: 100%;
-  height: 32px;
-  border: 1px solid var(--energy-accent);
-  color: #031019;
-  background: linear-gradient(100deg, var(--energy-accent), color-mix(in srgb, var(--energy-accent) 75%, #fff));
-  font: 700 7px/1 'JetBrains Mono', monospace;
+  height: 30px;
+  margin-top: 12px;
+  padding: 0 16px;
+  border: 1px solid var(--detail-accent);
+  color: var(--detail-accent);
+  background: color-mix(in srgb, var(--detail-accent) 12%, transparent);
+  font: 700 9px/1 'JetBrains Mono', monospace;
   letter-spacing: .12em;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--energy-accent) 25%, transparent);
-  transition: transform .2s, box-shadow .2s;
+  transition: background .2s, box-shadow .2s, opacity .2s;
 }
 
-.pvo-power-test:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--energy-accent) 35%, transparent);
+.pvo-power-test:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--detail-accent) 22%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--detail-accent) 30%, transparent);
 }
 
-/* Responsive: botões em 2 colunas em telas pequenas */
-@media (max-width: 768px) {
-  .pvo-char-select__grid,
-  .pvo-energy-select__grid {
+/* Enquanto a animação do poder roda, o botão fica desativado. */
+.pvo-power-test:disabled {
+  opacity: .7;
+  cursor: default;
+}
+
+/* Telas muito estreitas: opções em 2 colunas para os nomes caberem. */
+@media (max-width: 380px) {
+  .pvo-choice-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* ───────────────── Arte dos personagens (CharacterArt.tsx) ─────────────────
+ * Variáveis lidas do container .pvo-avatar-preview:
+ *   --body   cor do traje escolhida pelo jogador
+ *   --accent cor do brilho da energia
+ *   --visor  cor da viseira (acompanha o brilho)
+ *   --char   cor-assinatura do personagem (azul, roxo, verde ou dourado)
+ */
+
+.pvo-fig {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Traje: cor escolhida com contorno levemente tingido pela energia. */
+.pvo-fig__suit {
+  fill: var(--body);
+  stroke: color-mix(in srgb, var(--accent) 35%, #0b1626);
+  stroke-width: .8;
+}
+
+/* Partes escuras comuns: luvas, botas, gola, moldura da viseira. */
+.pvo-fig__dark {
+  fill: #0e1a2c;
+}
+
+/* Detalhes na cor-assinatura do personagem. */
+.pvo-fig__char {
+  fill: var(--char);
+}
+
+/* Versão mais escura da cor-assinatura (capuz e casaco da Lúmina). */
+.pvo-fig__char-deep {
+  fill: color-mix(in srgb, var(--char) 72%, #0e1a2c);
+}
+
+/* Traços na cor-assinatura (faixa do Zeta, alça do cadeado do Orion). */
+.pvo-fig__char-line {
+  fill: none;
+  stroke: var(--char);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.pvo-fig__thin {
+  stroke-width: 1.4;
+}
+
+.pvo-fig__soft {
+  opacity: .8;
+}
+
+.pvo-fig__visor {
+  fill: var(--visor);
+}
+
+/* Núcleo luminoso no peito do Primo. */
+.pvo-fig__core {
+  fill: var(--accent);
+}
+
+.pvo-fig__ring {
+  fill: #0e1a2c;
+  stroke: var(--char);
+  stroke-width: 1.4;
+}
+
+/* Lupa da Lúmina: lente translúcida e cabo escuro. */
+.pvo-fig__lens {
+  fill: color-mix(in srgb, var(--visor) 30%, transparent);
+  stroke: var(--char);
+  stroke-width: 2.4;
+}
+
+.pvo-fig__handle {
+  fill: none;
+  stroke: #0e1a2c;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* Cadeado pequeno no peito do Orion. */
+.pvo-fig__lock {
+  fill: var(--char);
+}
+
+/* Símbolo "{ }" no peito da Lúmina. */
+.pvo-fig__code {
+  fill: var(--char);
+  font: 700 6.5px/1 'JetBrains Mono', monospace;
+}

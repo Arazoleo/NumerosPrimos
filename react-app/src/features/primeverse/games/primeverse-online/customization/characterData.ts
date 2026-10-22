@@ -1,82 +1,89 @@
 /**
- * Character definitions for Primeverse Online.
- * 
- * Defines four explorer archetypes (Primo, Lúmina, Zeta, Orion) and four
- * energy types (Prime Ring, Crypto Matrix, Factor Net, Cipher Lock). Each
- * character represents a mathematical theme, and each energy type includes
- * an educational power concept.
+ * Dados de personalização do Primeverse Online.
+ *
+ * Define os quatro exploradores (Primo, Lúmina, Zeta e Orion) e as quatro
+ * energias (Anel dos Primos, Matriz Criptográfica, Rede de Fatores e Cifra
+ * Dourada). Cada personagem representa um tema matemático e cada energia traz
+ * um poder com um conceito educativo.
+ *
+ * Este arquivo só guarda dados (textos e cores). A aparência fica em
+ * CharacterArt.tsx (personagens) e EnergyAnimations.tsx (energias).
  */
 
 import type { CharacterModel, EnergyType } from '../shared/protocol'
 
+/** Ficha de um explorador exibida na tela de personalização. */
 export interface CharacterDefinition {
+  /** Identificador salvo na sessão e enviado ao servidor. */
   readonly id: CharacterModel
+  /** Nome exibido nos botões e na prévia. */
   readonly name: string
+  /** Título curto do papel do personagem ("O Explorador"...). */
   readonly theme: string
+  /** Frase que aparece na ficha de detalhes. */
   readonly description: string
+  /** Cor-assinatura usada no ícone e nos acessórios (variável CSS --char). */
   readonly accent: `#${string}` // HexColor
-  readonly symbol: string
-  readonly personality: string
 }
 
+/** Ficha de uma energia e do poder que ela concede. */
 export interface EnergyDefinition {
+  /** Identificador salvo na sessão; também escolhe a animação em EnergyAnimations.tsx. */
   readonly id: EnergyType
+  /** Nome da energia mostrado no botão de escolha. */
   readonly name: string
+  /** Conceito matemático que a energia representa. */
   readonly concept: string
+  /** Nome do poder mostrado na ficha de detalhes. */
   readonly powerName: string
+  /** Explicação do poder exibida para o jogador. */
   readonly powerDescription: string
-  readonly visualDescription: string
+  /** Cor padrão da energia; aplicada ao brilho quando a energia é escolhida. */
   readonly accent: `#${string}` // HexColor
+  /** Símbolo em texto usado no botão de escolha. */
   readonly icon: string
 }
 
+/** Os quatro exploradores, na ordem em que aparecem na grade de escolha. */
 export const CHARACTERS: readonly CharacterDefinition[] = [
   {
     id: 'primo',
     name: 'Primo',
     theme: 'O Explorador',
-    description: 'Descubra os segredos dos números primos.',
+    description: 'Um astronauta curioso que explora o universo dos números primos.',
     accent: '#5FA8FF',
-    symbol: 'P',
-    personality: 'curioso e equilibrado',
   },
   {
     id: 'lumina',
     name: 'Lúmina',
     theme: 'A Decifradora',
-    description: 'Encontre padrões e revele mensagens escondidas.',
+    description: 'Uma decifradora inteligente que encontra pistas e revela mensagens escondidas.',
     accent: '#A983FF',
-    symbol: 'L',
-    personality: 'inteligente e observadora',
   },
   {
     id: 'zeta',
     name: 'Zeta',
     theme: 'O Caçador de Primos',
-    description: 'Encontre números primos em grandes sequências.',
+    description: 'Um aventureiro ágil que enfrenta desafios e descobre padrões matemáticos.',
     accent: '#72E59A',
-    symbol: 'Z',
-    personality: 'rápido e explorador',
   },
   {
     id: 'orion',
     name: 'Orion',
     theme: 'O Guardião da Chave',
-    description: 'Proteja segredos usando a matemática.',
+    description: 'Um guardião de segredos que usa a matemática para proteger códigos e informações.',
     accent: '#F0C35A',
-    symbol: 'O',
-    personality: 'protetor e confiável',
   },
 ] as const
 
+/** As quatro energias, na ordem em que aparecem na grade de escolha. */
 export const ENERGIES: readonly EnergyDefinition[] = [
   {
     id: 'prime-ring',
     name: 'Anel dos Primos',
     concept: 'Números primos',
     powerName: 'Escudo Primo',
-    powerDescription: 'Os números primos formam um escudo que te protege de um erro em um desafio.',
-    visualDescription: 'Anéis luminosos orbitando com números primos 2, 3, 5, 7 e 11',
+    powerDescription: 'Anéis de números primos protegem o explorador e representam a força dos números indivisíveis.',
     accent: '#5CEEE5',
     icon: '◎',
   },
@@ -85,8 +92,7 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     name: 'Matriz Criptográfica',
     concept: 'Criptografia e padrões',
     powerName: 'Decifra-Pista',
-    powerDescription: 'A matriz revela uma pista para ajudar você a decifrar o código.',
-    visualDescription: 'Quadrados e pixels que se reorganizam como mensagens codificadas',
+    powerDescription: 'Pixels digitais se reorganizam para revelar pistas e ajudar a desvendar códigos.',
     accent: '#A983FF',
     icon: '▦',
   },
@@ -95,8 +101,7 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     name: 'Rede de Fatores',
     concept: 'Fatoração e relações',
     powerName: 'Visão dos Fatores',
-    powerDescription: 'A rede mostra como um número pode ser dividido em fatores menores.',
-    visualDescription: 'Pontos conectados por linhas formando uma rede geométrica',
+    powerDescription: 'Uma rede luminosa conecta números e revela como eles se dividem em fatores menores.',
     accent: '#72E59A',
     icon: '⬡',
   },
@@ -105,17 +110,18 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     name: 'Cifra Dourada',
     concept: 'Criptografia',
     powerName: 'Chave Secreta',
-    powerDescription: 'A chave ajuda você a abrir um enigma criptográfico e entender como os códigos protegem mensagens.',
-    visualDescription: 'Anéis geométricos dourados que se encaixam como uma fechadura',
+    powerDescription: 'Anéis geométricos se encaixam como uma fechadura para simbolizar a descoberta de mensagens secretas.',
     accent: '#F0C35A',
     icon: '⚿',
   },
 ] as const
 
+/** Busca um explorador pelo id; cai no Primo se o id for desconhecido. */
 export function getCharacter(id: CharacterModel): CharacterDefinition {
   return CHARACTERS.find((char) => char.id === id) ?? CHARACTERS[0]
 }
 
+/** Busca uma energia pelo id; cai no Anel dos Primos se o id for desconhecido. */
 export function getEnergy(id: EnergyType): EnergyDefinition {
   return ENERGIES.find((energy) => energy.id === id) ?? ENERGIES[0]
 }

@@ -38,9 +38,9 @@ Na entrada, o jogador personaliza seu explorador escolhendo:
 
 1. **Modelo de personagem** — quatro exploradores baseados em temas matemáticos:
    - **Primo** (azul): O Explorador — conceitos de números primos
-   - **Lúmina** (roxo): A Decifradora — códigos e padrões
-   - **Zeta** (verde): O Caçador de Primos — sequências numéricas
-   - **Orion** (dourado): O Guardião da Chave — criptografia e proteção
+   - **Cipher** (roxo): A Decifradora — códigos e padrões
+   - **Nexo** (verde): O Caçador de Primos — sequências numéricas
+   - **Crypton** (dourado): O Guardião da Chave — criptografia e proteção
 
 2. **Tipo de energia** — quatro energias com poderes educativos:
    - **Anel dos Primos** (ciano): Escudo Primo — anéis orbitando com números primos 2, 3, 5, 7, 11

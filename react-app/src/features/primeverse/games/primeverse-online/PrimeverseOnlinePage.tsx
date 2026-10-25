@@ -195,7 +195,7 @@ export default function PrimeverseOnlinePage(): JSX.Element {
               </div>
               <p>{currentEnergy.powerDescription}</p>
               <button type="button" className="pvo-power-test" onClick={handleTestPower} disabled={testingPower}>
-                <span>{testingPower ? 'PODER ATIVADO…' : 'TESTAR PODER'}</span>
+                <span>{testingPower ? 'ENERGIA ATIVADA…' : 'TESTAR ENERGIA'}</span>
               </button>
             </div>
           </section>

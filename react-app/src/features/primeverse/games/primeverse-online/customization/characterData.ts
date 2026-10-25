@@ -1,7 +1,7 @@
 /**
  * Dados de personalização do Primeverse Online.
  *
- * Define os quatro exploradores (Primo, Lúmina, Zeta e Orion) e as quatro
+ * Define os quatro exploradores (Primo, Cipher, Nexo e Crypton) e as quatro
  * energias (Anel dos Primos, Matriz Criptográfica, Rede de Fatores e Cifra
  * Dourada). Cada personagem representa um tema matemático e cada energia traz
  * um poder com um conceito educativo.
@@ -50,27 +50,27 @@ export const CHARACTERS: readonly CharacterDefinition[] = [
     id: 'primo',
     name: 'Primo',
     theme: 'O Explorador',
-    description: 'Um astronauta curioso que explora o universo dos números primos.',
+    description: 'Um astronauta explorador capaz de identificar números primos em meio à imensidão do universo.',
     accent: '#5FA8FF',
   },
   {
-    id: 'lumina',
-    name: 'Lúmina',
+    id: 'cipher',
+    name: 'Cipher',
     theme: 'A Decifradora',
-    description: 'Uma decifradora inteligente que encontra pistas e revela mensagens escondidas.',
+    description: 'Uma especialista em criptografia que decifra códigos e desvenda mensagens secretas.',
     accent: '#A983FF',
   },
   {
-    id: 'zeta',
-    name: 'Zeta',
-    theme: 'O Caçador de Primos',
-    description: 'Um aventureiro ágil que enfrenta desafios e descobre padrões matemáticos.',
+    id: 'nexo',
+    name: 'Nexo',
+    theme: 'O Caçador de Padrões',
+    description: 'Um ninja habilidoso que enfrenta desafios e descobre padrões matemáticos.',
     accent: '#72E59A',
   },
   {
-    id: 'orion',
-    name: 'Orion',
-    theme: 'O Guardião da Chave',
+    id: 'crypton',
+    name: 'Crypton',
+    theme: 'O Guardião',
     description: 'Um guardião de segredos que usa a matemática para proteger códigos e informações.',
     accent: '#F0C35A',
   },
@@ -80,10 +80,10 @@ export const CHARACTERS: readonly CharacterDefinition[] = [
 export const ENERGIES: readonly EnergyDefinition[] = [
   {
     id: 'prime-ring',
-    name: 'Anel dos Primos',
+    name: 'Escudo Primo',
     concept: 'Números primos',
     powerName: 'Escudo Primo',
-    powerDescription: 'Anéis de números primos protegem o explorador e representam a força dos números indivisíveis.',
+    powerDescription: 'Anéis de números primos se unem para formar um escudo poderoso e indivisível, capaz de bloquear ataques e proteger seu portador.',
     accent: '#5CEEE5',
     icon: '◎',
   },
@@ -91,8 +91,8 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     id: 'crypto-matrix',
     name: 'Matriz Criptográfica',
     concept: 'Criptografia e padrões',
-    powerName: 'Decifra-Pista',
-    powerDescription: 'Pixels digitais se reorganizam para revelar pistas e ajudar a desvendar códigos.',
+    powerName: 'Matriz Criptográfica',
+    powerDescription: 'Uma matriz de símbolos transforma mensagens em códigos secretos, criando campos de energia que confundem os adversários e dificultam sua passagem.',
     accent: '#A983FF',
     icon: '▦',
   },
@@ -100,8 +100,8 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     id: 'factor-net',
     name: 'Rede de Fatores',
     concept: 'Fatoração e relações',
-    powerName: 'Visão dos Fatores',
-    powerDescription: 'Uma rede luminosa conecta números e revela como eles se dividem em fatores menores.',
+    powerName: 'Rede de Fatores',
+    powerDescription: 'O poder decompõe um número em seus fatores primos para revelar a estrutura de uma chave criptográfica e abrir caminhos antes inacessíveis.',
     accent: '#72E59A',
     icon: '⬡',
   },
@@ -110,7 +110,7 @@ export const ENERGIES: readonly EnergyDefinition[] = [
     name: 'Cifra Dourada',
     concept: 'Criptografia',
     powerName: 'Chave Secreta',
-    powerDescription: 'Anéis geométricos se encaixam como uma fechadura para simbolizar a descoberta de mensagens secretas.',
+    powerDescription: 'Uma chave decifra mensagens protegidas por códigos numéricos, revelando senhas e pistas.',
     accent: '#F0C35A',
     icon: '⚿',
   },

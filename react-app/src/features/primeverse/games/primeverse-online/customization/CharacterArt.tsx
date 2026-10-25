@@ -52,9 +52,9 @@ export function CharacterFigure({ id }: CharacterArtProps): JSX.Element {
       </defs>
       {/* Cada personagem desenha suas próprias peças sobre a base compartilhada */}
       {id === 'primo' && <PrimoFigure shade={shade} glow={glow} />}
-      {id === 'lumina' && <LuminaFigure shade={shade} glow={glow} />}
-      {id === 'zeta' && <ZetaFigure shade={shade} glow={glow} />}
-      {id === 'orion' && <OrionFigure shade={shade} glow={glow} />}
+      {id === 'cipher' && <CipherFigure shade={shade} glow={glow} />}
+      {id === 'nexo' && <NexoFigure shade={shade} glow={glow} />}
+      {id === 'crypton' && <CryptonFigure shade={shade} glow={glow} />}
     </svg>
   )
 }
@@ -156,8 +156,8 @@ function PrimoFigure({ shade, glow }: FigureProps): JSX.Element {
   )
 }
 
-/** Lúmina — decifradora: capuz, casaco de exploradora, símbolo { } e lupa erguida. */
-function LuminaFigure({ shade, glow }: FigureProps): JSX.Element {
+/** Cipher — decifradora: capuz, casaco de exploradora, símbolo { } e lupa erguida. */
+function CipherFigure({ shade, glow }: FigureProps): JSX.Element {
   return (
     <>
       {/* Capuz que emoldura o capacete */}
@@ -193,8 +193,8 @@ function LuminaFigure({ shade, glow }: FigureProps): JSX.Element {
   )
 }
 
-/** Zeta — aventureiro esportivo: crista, faixa ao vento, traje leve e tênis verdes. */
-function ZetaFigure({ shade, glow }: FigureProps): JSX.Element {
+/** Nexo — aventureiro esportivo: crista, faixa ao vento, traje leve e tênis verdes. */
+function NexoFigure({ shade, glow }: FigureProps): JSX.Element {
   return (
     <>
       {/* Pontas da faixa da testa balançando atrás da cabeça */}
@@ -225,8 +225,8 @@ function ZetaFigure({ shade, glow }: FigureProps): JSX.Element {
   )
 }
 
-/** Orion — guardião: capacete quadrado, ombreiras e um cadeado pequeno no peito. */
-function OrionFigure({ shade, glow }: FigureProps): JSX.Element {
+/** Crypton — guardião: capacete quadrado, ombreiras e um cadeado pequeno no peito. */
+function CryptonFigure({ shade, glow }: FigureProps): JSX.Element {
   return (
     <>
       {/* Pernas com detalhe dourado no topo das botas */}
@@ -279,8 +279,8 @@ export function CharacterIcon({ id }: CharacterArtProps): JSX.Element {
           <text x="24" y="35" fontSize="6" fontWeight="bold" fill="var(--char-accent)" textAnchor="middle">P</text>
         </>
       )}
-      {/* Lúmina: capuz, casaco com gola e lupa */}
-      {id === 'lumina' && (
+      {/* Cipher: capuz, casaco com gola e lupa */}
+      {id === 'cipher' && (
         <>
           <path d="M13.5 23 C12.5 12 18 6.5 24 6.5 C30 6.5 35.5 12 34.5 23 L32.5 27 H15.5 Z" fill="var(--char-accent)" opacity="0.2" />
           <circle cx="24" cy="18" r="8" fill="none" stroke="var(--char-accent)" strokeWidth="1.5" />
@@ -294,8 +294,8 @@ export function CharacterIcon({ id }: CharacterArtProps): JSX.Element {
           <circle cx="35.4" cy="27.4" r="1.1" fill="var(--char-accent)" />
         </>
       )}
-      {/* Zeta: pontas da faixa ao vento, crista, faixa diagonal e linhas de velocidade */}
-      {id === 'zeta' && (
+      {/* Nexo: pontas da faixa ao vento, crista, faixa diagonal e linhas de velocidade */}
+      {id === 'nexo' && (
         <>
           <path d="M14.5 15 Q10 12.5 5.5 14.5" fill="none" stroke="var(--char-accent)" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
           <path d="M14.5 17.5 Q10 18 7 21" fill="none" stroke="var(--char-accent)" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
@@ -311,8 +311,8 @@ export function CharacterIcon({ id }: CharacterArtProps): JSX.Element {
           <line x1="10" y1="35" x2="14" y2="35" stroke="var(--char-accent)" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
         </>
       )}
-      {/* Orion: capacete quadrado, ombreiras e cadeado pequeno */}
-      {id === 'orion' && (
+      {/* Crypton: capacete quadrado, ombreiras e cadeado pequeno */}
+      {id === 'crypton' && (
         <>
           <rect x="23" y="5.5" width="2" height="4" rx="1" fill="var(--char-accent)" />
           <rect x="14" y="8" width="20" height="19" rx="7" fill="var(--char-accent)" opacity="0.2" />

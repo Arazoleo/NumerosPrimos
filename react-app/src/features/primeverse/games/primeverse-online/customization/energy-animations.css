@@ -8,7 +8,7 @@
  * - Cifra Dourada (Chave Secreta): anéis de fechadura se alinham → cadeado abre
  *
  * Tudo é desenhado atrás do personagem. Cada efeito tem um estado contínuo
- * (discreto, em loop) e um estado ativo (.active), ligado por "Testar poder".
+ * (discreto, em loop) e um estado ativo (.active), ligado por "Testar energia".
  * Regra usada em todo o arquivo: cores com var() ficam fora dos @keyframes;
  * os keyframes animam só opacidade, transformações e traços, o que evita
  * cores erradas em alguns navegadores.

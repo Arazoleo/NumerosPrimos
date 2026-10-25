@@ -10,7 +10,7 @@
  *
  * A forma de cada efeito é fixa; a cor escolhida (`--energy-color`) só muda o brilho.
  * Há dois estados: contínuo (sempre rodando, discreto) e ativo (classe `active`,
- * ligada pelo botão "Testar poder"). As animações ficam em energy-animations.css;
+ * ligada pelo botão "Testar energia"). As animações ficam em energy-animations.css;
  * aqui só montamos a geometria e passamos atrasos (`--d`) para cada peça.
  */
 

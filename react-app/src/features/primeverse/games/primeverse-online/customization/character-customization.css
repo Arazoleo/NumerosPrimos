@@ -219,16 +219,20 @@
   font: 500 10px/1.5 'Inter', sans-serif;
 }
 
-/* Botão "Testar poder": compacto, contornado na cor da energia, dentro da ficha. */
-.pvo-power-test {
-  height: 30px;
-  margin-top: 12px;
-  padding: 0 16px;
+/*
+ * Botão "Testar energia": pequeno, contornado na cor da energia e alinhado à direita da ficha.
+ * O seletor inclui .pvo-detail-card para vencer `.pvo-page button { font: inherit }`.
+ */
+.pvo-detail-card .pvo-power-test {
+  display: block;
+  height: 24px;
+  margin: 10px 0 0 auto;
+  padding: 0 12px;
   border: 1px solid var(--detail-accent);
   color: var(--detail-accent);
-  background: color-mix(in srgb, var(--detail-accent) 12%, transparent);
-  font: 700 9px/1 'JetBrains Mono', monospace;
-  letter-spacing: .12em;
+  background: color-mix(in srgb, var(--detail-accent) 10%, transparent);
+  font: 700 8px/1 'JetBrains Mono', monospace;
+  letter-spacing: .1em;
   transition: background .2s, box-shadow .2s, opacity .2s;
 }
 
@@ -237,7 +241,7 @@
   box-shadow: 0 0 14px color-mix(in srgb, var(--detail-accent) 30%, transparent);
 }
 
-/* Enquanto a animação do poder roda, o botão fica desativado. */
+/* Enquanto a animação da energia roda, o botão fica desativado. */
 .pvo-power-test:disabled {
   opacity: .7;
   cursor: default;

@@ -2,9 +2,45 @@
 
 Aplicação Vite + React que reúne a landing page e as experiências do Primeverse. O Primeverse Online mantém a mesma sala ao atravessar quatro expedições; os demais jogos continuam independentes.
 
-## Desenvolvimento
-
 Requisitos: Node.js 22.12 ou superior e npm.
+
+## Smoke tests de navegador
+
+Execute a partir de `react-app`:
+
+```bash
+npm ci
+npx playwright install --no-shell chromium
+npm run test:e2e
+```
+
+O Playwright compila o projeto e inicia um preview exclusivo em `127.0.0.1:4173`.
+Não é necessário iniciar o frontend nem o backend. A porta deve estar livre.
+Os mesmos 23 cenários rodam em Chromium desktop e mobile com viewport 390×844:
+as 17 rotas de conteúdo atuais de `src/App.jsx`, quatro redirecionamentos legados,
+seleção de Raul Sato e entrada na arena do Núcleo 257, e indisponibilidade do Online.
+As rotas são extraídas do router, incluindo automaticamente futuras adições.
+Cada teste usa um contexto limpo e falha em `pageerror` ou `console.error`, sem
+lista de exceções. O cenário offline fecha as conexões WebSocket e aguarda as
+tentativas reais de reconexão, validando mensagem, ação de tentar novamente e retorno.
+
+```bash
+npm run test:e2e -- --project=chromium-mobile
+npx playwright show-report
+```
+
+O workflow `Smoke E2E` executa os dois projetos em PRs, merge queue e pushes em
+`develop`/`main`. São dois workers, sem retries, com limite global de quatro minutos
+e limite de cinco minutos para o job completo. Falhas publicam relatório, screenshots
+e traces por sete dias. O tempo no runner deve ser acompanhado na primeira execução
+da CI; o limite encerra e sinaliza uma regressão, não garante desempenho por si só.
+O Vitest exclui `e2e/` e continua sendo executado por `npm test`.
+
+Validação local em 27/10/2026: 46 cenários aprovados em aproximadamente 1m18s,
+incluindo o build de produção. A detecção de `console.error` e exceções não tratadas
+também foi comprovada com falhas injetadas temporariamente.
+
+## Desenvolvimento
 
 ```bash
 npm ci

@@ -9,7 +9,7 @@ import {
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import GameIntro from '../../ui/GameIntro'
 import { useBackroomsRuntime } from './backrooms'
 import { CAESAR_PUZZLE, decodeCaesar } from './caesarLogic'
@@ -293,7 +293,7 @@ function IntroPanel({
       keys="WASD mover · Shift correr · F lanterna · E interagir"
       onStart={start}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -333,7 +333,7 @@ function MissionTopbar({
           <span className="escape-flashlight__label">Luz {flashlightOn ? 'on' : 'off'}</span>
           <kbd>F</kbd>
         </button>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="escape-restart" aria-label="Reiniciar missão" onClick={restart}>
           <span aria-hidden="true">↻</span><span className="escape-restart__label">Reiniciar</span>
         </button>

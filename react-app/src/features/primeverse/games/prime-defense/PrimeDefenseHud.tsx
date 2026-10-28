@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   analyzeDefensePlan,
   createWaveEnemies,
@@ -80,7 +80,7 @@ function IntroPanel({ quality, onQualityChange }: PrimeDefenseHudProps): JSX.Ele
       mark="5"
       onStart={() => start()}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -121,7 +121,7 @@ function MissionTopbar({ quality, onQualityChange }: Pick<PrimeDefenseHudProps, 
         <span className={`defense-signal${phase === 'running' ? ' is-running' : ''}`}>
           <i /> {phase === 'running' ? 'ONDA EM CURSO' : 'MALHA ONLINE'}
         </span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="defense-restart" onClick={restart}>Reiniciar</button>
       </div>
     </header>

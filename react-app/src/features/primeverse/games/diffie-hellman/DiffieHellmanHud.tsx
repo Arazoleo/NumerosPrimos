@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   calculatePublicValue,
   calculateSharedSecret,
@@ -72,7 +72,7 @@ function IntroPanel({
       mark="g"
       onStart={startTutorial}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -105,7 +105,7 @@ function MissionTopbar({
       </div>
       <div className="dh-topbar__actions">
         <span className={`dh-signal${transit ? ' is-transit' : ''}`}><i />{transit ? 'PACOTE EM TRÂNSITO' : 'CANAL ATIVO'}</span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="dh-restart" onClick={restart}>Reiniciar</button>
       </div>
     </header>

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { audioPreferences } from './audioPreferences'
 
 /** Minimal Web Audio stand-in: records what the code under test actually schedules. */
 function installAudioMock() {
@@ -65,6 +66,25 @@ function installAudioMock() {
 }
 
 describe('audio actually schedules sound', () => {
+  it('applies shared volume and mute to a running soundtrack without losing its level', async () => {
+    const spy = installAudioMock()
+    const { createMusicDirector } = await import('./proceduralMusic')
+    const { PRIMEBOUND_TRACK } = await import('./tracks')
+    const previous = audioPreferences.getState()
+    audioPreferences.setState({ volume: 0.2, muted: false })
+    const director = createMusicDirector(PRIMEBOUND_TRACK)
+    try {
+      await director.start()
+      expect(spy.gains[spy.gains.length - 1]).toBeCloseTo(0.1)
+      audioPreferences.getState().setMuted(true)
+      expect(spy.gains[spy.gains.length - 1]).toBeLessThan(0.001)
+      audioPreferences.getState().setMuted(false)
+      expect(spy.gains[spy.gains.length - 1]).toBeCloseTo(0.1)
+    } finally {
+      await director.dispose()
+      audioPreferences.setState({ volume: previous.volume, muted: previous.muted })
+    }
+  })
   it('plays a Primebound cue through Web Audio', async () => {
     const spy = installAudioMock()
     const { createPrimeboundSfx } = await import('../games/primebound/primeboundAudio')

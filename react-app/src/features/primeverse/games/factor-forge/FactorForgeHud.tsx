@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isPrime } from '../../../../lib/math/primes'
 import GameIntro from '../../ui/GameIntro'
+import VolumeControl from '../../ui/VolumeControl'
 
 import { getDivisorOptions, getLeafNodes } from './factorLogic'
 import { useFactorForgeStore } from './factorForgeStore'
@@ -62,7 +63,7 @@ function QualityPicker({
   onQualityChange: (quality: ForgeQuality) => void
 }): JSX.Element {
   return (
-    <label className="factor-forge__quality">
+    <div className="pv-game-settings"><label className="factor-forge__quality">
       <span>Qualidade</span>
       <select
         aria-label="Qualidade gráfica"
@@ -73,7 +74,7 @@ function QualityPicker({
         <option value="medium">Média</option>
         <option value="high">Alta</option>
       </select>
-    </label>
+    </label><VolumeControl /></div>
   )
 }
 

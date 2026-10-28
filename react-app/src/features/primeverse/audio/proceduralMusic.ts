@@ -7,6 +7,8 @@
  * drives (fear, combat pressure, region), so the track reacts instead of looping flat.
  */
 
+import { effectiveAudioVolume, subscribeAudioVolume } from './audioPreferences'
+
 export type MusicInstrument =
   | 'pad'
   | 'bass'
@@ -208,6 +210,7 @@ export function startMusicOnFirstGesture(director: MusicDirector): () => void {
 }
 
 export function createMusicDirector(track: MusicTrack): MusicDirector {
+  let preferenceVolume = effectiveAudioVolume()
   let context: AudioContext | null = null
   let master: GainNode | null = null
   let timer: ReturnType<typeof setInterval> | null = null
@@ -367,7 +370,7 @@ export function createMusicDirector(track: MusicTrack): MusicDirector {
       nextNoteTime = audio.currentTime + 0.08
       master.gain.cancelScheduledValues(audio.currentTime)
       master.gain.setValueAtTime(Math.max(SILENCE, master.gain.value), audio.currentTime)
-      master.gain.exponentialRampToValueAtTime(enabled ? 0.5 : SILENCE, audio.currentTime + 1.4)
+      master.gain.exponentialRampToValueAtTime(enabled ? Math.max(SILENCE, 0.5 * preferenceVolume) : SILENCE, audio.currentTime + 1.4)
       if (timer === null) timer = setInterval(tick, LOOKAHEAD_MS)
       return true
     },
@@ -391,7 +394,7 @@ export function createMusicDirector(track: MusicTrack): MusicDirector {
       master.gain.cancelScheduledValues(context.currentTime)
       master.gain.setValueAtTime(Math.max(SILENCE, master.gain.value), context.currentTime)
       master.gain.exponentialRampToValueAtTime(
-        enabled && running ? 0.5 : SILENCE,
+        enabled && running ? Math.max(SILENCE, 0.5 * preferenceVolume) : SILENCE,
         context.currentTime + 0.35,
       )
     },
@@ -401,6 +404,7 @@ export function createMusicDirector(track: MusicTrack): MusicDirector {
     },
 
     async dispose() {
+      unsubscribePreferences()
       disposed = true
       director.stop()
       if (context && context.state !== 'closed') await context.close().catch(() => undefined)
@@ -410,5 +414,9 @@ export function createMusicDirector(track: MusicTrack): MusicDirector {
     },
   }
 
+  const unsubscribePreferences = subscribeAudioVolume(volume => {
+    preferenceVolume = volume
+    director.setEnabled(enabled)
+  })
   return director
 }

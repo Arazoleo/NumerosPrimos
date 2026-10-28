@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom'
 import { createMusicDirector, startMusicOnFirstGesture } from '../../audio/proceduralMusic'
 import { PRIMEBOUND_TRACK } from '../../audio/tracks'
 import { useAudioResource } from '../../audio/useAudioResource'
+import { useAudioPreferences } from '../../audio/audioPreferences'
+import VolumeControl from '../../ui/VolumeControl'
 import { usePrimeverseExpeditionParty } from '../primeverse-online/party/usePrimeverseExpeditionParty'
 import { decodePrimeboundPresence, encodePrimeboundPresence } from './primeboundPresence'
 import { stretchFactorForParty, stretchTileMap, stretchedGridIndex } from './primeboundMapStretch'
@@ -8670,7 +8672,7 @@ export default function PrimeboundGame({
   const lastHudUpdateRef = useRef(-1_000)
   const [hud, setHud] = useState(() => initialHud(engineRef.current))
   const [dialogue, setDialogue] = useState<ActiveDialogue | null>(null)
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const soundEnabled = useAudioPreferences(state => !state.muted)
   const voicePlayerRef = useRef<OriginVoicePlayer | null>(null)
   const techVoiceReadyAtRef = useRef(0)
   const previousTransformationRef = useRef(false)
@@ -11141,14 +11143,7 @@ export default function PrimeboundGame({
               )}
             </div>
             <div className="primebound-hud__actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setSoundEnabled((enabled) => !enabled)
-                  canvasRef.current?.focus()
-                }}
-                aria-label={soundEnabled ? 'Desligar som' : 'Ligar som'}
-              >{soundEnabled ? 'SOM ON' : 'SOM OFF'}</button>
+              <VolumeControl />
               <button type="button" onClick={() => onPauseChange(true)} aria-label="Pausar jogo">II</button>
             </div>
           </header>

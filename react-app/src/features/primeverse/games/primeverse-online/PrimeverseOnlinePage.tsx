@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useQualitySettings } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import { useDocumentTitle } from '../../useDocumentTitle'
 import { PRIMEVERSE_EXPEDITIONS } from './expeditions'
 import PrimeverseOnlineExperience from './PrimeverseOnlineExperience'
@@ -217,7 +217,7 @@ export default function PrimeverseOnlinePage(): JSX.Element {
 
       <footer className="pvo-landing__footer">
         <div><span>WASD <small>MOVER</small></span><span>SHIFT <small>CORRER</small></span><span>SPACE <small>SALTAR</small></span><span>E <small>INTERAGIR</small></span><span>Q <small>EMOTES</small></span></div>
-        <QualityControl value={quality} onChange={setQuality} />
+        <GameSettings value={quality} onChange={setQuality} />
       </footer>
     </main>
   )

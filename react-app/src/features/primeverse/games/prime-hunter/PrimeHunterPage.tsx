@@ -5,7 +5,7 @@ import { ACHIEVEMENT_BY_ID, useProgressionStore } from '../../../../progression'
 import { isPrime } from '../../../../lib/math'
 import { audioBus } from '../../audio/audioBus'
 import { useQualitySettings } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import { SceneBoundary, WebGLFallback } from '../../ui/SceneBoundary'
 import { useDocumentTitle } from '../../useDocumentTitle'
 import GameIntro from '../../ui/GameIntro'
@@ -199,7 +199,7 @@ export default function PrimeHunterPage() {
           </Link>
           <div className="pv-topbar__actions">
             <span className="ph-level">LVL {String(level).padStart(2, '0')}</span>
-            <QualityControl value={quality} onChange={setQuality} />
+            <GameSettings value={quality} onChange={setQuality} />
             {(status === 'playing' || status === 'paused') && (
               <button className="ph-pause-button" type="button" onClick={togglePause}>
                 {status === 'paused' ? 'RETOMAR' : 'Ⅱ PAUSAR'}

@@ -173,6 +173,15 @@ const AsteroidSlot = forwardRef<AsteroidHandle, AsteroidSlotProps>(function Aste
   )
 })
 
+export interface ScriptedWave {
+  id: number
+  values: readonly number[]
+}
+
+const SCRIPT_LANES: ReadonlyArray<[number, number]> = [[-2.4, 0.5], [1.8, -0.2], [-0.6, 0.9], [2.8, 0]]
+const SCRIPT_SPEED = 3.2
+const SCRIPT_INTERVAL = 2.2
+
 interface AsteroidPoolProps {
   count: number
   playing: boolean
@@ -181,14 +190,19 @@ interface AsteroidPoolProps {
   onHit: AsteroidSlotProps['onHit']
   onBreach: AsteroidSlotProps['onBreach']
   onStageChange: (stage: number) => void
+  /** Quando definido, substitui o spawn aleatório por uma sequência fixa (tutorial). */
+  script?: ScriptedWave | null
 }
 
-export default function AsteroidPool({ count, playing, runId, score, onHit, onBreach, onStageChange }: AsteroidPoolProps) {
+export default function AsteroidPool({ count, playing, runId, score, onHit, onBreach, onStageChange, script = null }: AsteroidPoolProps) {
   const handles = useRef<Array<AsteroidHandle | null>>([])
   const elapsedRef = useRef(0)
   const spawnCountdownRef = useRef(0.65)
   const stageRef = useRef(-1)
   const runRef = useRef(runId)
+  const scriptIdRef = useRef<number | null>(null)
+  const queueRef = useRef<number[]>([])
+  const queueIndexRef = useRef(0)
 
   useFrame((_, delta) => {
     if (runRef.current !== runId) {
@@ -197,6 +211,37 @@ export default function AsteroidPool({ count, playing, runId, score, onHit, onBr
       spawnCountdownRef.current = 0.65
       stageRef.current = -1
       handles.current.forEach((handle) => handle?.reset())
+    }
+
+    if (script) {
+      if (scriptIdRef.current !== script.id) {
+        scriptIdRef.current = script.id
+        queueRef.current = [...script.values]
+        queueIndexRef.current = 0
+        spawnCountdownRef.current = 0.5
+        handles.current.forEach((handle) => handle?.reset())
+      }
+      if (!playing || queueRef.current.length === 0) return
+      spawnCountdownRef.current -= delta
+      if (spawnCountdownRef.current > 0) return
+      const slot = handles.current.find((handle) => handle?.available())
+      if (!slot) return
+      const [value, ...rest] = queueRef.current
+      const [x, y] = SCRIPT_LANES[queueIndexRef.current % SCRIPT_LANES.length]
+      queueRef.current = rest
+      queueIndexRef.current += 1
+      spawnCountdownRef.current = SCRIPT_INTERVAL
+      slot.spawn({ value, position: [x, y, -15], speed: SCRIPT_SPEED, drift: 0.15, spin: 0.25 })
+      return
+    }
+
+    if (scriptIdRef.current !== null) {
+      // Saiu do tutorial: limpa asteroides que ficaram em cena.
+      scriptIdRef.current = null
+      queueRef.current = []
+      handles.current.forEach((handle) => handle?.reset())
+      elapsedRef.current = 0
+      spawnCountdownRef.current = 0.65
     }
     if (!playing) return
 

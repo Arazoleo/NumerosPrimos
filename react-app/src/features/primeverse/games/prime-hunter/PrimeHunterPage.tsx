@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ACHIEVEMENT_BY_ID, useProgressionStore } from '../../../../progression'
 import { isPrime } from '../../../../lib/math'
@@ -11,6 +11,15 @@ import { useDocumentTitle } from '../../useDocumentTitle'
 import GameIntro from '../../ui/GameIntro'
 import PrimeHunterScene, { type HunterShot } from './PrimeHunterScene'
 import { HUNTER_TARGET_HITS, usePrimeHunterStore } from './primeHunterStore'
+import PrimeHunterTutorialCard from './PrimeHunterTutorialCard'
+import {
+  TUTORIAL_HIGHLIGHT_MS,
+  TUTORIAL_STEPS,
+  initialTutorialState,
+  markTutorialComplete,
+  readTutorialComplete,
+  tutorialReducer,
+} from './primeHunterTutorial'
 import '../../primeverse.css'
 import './PrimeHunterPage.css'
 
@@ -56,6 +65,20 @@ export default function PrimeHunterPage() {
   const committedRunRef = useRef(-1)
   const crosshairRef = useRef<HTMLDivElement>(null)
   const shellRef = useRef<HTMLElement>(null)
+  const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [tutorialDone, setTutorialDone] = useState(readTutorialComplete)
+  const [tutorial, dispatchTutorial] = useReducer(tutorialReducer, initialTutorialState)
+  const tutorialStep = TUTORIAL_STEPS[tutorial.stepIndex]
+  const tutorialWaveActive = tutorialOpen && tutorial.phase === 'running' && tutorialStep.wave.length > 0
+  const showHud = status !== 'ready' || (tutorialOpen && tutorialStep.id === 'briefing')
+  const [highlightIndex, setHighlightIndex] = useState(0)
+  const highlights = tutorialOpen ? tutorialStep.highlights : undefined
+  const hudFocus = highlights?.[highlightIndex]?.target ?? null
+  const focusClass = (target: string) => (hudFocus === target ? ' is-tutorial-focus' : '')
+  const script = useMemo(
+    () => (tutorialOpen && tutorialStep.wave.length > 0 ? { id: tutorial.waveId, values: tutorialStep.wave } : null),
+    [tutorialOpen, tutorialStep, tutorial.waveId],
+  )
 
   const attempts = hits + errors
   const accuracy = attempts === 0 ? 100 : Math.round((hits / attempts) * 100)
@@ -64,6 +87,17 @@ export default function PrimeHunterPage() {
     resetToReady()
     return resetToReady
   }, [resetToReady])
+
+  // Passa ao próximo destaque do HUD. Depende do índice, então um clique numa frase reinicia a contagem.
+  const highlightCount = highlights?.length ?? 0
+  useEffect(() => {
+    if (highlightCount === 0) return
+    const timer = window.setTimeout(
+      () => setHighlightIndex((index) => (index + 1) % highlightCount),
+      TUTORIAL_HIGHLIGHT_MS,
+    )
+    return () => window.clearTimeout(timer)
+  }, [highlightCount, highlightIndex])
 
   const showAchievements = useCallback((ids: readonly string[]) => {
     if (ids.length === 0) return
@@ -122,10 +156,38 @@ export default function PrimeHunterPage() {
     start()
   }
 
+  const openTutorial = () => {
+    dispatchTutorial({ type: 'restart' })
+    setHighlightIndex(0)
+    setShot(null)
+    setTutorialOpen(true)
+  }
+
+  const closeTutorial = () => {
+    setTutorialOpen(false)
+    markTutorialComplete()
+    setTutorialDone(true)
+  }
+
+  const skipAndPlay = () => {
+    closeTutorial()
+    start()
+  }
+
+  const finishTutorial = () => {
+    closeTutorial()
+    begin()
+  }
+
   const shootTarget = useCallback((value: number, prime: boolean, position: [number, number, number]) => {
     shotIdRef.current += 1
     setShot({ id: shotIdRef.current, target: position, kind: prime ? 'prime' : 'composite' })
     audioBus.play('laser')
+    if (tutorialOpen) {
+      audioBus.play(prime ? 'correct' : 'error')
+      dispatchTutorial({ type: 'hit', value })
+      return
+    }
     if (prime) {
       hitPrime(value)
       audioBus.play('correct')
@@ -136,26 +198,32 @@ export default function PrimeHunterPage() {
       audioBus.play('error')
       recordPrimeMiss()
     }
-  }, [hitComposite, hitPrime, recordPrimeHit, recordPrimeMiss, showAchievements])
+  }, [hitComposite, hitPrime, recordPrimeHit, recordPrimeMiss, showAchievements, tutorialOpen])
 
   const asteroidBreach = useCallback((value: number) => {
+    if (tutorialOpen) {
+      if (isPrime(value)) audioBus.play('error')
+      dispatchTutorial({ type: 'pass', value })
+      return
+    }
     if (!isPrime(value)) return
     breachPrime(value)
     audioBus.play('error')
     recordPrimeMiss()
-  }, [breachPrime, recordPrimeMiss])
+  }, [breachPrime, recordPrimeMiss, tutorialOpen])
 
   const shootEmpty = useCallback((event: MouseEvent) => {
-    if (status !== 'playing' || !shellRef.current) return
+    if ((status !== 'playing' && !tutorialWaveActive) || !shellRef.current) return
     const rect = shellRef.current.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width - 0.5) * 9
     const y = -((event.clientY - rect.top) / rect.height - 0.5) * 5.2
     shotIdRef.current += 1
     setShot({ id: shotIdRef.current, target: [x, y, -8], kind: 'miss' })
     audioBus.play('laser')
+    if (tutorialWaveActive) return // no tutorial, tiro no vazio não penaliza
     missShot()
     recordPrimeMiss()
-  }, [missShot, recordPrimeMiss, status])
+  }, [missShot, recordPrimeMiss, status, tutorialWaveActive])
 
   const resultTitle = outcome === 'sector-cleared' ? 'SETOR LIMPO' : 'NAVE AVARIADA'
   const resultCopy = outcome === 'sector-cleared'
@@ -165,7 +233,7 @@ export default function PrimeHunterPage() {
   const healthMarks = useMemo(() => Array.from({ length: 3 }, (_, index) => index < health), [health])
 
   return (
-    <main ref={shellRef} className={`primeverse-shell ph-shell is-${status}`}>
+    <main ref={shellRef} className={`primeverse-shell ph-shell is-${status}${tutorialWaveActive ? ' is-tutorial' : ''}`}>
       <SceneBoundary>
         <Canvas
           className="pv-canvas"
@@ -179,19 +247,20 @@ export default function PrimeHunterPage() {
           <Suspense fallback={null}>
             <PrimeHunterScene
               profile={profile}
-              playing={status === 'playing'}
+              playing={status === 'playing' || tutorialWaveActive}
               runId={runId}
               score={score}
               shot={shot}
               onHit={shootTarget}
               onBreach={asteroidBreach}
               onStageChange={setStage}
+              script={script}
             />
           </Suspense>
         </Canvas>
       </SceneBoundary>
 
-      <div className="pv-hud ph-hud">
+      <div className={`pv-hud ph-hud${hudFocus ? ' is-tutorial-briefing' : ''}`}>
         <header className="pv-topbar ph-topbar">
           <Link className="pv-brand" to="/jogos" aria-label="Voltar ao Primeverse">
             <span className="pv-brand__mark">P</span>
@@ -209,26 +278,33 @@ export default function PrimeHunterPage() {
           </div>
         </header>
 
-        {status !== 'ready' && (
+        {showHud && (
           <div className="ph-stats" aria-label="Estatísticas da partida">
-            <div className="ph-stat ph-stat--score"><span>SCORE</span><strong>{score.toLocaleString('pt-BR').padStart(5, '0')}</strong><small>BEST {bestScore.toLocaleString('pt-BR')}</small></div>
-            <div className="ph-stat"><span>COMBO</span><strong className={combo >= 5 ? 'is-hot' : ''}>×{combo}</strong><small>MELHOR ×{bestCombo}</small></div>
+            <div className={`ph-stat ph-stat--score${focusClass('score-combo')}`}>
+              <span>SCORE</span><strong>{score.toLocaleString('pt-BR').padStart(5, '0')}</strong><small>BEST {bestScore.toLocaleString('pt-BR')}</small>
+              {hudFocus === 'score-combo' && <em className="ph-demo-pop" aria-hidden="true">+118</em>}
+            </div>
+            <div className={`ph-stat${focusClass('score-combo')}`}>
+              <span>COMBO</span><strong className={combo >= 5 ? 'is-hot' : ''}>×{combo}</strong><small>MELHOR ×{bestCombo}</small>
+              {hudFocus === 'score-combo' && <em className="ph-demo-pop" aria-hidden="true">+1</em>}
+            </div>
             <div className="ph-stat"><span>PRECISÃO</span><strong>{accuracy}%</strong><small>{hits} ACERTOS · {errors} ERROS</small></div>
           </div>
         )}
 
-        {status !== 'ready' && (
-          <div className="ph-mission-status">
+        {showHud && (
+          <div className={`ph-mission-status${focusClass('mission')}`}>
             <span>{STAGE_LABELS[stage]}</span>
             <div><i style={{ width: `${Math.min(100, (hits / HUNTER_TARGET_HITS) * 100)}%` }} /></div>
             <small>{hits}/{HUNTER_TARGET_HITS} PRIMOS</small>
           </div>
         )}
 
-        {status !== 'ready' && (
-          <div className="ph-health" aria-label={`${health} de 3 pontos de energia`}>
+        {showHud && (
+          <div className={`ph-health${focusClass('health')}`} aria-label={`${health} de 3 pontos de energia`}>
             <span>ENERGIA</span>
             <div>{healthMarks.map((active, index) => <i key={index} className={active ? 'is-active' : ''}>♥</i>)}</div>
+            {hudFocus === 'health' && <em className="ph-demo-pop is-loss" aria-hidden="true">−1</em>}
           </div>
         )}
 
@@ -240,16 +316,35 @@ export default function PrimeHunterPage() {
 
         <div ref={crosshairRef} className="ph-crosshair" aria-hidden="true"><i /><i /><span /></div>
 
-        {status === 'ready' && (
+        {status === 'ready' && !tutorialOpen && (
           <GameIntro
             title="Prime Hunter"
             emphasis="Hunter"
             instruction="Números sobem pela tela. Acerte os primos e deixe os compostos passarem — errar custa a série."
-            actionLabel="Começar a caçada"
+            actionLabel={tutorialDone ? 'Começar a caçada' : 'Começar tutorial'}
             accent="#6ef0a8"
             mark="13"
             keys="Mouse ou toque para mirar e disparar · P pausa"
-            onStart={start}
+            onStart={tutorialDone ? start : openTutorial}
+          >
+            <button type="button" className="ph-intro-link" onClick={tutorialDone ? openTutorial : skipAndPlay}>
+              {tutorialDone ? 'Rever tutorial interativo' : 'Pular tutorial e jogar'}
+            </button>
+          </GameIntro>
+        )}
+
+        {tutorialOpen && (
+          <PrimeHunterTutorialCard
+            state={tutorial}
+            onNext={() => {
+              setHighlightIndex(0)
+              dispatchTutorial({ type: 'next' })
+            }}
+            highlightIndex={highlightIndex}
+            onHighlight={setHighlightIndex}
+            onRetry={() => dispatchTutorial({ type: 'retry' })}
+            onSkip={closeTutorial}
+            onFinish={finishTutorial}
           />
         )}
 

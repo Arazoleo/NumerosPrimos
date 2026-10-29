@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import type { QualityProfile } from '../../graphics/useQualitySettings'
-import AsteroidPool from './AsteroidPool'
+import AsteroidPool, { type ScriptedWave } from './AsteroidPool'
 
 export interface HunterShot {
   id: number
@@ -20,6 +20,7 @@ interface PrimeHunterSceneProps {
   onHit: (value: number, prime: boolean, position: [number, number, number]) => void
   onBreach: (value: number) => void
   onStageChange: (stage: number) => void
+  script?: ScriptedWave | null
 }
 
 function FlightCamera({ playing }: { playing: boolean }) {
@@ -128,7 +129,7 @@ function ShotBeam({ shot }: { shot: HunterShot }) {
   )
 }
 
-export default function PrimeHunterScene({ profile, playing, runId, score, shot, onHit, onBreach, onStageChange }: PrimeHunterSceneProps) {
+export default function PrimeHunterScene({ profile, playing, runId, score, shot, onHit, onBreach, onStageChange, script = null }: PrimeHunterSceneProps) {
   return (
     <>
       <color attach="background" args={['#05070b']} />
@@ -148,6 +149,7 @@ export default function PrimeHunterScene({ profile, playing, runId, score, shot,
         onHit={onHit}
         onBreach={onBreach}
         onStageChange={onStageChange}
+        script={script}
       />
       {shot && <ShotBeam key={shot.id} shot={shot} />}
       <Cockpit />

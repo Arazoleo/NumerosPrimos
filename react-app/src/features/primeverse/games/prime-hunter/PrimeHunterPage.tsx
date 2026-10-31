@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import * as THREE from 'three'
 import { ACHIEVEMENT_BY_ID, useProgressionStore } from '../../../../progression'
 import { isPrime } from '../../../../lib/math'
 import { audioBus } from '../../audio/audioBus'
@@ -13,6 +14,9 @@ import PrimeHunterScene, { type HunterShot } from './PrimeHunterScene'
 import { HUNTER_TARGET_HITS, usePrimeHunterStore } from './primeHunterStore'
 import '../../primeverse.css'
 import './PrimeHunterPage.css'
+
+// Plano z = -8 (normal +Z, constante 8 ⇒ z + 8 = 0), onde terminam os tiros perdidos.
+const MISS_PLANE = new THREE.Plane(new THREE.Vector3(0, 0, 1), 8)
 
 const STAGE_LABELS = ['ÓRBITA 2–30', 'CINTURÃO 30–100', 'SETOR 100–500', 'FRONTEIRA 500+'] as const
 
@@ -56,6 +60,7 @@ export default function PrimeHunterPage() {
   const committedRunRef = useRef(-1)
   const crosshairRef = useRef<HTMLDivElement>(null)
   const shellRef = useRef<HTMLElement>(null)
+  const threeRef = useRef<{ camera: THREE.Camera; canvas: HTMLCanvasElement } | null>(null)
 
   const attempts = hits + errors
   const accuracy = attempts === 0 ? 100 : Math.round((hits / attempts) * 100)
@@ -146,12 +151,21 @@ export default function PrimeHunterPage() {
   }, [breachPrime, recordPrimeMiss])
 
   const shootEmpty = useCallback((event: MouseEvent) => {
-    if (status !== 'playing' || !shellRef.current) return
-    const rect = shellRef.current.getBoundingClientRect()
-    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 9
-    const y = -((event.clientY - rect.top) / rect.height - 0.5) * 5.2
+    const three = threeRef.current
+    if (status !== 'playing' || !three) return
+    // Projeta o clique pela câmera real até o plano z = -8,
+    // para o feixe terminar exatamente sob a mira em qualquer ponto da tela.
+    const rect = three.canvas.getBoundingClientRect()
+    const ndc = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
+    )
+    const raycaster = new THREE.Raycaster()
+    raycaster.setFromCamera(ndc, three.camera)
+    const hit = new THREE.Vector3()
+    if (!raycaster.ray.intersectPlane(MISS_PLANE, hit)) raycaster.ray.at(16, hit)
     shotIdRef.current += 1
-    setShot({ id: shotIdRef.current, target: [x, y, -8], kind: 'miss' })
+    setShot({ id: shotIdRef.current, target: [hit.x, hit.y, hit.z], kind: 'miss' })
     audioBus.play('laser')
     missShot()
     recordPrimeMiss()
@@ -172,6 +186,7 @@ export default function PrimeHunterPage() {
           camera={{ position: [0, 0, 8], fov: 52, near: 0.1, far: 70 }}
           dpr={profile.dpr}
           gl={{ antialias: profile.antialias, alpha: false, powerPreference: 'high-performance' }}
+          onCreated={({ camera, gl }) => { threeRef.current = { camera, canvas: gl.domElement } }}
           onPointerMissed={shootEmpty}
           fallback={<WebGLFallback />}
           aria-label="Campo tridimensional do jogo Prime Hunter"

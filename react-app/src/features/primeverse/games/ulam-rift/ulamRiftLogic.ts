@@ -322,6 +322,75 @@ export function ulamRiftReducer(state: UlamRiftState, action: UlamRiftAction): U
   }
 }
 
+export type UlamRiftOutcome = 'won' | 'lost'
+
+export interface UlamRiftResult {
+  readonly outcome: UlamRiftOutcome
+  readonly score: number
+  readonly elapsedMs: number
+  readonly xp: number
+  readonly terms: number
+  readonly towers: number
+  readonly falls: number
+  readonly hits: number
+}
+
+const RIFT_SCORE_PER_TERM = 120
+const RIFT_SCORE_PER_TOWER = 260
+const RIFT_VICTORY_BONUS = 600
+const RIFT_SPEED_BONUS_CAP = 400
+const RIFT_SPEED_REFERENCE_MS = 150_000
+const RIFT_INTEGRITY_WEIGHT = 3
+const RIFT_DAMAGE_PENALTY = 18
+const RIFT_XP_DIVISOR = 10
+const RIFT_XP_LOSS_FLOOR = 5
+
+export function calculateUlamRiftScore(state: UlamRiftState): number {
+  const won = state.phase === 'won'
+  const terms = Math.min(ULAM_RIFT_PRIMES.length, Math.max(0, state.nextPrimeIndex))
+  const towers = Math.min(ULAM_RIFT_TOWERS.length, state.activatedTowerIds.length)
+
+  let score = terms * RIFT_SCORE_PER_TERM + towers * RIFT_SCORE_PER_TOWER
+
+  if (won) {
+    score += RIFT_VICTORY_BONUS
+    score += Math.max(0, state.integrity) * RIFT_INTEGRITY_WEIGHT
+    const elapsed = safeTime(state.elapsedMs)
+    const speedBonus = Math.round(
+      RIFT_SPEED_BONUS_CAP * Math.max(0, 1 - elapsed / RIFT_SPEED_REFERENCE_MS),
+    )
+    score += speedBonus
+  }
+
+  score -= (state.falls + state.hits) * RIFT_DAMAGE_PENALTY
+
+  return Math.max(0, Math.round(score))
+}
+
+export function calculateUlamRiftXp(state: UlamRiftState): number {
+  const score = calculateUlamRiftScore(state)
+  const base = Math.floor(score / RIFT_XP_DIVISOR)
+  if (state.phase === 'won') return base
+  if (base === 0 && (state.nextPrimeIndex > 0 || state.activatedTowerIds.length > 0)) {
+    return RIFT_XP_LOSS_FLOOR
+  }
+  return base
+}
+
+export function buildUlamRiftResult(state: UlamRiftState): UlamRiftResult | null {
+  if (state.phase !== 'won' && state.phase !== 'lost') return null
+  return {
+    outcome: state.phase,
+    score: calculateUlamRiftScore(state),
+    elapsedMs: Math.max(0, safeTime(state.elapsedMs)),
+    xp: calculateUlamRiftXp(state),
+    terms: Math.min(ULAM_RIFT_PRIMES.length, Math.max(0, state.nextPrimeIndex)),
+    towers: Math.min(ULAM_RIFT_TOWERS.length, state.activatedTowerIds.length),
+    falls: state.falls,
+    hits: state.hits,
+  }
+}
+
 export function getUlamRiftCheckpoint(state: UlamRiftState): RiftVec3 {
   if (!state.checkpointTowerId) return ULAM_RIFT_SPAWN
   return ULAM_RIFT_TOWERS.find((tower) => tower.id === state.checkpointTowerId)?.checkpoint ?? ULAM_RIFT_SPAWN

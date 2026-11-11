@@ -25,4 +25,13 @@ describe('RSA Vault tutorial copy', () => {
     expect(getRsaTutorialCopy(4)?.target).toBe('factor-q')
     expect(getRsaTutorialCopy(5)?.target).toBe('submit')
   })
+
+  it('centers the final tutorial step and highlights the first input', () => {
+    expect(getRsaTutorialCopy(7)).toMatchObject({ target: 'factor-p', position: 'center' })
+  })
+
+  it('uses touch-friendly instructions on coarse-pointer devices', () => {
+    expect(getRsaTutorialCopy(3, true)?.body).toContain('Toque no campo p')
+    expect(getRsaTutorialCopy(5, true)?.body).toContain('toque neste botão')
+  })
 })

@@ -26,7 +26,7 @@
 .rsa-vault *,
 .rsa-vault *::before,
 .rsa-vault *::after { box-sizing: border-box; }
-.rsa-vault section { padding: 0; }
+.rsa-vault :where(section:not(.game-intro):not(.rsa-tutorial__panel)) { padding: 0; }
 .rsa-vault button,
 .rsa-vault input,
 .rsa-vault select { font: inherit; }
@@ -34,6 +34,52 @@
 .rsa-vault input:focus-visible,
 .rsa-vault select:focus-visible,
 .rsa-vault a:focus-visible { outline: 2px solid var(--rsa-cyan); outline-offset: 3px; }
+.rsa-vault button,
+.rsa-vault input,
+.rsa-vault select,
+.rsa-vault a { min-width: 44px; min-height: 44px; }
+.rsa-vault .game-intro__back { display: inline-flex; align-items: center; }
+.rsa-vault .game-intro__action {
+  align-items: center;
+  gap: 16px;
+  min-height: 54px;
+  padding: 0 18px;
+  border: 1px solid color-mix(in srgb, var(--intro-accent) 54%, transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--intro-accent) 12%, transparent), rgba(255, 198, 90, .035));
+  box-shadow: inset 0 0 18px rgba(255, 198, 90, .045), 0 8px 28px rgba(255, 198, 90, .06);
+  color: #fff5df;
+  font: 700 10px/1 'JetBrains Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.rsa-vault .game-intro__action i {
+  position: relative;
+  width: 20px;
+  background: var(--intro-accent);
+  transition: width .2s ease;
+}
+.rsa-vault .game-intro__action i::after {
+  position: absolute;
+  top: -3px;
+  right: 0;
+  width: 7px;
+  height: 7px;
+  border-top: 1px solid var(--intro-accent);
+  border-right: 1px solid var(--intro-accent);
+  content: '';
+  transform: rotate(45deg);
+}
+.rsa-vault .game-intro__action:hover {
+  transform: translateY(-2px);
+  border-color: var(--intro-accent);
+  background: color-mix(in srgb, var(--intro-accent) 16%, rgba(8, 12, 14, .92));
+  box-shadow: inset 0 0 22px rgba(255, 198, 90, .08), 0 12px 34px rgba(255, 198, 90, .12);
+}
+.rsa-vault .game-intro__action:hover i,
+.rsa-vault .game-intro__action:focus-visible i { width: 28px; }
+.rsa-vault .game-intro__action:focus-visible { outline: 2px solid var(--intro-accent); outline-offset: 4px; }
+.rsa-vault .game-intro__action:active { transform: translateY(0); }
 
 .rsa-vault__canvas,
 .rsa-vault__canvas > div,
@@ -58,7 +104,21 @@
 .rsa-console.tutorial-highlight,
 .rsa-topbar:has(.tutorial-highlight),
 .rsa-telemetry:has(.tutorial-highlight) {
-  z-index: 20 !important;
+  z-index: 23 !important;
+}
+
+.rsa-console:has(.tutorial-highlight):not(.tutorial-highlight) {
+  backdrop-filter: none;
+}
+
+.rsa-console:has(.tutorial-highlight):not(.tutorial-highlight)::after,
+.rsa-telemetry:has(.tutorial-highlight)::after {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  background: rgba(0, 0, 0, .76);
+  content: '';
+  pointer-events: none;
 }
 
 .rsa-brand { display: inline-flex; align-items: center; gap: 11px; min-width: 0; }
@@ -234,8 +294,8 @@
 .rsa-secondary:hover { color: var(--rsa-cyan); border-color: rgba(98,247,229,.4); }
 
 .rsa-tutorial { position: absolute; inset: 0; display: grid; padding: clamp(16px, 4vw, 52px); pointer-events: none; transition: all .3s ease; }
-.rsa-tutorial__veil { position: absolute; inset: 0; z-index: 10; background: rgba(1, 4, 7, .72); backdrop-filter: blur(4px) saturate(.72); -webkit-backdrop-filter: blur(4px) saturate(.72); }
-.rsa-tutorial__panel { position: relative; z-index: 30; width: min(470px, 100%); max-height: min(620px, calc(100dvh - 32px)); overflow: auto; padding: clamp(22px, 4vw, 36px); border: 1px solid rgba(255, 198, 90, .46); border-left: 3px solid var(--rsa-gold); background: linear-gradient(145deg, rgba(8, 17, 25, .98), rgba(4, 10, 15, .96)); box-shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 32px rgba(255, 198, 90, .12); }
+.rsa-tutorial__veil { position: absolute; inset: 0; z-index: 22; background: rgba(0, 0, 0, .84); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+.rsa-vault .rsa-tutorial__panel { position: relative; z-index: 30; width: min(470px, 100%); max-height: min(620px, calc(100dvh - 32px)); overflow: auto; padding: clamp(22px, 4vw, 36px); border: 1px solid rgba(255, 198, 90, .46); border-left: 3px solid var(--rsa-gold); background: linear-gradient(145deg, rgba(8, 17, 25, .98), rgba(4, 10, 15, .96)); box-shadow: 0 30px 90px rgba(0, 0, 0, .55), 0 0 32px rgba(255, 198, 90, .12); }
 .rsa-tutorial__counter { margin: 0 0 10px; color: var(--rsa-gold); font: 700 9px/1 'JetBrains Mono', monospace; letter-spacing: .16em; }
 .rsa-tutorial__panel h2 { margin: 0; color: var(--rsa-ink); font: 700 clamp(24px, 4vw, 34px)/1.05 'Space Grotesk', sans-serif; }
 .rsa-tutorial__panel > p:not(.rsa-tutorial__counter) { margin: 16px 0 24px; color: #b7c7ca; font-size: 13px; line-height: 1.65; }
@@ -246,8 +306,8 @@
 .rsa-tutorial__skip:hover, .rsa-tutorial__skip:focus-visible { color: var(--rsa-ink); border-color: var(--rsa-cyan); }
 .rsa-tutorial__next:hover, .rsa-tutorial__next:focus-visible { filter: brightness(1.07); }
 .rsa-tutorial__hint { display: block; margin-top: 14px; color: #71858d; font: 500 9px/1.4 'JetBrains Mono', monospace; }
-.rsa-vault .tutorial-highlight { position: relative !important; z-index: 25 !important; border-color: var(--rsa-gold) !important; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 0 22px 7px rgba(255, 198, 90, .48) !important; transition: box-shadow .22s ease, border-color .22s ease; }
-.rsa-vault .tutorial-highlight::after { position: absolute; inset: -5px; border: 1px solid rgba(255, 198, 90, .65); content: ''; pointer-events: none; }
+.rsa-vault .tutorial-highlight { position: relative !important; z-index: 25 !important; outline: 2px solid rgba(255, 255, 255, .9); outline-offset: 3px; border-color: var(--rsa-gold) !important; box-shadow: 0 0 22px 7px rgba(255, 198, 90, .58) !important; transition: box-shadow .22s ease, border-color .22s ease; }
+.rsa-vault .rsa-console.tutorial-highlight { position: absolute !important; }
 
 .rsa-tutorial[data-position="right"] { place-items: center end; }
 
@@ -261,9 +321,14 @@
 
 @media (max-width: 760px) {
   .rsa-tutorial { place-items: end center; padding: 14px; }
-  .rsa-tutorial__panel { width: min(520px, 100%); max-height: calc(100dvh - 28px); padding: 20px; }
-  .rsa-tutorial__actions { align-items: stretch; flex-direction: column-reverse; }
-  .rsa-tutorial__skip, .rsa-tutorial__next { width: 100%; }
+  .rsa-tutorial[data-position="left"] { place-items: center center; }
+  .rsa-tutorial[data-position="left"] .rsa-tutorial__panel { transform: translateY(28px); }
+  .rsa-tutorial[data-position="left"][data-step="6"] .rsa-tutorial__panel { transform: translateY(52px); }
+  .rsa-vault .rsa-tutorial__panel { width: min(520px, 100%); max-height: calc(100dvh - 28px); padding: 20px; }
+  .rsa-tutorial[data-position="right"] .rsa-tutorial__panel { transform: translateY(-12px); }
+  .rsa-tutorial[data-position="right"][data-step="2"] .rsa-tutorial__panel { transform: translateY(-48px); }
+  .rsa-tutorial__actions { align-items: center; flex-direction: row; }
+  .rsa-tutorial__skip, .rsa-tutorial__next { flex: 1; width: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -280,10 +345,10 @@
 @media (max-width: 1050px) {
   .rsa-signal { display: none; }
   .rsa-telemetry { width: 205px; }
-  .rsa-proof-stack { display: none; }
 }
 
 @media (max-width: 760px) {
+  .rsa-vault .game-intro { padding: max(28px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(96px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); }
   .rsa-vault { min-height: 540px; }
   .rsa-topbar { height: 62px; padding: 0 11px; gap: 8px; }
   .rsa-brand__mark { width: 32px; height: 32px; }
@@ -296,20 +361,19 @@
   .rsa-vault-progress i { width: 13px; }
   .rsa-topbar__actions { gap: 6px; }
   .rsa-topbar .pv-quality select { min-width: 65px; padding: 6px 18px 6px 6px; font-size: 7px; }
-  .rsa-console { top: auto; right: 0; bottom: 0; left: 0; width: 100%; max-height: 64dvh; padding: 17px 16px calc(17px + env(safe-area-inset-bottom)); border-right: 0; border-bottom: 0; border-left-width: 0; border-top: 1px solid var(--rsa-line); box-shadow: 0 -22px 55px rgba(0,0,0,.42); }
+  .rsa-vault .rsa-console { top: auto; right: 0; bottom: 0; left: 0; width: 100%; max-height: 64dvh; padding: 17px 22px calc(17px + env(safe-area-inset-bottom)); border-right: 0; border-bottom: 0; border-left-width: 0; border-top: 1px solid var(--rsa-line); box-shadow: 0 -22px 55px rgba(0,0,0,.42); }
   .rsa-console::before { left: 0; width: 86px; }
   .rsa-console h2 { font-size: 24px; }
   .rsa-stage-rail { margin: 12px 0 14px; }
   .rsa-stage-rail li small { font-size: 6px; }
   .rsa-equation { min-height: 54px; }
   .rsa-field input { min-height: 46px; }
-  .rsa-telemetry { top: 72px; right: 10px; width: auto; }
-  .rsa-telemetry__stats { display: flex; }
-  .rsa-telemetry__stats div { min-height: 45px; min-width: 74px; padding: 8px; border-right: 1px solid var(--rsa-line) !important; border-bottom: 0; }
-  .rsa-telemetry__stats div:last-child { border: 0 !important; }
+  .rsa-telemetry { top: 72px; right: 10px; width: min(260px,calc(100vw - 20px)); gap: 6px; }
+  .rsa-telemetry__stats { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .rsa-telemetry__stats div { min-height: 44px; min-width: 0; padding: 7px 5px; border-right: 1px solid var(--rsa-line) !important; border-bottom: 0; }
+  .rsa-telemetry__stats div:last-child { grid-column: auto; border: 0 !important; }
   .rsa-telemetry__stats span { font-size: 6px; }
-  .rsa-telemetry__stats strong { font-size: 11px; }
-  .rsa-public-key { display: none; }
+  .rsa-telemetry__stats strong { font-size: 10px; }
   .rsa-feedback { right: 10px; bottom: calc(64dvh + 10px); width: min(340px,calc(100vw - 20px)); }
   .rsa-unlocking { bottom: calc(64dvh + 12px); padding: 10px 16px; }
   .rsa-modal-wrap { align-items: start; padding: 13px; background: rgba(3,6,10,.78); }
@@ -332,6 +396,7 @@
   .rsa-instructions { grid-template-columns: 1fr; }
   .rsa-instructions > div { min-height: 0; grid-template-columns: auto 1fr; gap: 10px; }
   .rsa-lead { font-size: 11px; }
+  .rsa-tutorial[data-position="center"] { place-items: center; }
   .rsa-intro__footer > span { display: none; }
   .rsa-intro__footer { justify-content: flex-end; }
   .rsa-primary,
@@ -352,7 +417,15 @@
 
 @media (max-height: 560px) and (orientation: landscape) {
   .rsa-vault { min-height: 0; }
-  .rsa-console { top: 65px; right: auto; bottom: 5px; left: 6px; width: min(390px,55vw); max-height: none; padding: 13px; border: 1px solid var(--rsa-line); }
+  .rsa-vault .rsa-console { top: 65px; right: auto; bottom: 5px; left: 6px; width: min(390px,55vw); max-height: none; padding: 13px; border: 1px solid var(--rsa-line); }
+  .rsa-vault .rsa-tutorial__panel { width: min(390px, calc(100vw - 430px)); max-height: calc(100dvh - 32px); padding: 18px; }
+  .rsa-telemetry { top: 70px; gap: 6px; }
+  .rsa-telemetry__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .rsa-telemetry__stats div { min-width: 0; min-height: 44px; padding: 7px 4px; border-right: 1px solid var(--rsa-line) !important; border-bottom: 0; }
+  .rsa-telemetry__stats div:nth-child(2) { border-right: 1px solid var(--rsa-line); }
+  .rsa-telemetry__stats div:last-child { grid-column: auto; border: 0 !important; }
+  .rsa-telemetry__stats span { font-size: 6px; }
+  .rsa-telemetry__stats strong { font-size: 10px; }
   .rsa-feedback { display: none; }
   .rsa-unlocking { right: 16px; bottom: 18px; left: auto; transform: none; }
   .rsa-modal-wrap { align-items: center; }

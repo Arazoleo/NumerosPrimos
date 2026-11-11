@@ -18,6 +18,14 @@ export interface RsaTutorialCopy {
   readonly body: string
 }
 
+export const RSA_TOUCH_MEDIA_QUERY = '(pointer: coarse)'
+
+export function isRsaTouchDevice(): boolean {
+  return typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia(RSA_TOUCH_MEDIA_QUERY).matches
+}
+
 export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, RsaTutorialCopy>> = {
   1: {
     target: 'public-key',
@@ -56,13 +64,21 @@ export const RSA_TUTORIAL_COPY: Readonly<Record<Exclude<RsaTutorialStep, 0>, Rsa
     body: 'Tudo o que você resolver aparecerá guardado aqui. Use esta área para consultar seus passos sem precisar anotar nada fora da tela.',
   },
   7: {
-    target: 'console',
-    position: 'right',
+    target: 'factor-p',
+    position: 'center',
     title: 'Hora de jogar!',
     body: 'O caminho está livre! Encontre p e q para dar o primeiro passo. Se tiver dúvidas, fique de olho nas dicas da tela.',
   },
 }
 
-export function getRsaTutorialCopy(step: RsaTutorialStep): RsaTutorialCopy | null {
-  return step === 0 ? null : RSA_TUTORIAL_COPY[step]
+export function getRsaTutorialCopy(step: RsaTutorialStep, isTouchDevice = false): RsaTutorialCopy | null {
+  if (step === 0) return null
+
+  const copy = RSA_TUTORIAL_COPY[step]
+  if (!isTouchDevice) return copy
+
+  return {
+    ...copy,
+    body: copy.body.replace(/\bclique\b/gi, (match) => (match[0] === 'C' ? 'Toque' : 'toque')),
+  }
 }

@@ -32,6 +32,8 @@ export function createDefaultSessionIdentity(): SessionIdentity {
       visorStyle: 'slit',
       auraStyle: 'orbit',
       accentStyle: 'prime',
+      characterModel: 'primo',
+      energyType: 'prime-ring',
     },
   }
 }

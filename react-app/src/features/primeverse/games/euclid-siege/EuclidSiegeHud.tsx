@@ -1,6 +1,7 @@
 import type { PointerEvent as ReactPointerEvent } from 'react'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
+import GameSettings from '../../ui/GameSettings'
 import {
   FACTOR_LANCE_RANGE,
   formatSiegeTime,
@@ -121,6 +122,7 @@ export default function EuclidSiegeHud({
         <div className="euclid-hud__score">
           <span>PONTOS</span><strong>{state.score.toLocaleString('pt-BR')}</strong><small>{formatSiegeTime(state.elapsedMs)}</small>
         </div>
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="euclid-hud__pause" onClick={onPause} aria-label="Pausar cerco">II</button>
       </header>
 
@@ -219,12 +221,6 @@ export default function EuclidSiegeHud({
 
       <footer className="euclid-hud__footer">
         <span><kbd>WASD</kbd> MOVER</span><span><kbd>1–6</kbd> FATOR</span><span><kbd>J</kbd> ATACAR</span><span><kbd>F</kbd> FATORAR</span><span><kbd>Q</kbd> PULSO</span><span><kbd>E</kbd> DEFENDER</span>
-        <label>
-          QUALIDADE
-          <select value={quality} onChange={(event) => onQualityChange(event.target.value as QualityLevel)}>
-            <option value="low">LOW</option><option value="medium">MID</option><option value="high">HIGH</option>
-          </select>
-        </label>
       </footer>
 
       {(state.phase === 'countdown' || state.phase === 'intermission') && (

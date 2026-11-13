@@ -78,13 +78,8 @@ export type AvatarAccentColor = (typeof AVATAR_ACCENT_COLORS)[number]
 export const AVATAR_ENERGY_COLORS = AVATAR_ACCENT_COLORS
 export type AvatarEnergyColor = AvatarAccentColor
 
-export const AVATAR_BODY_COLORS = [
-  '#172b3a',
-  '#2c254b',
-  '#323943',
-  '#3a2430',
-  '#22372f',
-] as const
+/** O traje usa a mesma paleta do brilho, para as duas linhas de cores ficarem iguais e alinhadas. */
+export const AVATAR_BODY_COLORS = AVATAR_ACCENT_COLORS
 export type AvatarBodyColor = (typeof AVATAR_BODY_COLORS)[number]
 export type HexColor = `#${string}`
 
@@ -97,6 +92,14 @@ export type AvatarAuraStyle = (typeof AVATAR_AURA_STYLES)[number]
 export const AVATAR_ACCENT_STYLES = ['prime', 'factor', 'cipher'] as const
 export type AvatarAccentStyle = (typeof AVATAR_ACCENT_STYLES)[number]
 
+/** Character body models */
+export const CHARACTER_MODELS = ['primo', 'cipher', 'nexo', 'crypton'] as const
+export type CharacterModel = (typeof CHARACTER_MODELS)[number]
+
+/** Energy types with mathematical concepts and powers */
+export const ENERGY_TYPES = ['prime-ring', 'crypto-matrix', 'factor-net', 'cipher-lock'] as const
+export type EnergyType = (typeof ENERGY_TYPES)[number]
+
 export interface AvatarAppearance {
   readonly bodyColor: HexColor
   readonly accentColor: HexColor
@@ -104,6 +107,8 @@ export interface AvatarAppearance {
   readonly visorStyle?: AvatarVisorStyle
   readonly auraStyle?: AvatarAuraStyle
   readonly accentStyle?: AvatarAccentStyle
+  readonly characterModel?: CharacterModel
+  readonly energyType?: EnergyType
 }
 
 export const DEFAULT_AVATAR_APPEARANCE: AvatarAppearance = Object.freeze({
@@ -113,6 +118,8 @@ export const DEFAULT_AVATAR_APPEARANCE: AvatarAppearance = Object.freeze({
   visorStyle: AVATAR_VISOR_STYLES[0],
   auraStyle: AVATAR_AURA_STYLES[0],
   accentStyle: AVATAR_ACCENT_STYLES[0],
+  characterModel: CHARACTER_MODELS[0],
+  energyType: ENERGY_TYPES[0],
 })
 
 export const EMOTES = ['wave', 'celebrate', 'heart', 'question', 'spark'] as const
@@ -850,6 +857,8 @@ export function isAvatarAppearance(value: unknown): value is AvatarAppearance {
     && (value.visorStyle === undefined || includesValue(AVATAR_VISOR_STYLES, value.visorStyle))
     && (value.auraStyle === undefined || includesValue(AVATAR_AURA_STYLES, value.auraStyle))
     && (value.accentStyle === undefined || includesValue(AVATAR_ACCENT_STYLES, value.accentStyle))
+    && (value.characterModel === undefined || includesValue(CHARACTER_MODELS, value.characterModel))
+    && (value.energyType === undefined || includesValue(ENERGY_TYPES, value.energyType))
 }
 
 function copyAppearance(appearance: AvatarAppearance): AvatarAppearance {
@@ -860,6 +869,8 @@ function copyAppearance(appearance: AvatarAppearance): AvatarAppearance {
     ...(appearance.visorStyle === undefined ? {} : { visorStyle: appearance.visorStyle }),
     ...(appearance.auraStyle === undefined ? {} : { auraStyle: appearance.auraStyle }),
     ...(appearance.accentStyle === undefined ? {} : { accentStyle: appearance.accentStyle }),
+    ...(appearance.characterModel === undefined ? {} : { characterModel: appearance.characterModel }),
+    ...(appearance.energyType === undefined ? {} : { energyType: appearance.energyType }),
   }
 }
 

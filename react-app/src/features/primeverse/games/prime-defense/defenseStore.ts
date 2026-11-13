@@ -55,6 +55,7 @@ export interface PrimeDefenseState {
   isTutorialActive: boolean
   
   nextTutorialStep: () => void
+  prevTutorialStep: () => void
   skipTutorial: () => void
   startTutorial: () => void
   
@@ -164,6 +165,7 @@ type PrimeDefenseActions = Pick<
   | 'returnToIntro'
   | 'clearFeedback'
   | 'nextTutorialStep'
+  | 'prevTutorialStep'
   | 'skipTutorial'
   | 'startTutorial'
 >
@@ -563,6 +565,19 @@ export function createPrimeDefenseStore(
             return { tutorialStep: state.tutorialStep + 1 }
           }
           return { isTutorialActive: false, tutorialStep: 0 } 
+        }),
+
+      // Volta um passo e desfaz os filtros que o tutorial só colocou depois dele.
+      prevTutorialStep: () =>
+        set((state) => {
+          const tutorialStep = Math.max(1, state.tutorialStep - 1)
+          return {
+            tutorialStep,
+            selectedDivisor: 2,
+            placements: state.placements.filter(
+              (placement) => tutorialStep >= 8 || (tutorialStep >= 5 && placement.lane === 1),
+            ),
+          }
         }),
 
       skipTutorial: () => {

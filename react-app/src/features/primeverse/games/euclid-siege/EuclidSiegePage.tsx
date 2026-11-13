@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useQualitySettings } from '../../graphics/useQualitySettings'
+import VolumeControl from '../../ui/VolumeControl'
 import { SceneBoundary } from '../../ui/SceneBoundary'
 import { useDocumentTitle } from '../../useDocumentTitle'
 import { ExpeditionPartyAvatars, ExpeditionPartyHud, usePrimeverseExpeditionParty } from '../primeverse-online/party'
@@ -191,11 +192,11 @@ export default function EuclidSiegePage(): JSX.Element {
           backLabel="Primeverse Online"
           onStart={startTutorial}
         >
-          <label className="euclid-intro__quality">QUALIDADE
+          <div className="pv-game-settings"><label className="euclid-intro__quality">QUALIDADE
             <select value={quality} onChange={(event) => setQuality(event.target.value as typeof quality)}>
               <option value="low">LOW</option><option value="medium">MID</option><option value="high">HIGH</option>
             </select>
-          </label>
+          </label><VolumeControl /></div>
         </GameIntro>
         <ExpeditionPartyHud party={party} className="pep-hud--euclid" />
       </main>

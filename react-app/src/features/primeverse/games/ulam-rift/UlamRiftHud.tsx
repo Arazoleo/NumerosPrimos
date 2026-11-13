@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import GameIntro from '../../ui/GameIntro'
 import type { UlamRiftTelemetry } from './UlamRiftScene'
 import {
@@ -140,7 +140,7 @@ export default function UlamRiftHud({
         </Link>
         <div className="ulam-rift-sector"><small>SETOR ATUAL</small><strong>{telemetry.sector}</strong></div>
         <div className="ulam-rift-topbar__actions">
-          <QualityControl value={quality} onChange={onQualityChange} />
+          <GameSettings value={quality} onChange={onQualityChange} />
           <button type="button" onClick={onRestart}>REINICIAR</button>
           <button type="button" onClick={() => onPauseChange(!paused)} aria-label={paused ? 'Continuar' : 'Pausar'}>{paused ? '▶' : 'Ⅱ'}</button>
         </div>

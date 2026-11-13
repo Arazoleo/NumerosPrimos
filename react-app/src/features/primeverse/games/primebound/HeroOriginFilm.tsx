@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { createMusicDirector, startMusicOnFirstGesture } from '../../audio/proceduralMusic'
 import { useAudioResource } from '../../audio/useAudioResource'
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
 import { getHeroClass, type HeroClassId } from './heroClassSystem'
 import HeroSprite from './HeroSprite'
 import { ORIGIN_FILM_TRACKS } from './originFilmMusic'
@@ -538,7 +539,7 @@ export default function HeroOriginFilm({
     const score = new Audio(`/games/primebound/origins/score-${filmDefinition.scene}.mp3`)
     staticScoreRef.current = score
     score.loop = true
-    score.volume = 0.32
+    const releaseVolume = subscribeAudioVolume(volume => { score.volume = 0.32 * volume })
     let cancelGesture: (() => void) | undefined
     const startProcedural = () => {
       if (usingStaticScore.current) return
@@ -554,6 +555,7 @@ export default function HeroOriginFilm({
       if (!usingStaticScore.current) startProcedural()
     })
     return () => {
+      releaseVolume()
       cancelGesture?.()
       getMusic().stop()
       score.pause()
@@ -567,7 +569,7 @@ export default function HeroOriginFilm({
   useEffect(() => {
     getMusic().setIntensity(Math.min(0.9, 0.25 + frame.progress * 0.65))
     if (staticScoreRef.current && usingStaticScore.current) {
-      staticScoreRef.current.volume = Math.min(0.5, 0.24 + frame.progress * 0.26)
+      staticScoreRef.current.volume = Math.min(0.5, 0.24 + frame.progress * 0.26) * effectiveAudioVolume()
     }
   }, [frame.progress, getMusic])
   const voiceRef = useRef<OriginVoicePlayer | null>(null)

@@ -17,6 +17,8 @@ export interface HorrorAudioController {
   dispose(): Promise<void>
 }
 
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
+
 type AudioContextConstructor = new (options?: AudioContextOptions) => AudioContext
 
 interface SafariAudioWindow extends Window {
@@ -75,6 +77,7 @@ function safeStop(source: AudioScheduledSourceNode): void {
 
 /** Procedural ambience: no downloaded samples and no browser speech voices. */
 export function createHorrorAudio(): HorrorAudioController {
+  let preferenceVolume = effectiveAudioVolume()
   let context: AudioContext | null = null
   let master: GainNode | null = null
   let compressor: DynamicsCompressorNode | null = null
@@ -223,14 +226,14 @@ export function createHorrorAudio(): HorrorAudioController {
       active = nextActive
       if (!context || context.state === 'closed' || !master || !drone) return
       const now = context.currentTime
-      glide(master.gain, active && enabled ? 0.32 : SILENCE, now, 0.35)
+      glide(master.gain, active && enabled ? Math.max(SILENCE, 0.32 * preferenceVolume) : SILENCE, now, 0.35)
       glide(drone.gain.gain, active ? 0.11 : SILENCE, now, 0.5)
     },
 
     setEnabled(nextEnabled) {
       enabled = nextEnabled
       if (!context || context.state === 'closed' || !master) return
-      glide(master.gain, active && enabled ? 0.32 : SILENCE, context.currentTime, 0.2)
+      glide(master.gain, active && enabled ? Math.max(SILENCE, 0.32 * preferenceVolume) : SILENCE, context.currentTime, 0.2)
     },
 
     update(mix) {
@@ -285,6 +288,7 @@ export function createHorrorAudio(): HorrorAudioController {
     },
 
     async dispose() {
+      unsubscribePreferences()
       disposed = true
       active = false
       if (drone) {
@@ -300,5 +304,9 @@ export function createHorrorAudio(): HorrorAudioController {
     },
   }
 
+  const unsubscribePreferences = subscribeAudioVolume(volume => {
+    preferenceVolume = volume
+    controller.setEnabled(enabled)
+  })
   return controller
 }

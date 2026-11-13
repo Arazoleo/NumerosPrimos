@@ -16,6 +16,9 @@ import {
   getObjectiveProgress,
   useSkylineRunnerStore,
 } from './skylineRunnerStore'
+import SkylineRunnerTutorialView from './skylineRunnerTutorialView'
+
+const TUTORIAL_STORAGE_KEY = 'primeverse_skyline_tutorial_completed'
 
 export type TouchAction = 'jump' | 'grapple' | 'attack' | 'interact' | 'sprint'
 
@@ -190,6 +193,24 @@ export default function SkylineRunnerHud({
     () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
     [],
   )
+  const [tutorialStep, setTutorialStep] = useState<number>(() => {
+    return localStorage.getItem(TUTORIAL_STORAGE_KEY) === 'true' ? 0 : 1
+  })
+
+  const handleNextStep = () => {
+    setTutorialStep((prev) => {
+      const next = prev < 5 ? prev + 1 : 0
+      if (next === 0) {
+        localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
+      }
+      return next
+    })
+  }
+
+  const handleSkipTutorial = () => {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
+    setTutorialStep(0)
+  }
 
   useEffect(() => {
     if (!toast) return undefined
@@ -231,7 +252,8 @@ export default function SkylineRunnerHud({
         </Link>
         <div className="skyline-sector"><span>LOCALIZAÇÃO</span><strong>{telemetry.sector}</strong></div>
         <div className="skyline-topbar__right">
-          <GameSettings value={quality} onChange={onQualityChange} />
+<GameSettings value={quality} onChange={onQualityChange} />
+          <button type="button" onClick={() => setTutorialStep(1)}>TUTORIAL</button>
           <button type="button" onClick={onRestart}>REINICIAR</button>
           <button type="button" onClick={onPause} aria-label="Pausar jogo">II</button>
         </div>
@@ -320,6 +342,12 @@ export default function SkylineRunnerHud({
       <div className={`skyline-speed-lines${telemetry.speed > 10 ? ' active' : ''}`} aria-hidden="true">
         {Array.from({ length: 9 }, (_, index) => <i key={index} style={{ top: `${9 + index * 10}%`, animationDelay: `${index * -0.07}s` }} />)}
       </div>
+
+      <SkylineRunnerTutorialView
+        step={tutorialStep as 0 | 1 | 2 | 3 | 4 | 5}
+        onNext={handleNextStep}
+        onSkip={handleSkipTutorial}
+      />
 
       {isCoarse && !activeDialogue && <TouchControls onAction={onTouchAction} onMove={onTouchMove} />}
       <div className="skyline-orientation" role="note"><i /><strong>Gire o dispositivo</strong><span>O Skyline Protocol foi desenhado para o modo paisagem.</span></div>

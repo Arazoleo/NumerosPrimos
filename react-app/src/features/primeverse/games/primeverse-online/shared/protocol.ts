@@ -78,14 +78,8 @@ export type AvatarAccentColor = (typeof AVATAR_ACCENT_COLORS)[number]
 export const AVATAR_ENERGY_COLORS = AVATAR_ACCENT_COLORS
 export type AvatarEnergyColor = AvatarAccentColor
 
-export const AVATAR_BODY_COLORS = [
-  '#5FA8FF',  // Azul ciano
-  '#A983FF',  // Roxo
-  '#72E59A',  // Verde
-  '#F0C35A',  // Amarelo dourado
-  '#FF759F',  // Rosa
-  '#E8F0FF',  // Branco azulado
-] as const
+/** O traje usa a mesma paleta do brilho, para as duas linhas de cores ficarem iguais e alinhadas. */
+export const AVATAR_BODY_COLORS = AVATAR_ACCENT_COLORS
 export type AvatarBodyColor = (typeof AVATAR_BODY_COLORS)[number]
 export type HexColor = `#${string}`
 
@@ -99,7 +93,7 @@ export const AVATAR_ACCENT_STYLES = ['prime', 'factor', 'cipher'] as const
 export type AvatarAccentStyle = (typeof AVATAR_ACCENT_STYLES)[number]
 
 /** Character body models */
-export const CHARACTER_MODELS = ['primo', 'lumina', 'zeta', 'orion'] as const
+export const CHARACTER_MODELS = ['primo', 'cipher', 'nexo', 'crypton'] as const
 export type CharacterModel = (typeof CHARACTER_MODELS)[number]
 
 /** Energy types with mathematical concepts and powers */

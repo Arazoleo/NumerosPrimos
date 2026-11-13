@@ -7,6 +7,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
 } from 'react'
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
 
 import HeroSprite from './HeroSprite'
 import { HERO_ORIGIN_FILMS } from './heroOriginFilms'
@@ -182,6 +183,10 @@ export default function PrimeboundClassSelect({
     setSpeakingClassId(null)
   }, [])
 
+  useEffect(() => subscribeAudioVolume(volume => {
+    if (voiceRef.current) voiceRef.current.volume = 0.92 * volume
+  }), [])
+
   const playCatchphrase = useCallback((classId: HeroClassId) => {
     if (typeof Audio === 'undefined') return
 
@@ -191,7 +196,7 @@ export default function PrimeboundClassSelect({
 
     const audio = new Audio(originQuoteAudioPath(classId))
     audio.preload = 'auto'
-    audio.volume = 0.92
+    audio.volume = 0.92 * effectiveAudioVolume()
     voiceRef.current = audio
     setSpeakingClassId(classId)
 

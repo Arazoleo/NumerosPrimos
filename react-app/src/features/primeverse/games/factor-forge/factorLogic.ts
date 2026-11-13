@@ -7,7 +7,18 @@ import {
 
 import type { FactorNodeLayout, ForgeNode } from './types'
 
-export const FORGE_CHALLENGES = [60, 84, 90, 126, 168, 210, 252, 360] as const
+/**
+ * Pool of challenges: every number from 24 to 500 that splits into 3 to 6 prime factors.
+ * Fewer than 3 would be trivial; more than 6 makes the 3D tree too wide to read.
+ */
+export const FORGE_CHALLENGES: readonly number[] = Array.from({ length: 477 }, (_, index) => index + 24)
+  .filter((value) => {
+    const count = primeFactorization(value).length
+    return count >= 3 && count <= 6
+  })
+
+/** How many recent challenges are excluded when drawing the next one. */
+export const FORGE_RECENT_MEMORY = 12
 
 const SUPERSCRIPT_DIGITS: Record<string, string> = {
   '0': '⁰',
@@ -130,17 +141,19 @@ export function calculateForgeScore({
   elapsedMs,
   steps,
   invalidAttempts,
+  hintsUsed = 0,
 }: {
   value: number
   elapsedMs: number
   steps: number
   invalidAttempts: number
+  hintsUsed?: number
 }): number {
   const optimalSteps = getOptimalStepCount(value)
   const complexity = Math.round(Math.log2(value) * 120)
   const speedBonus = Math.max(0, 1_500 - Math.floor(elapsedMs / 80))
   const efficiencyBonus = Math.max(0, 600 - Math.max(0, steps - optimalSteps) * 120)
-  const precisionBonus = Math.max(0, 400 - invalidAttempts * 100)
+  const precisionBonus = Math.max(0, 400 - invalidAttempts * 100 - hintsUsed * 80)
 
   return Math.max(100, 500 + complexity + speedBonus + efficiencyBonus + precisionBonus)
 }
@@ -150,11 +163,24 @@ export function calculateForgeXp(score: number, invalidAttempts: number): number
   return Math.max(25, Math.min(300, Math.round((score / 16) * precisionMultiplier)))
 }
 
-export function nextChallengeValue(currentValue: number): number {
-  const currentIndex = FORGE_CHALLENGES.indexOf(
-    currentValue as (typeof FORGE_CHALLENGES)[number],
-  )
-  return FORGE_CHALLENGES[(currentIndex + 1 + FORGE_CHALLENGES.length) % FORGE_CHALLENGES.length]
+/** Draws a random challenge that is not the current one nor any of the recent ones. */
+export function nextChallengeValue(
+  currentValue: number,
+  recent: readonly number[] = [],
+  random: () => number = Math.random,
+): number {
+  const excluded = new Set([currentValue, ...recent])
+  const candidates = FORGE_CHALLENGES.filter((value) => !excluded.has(value))
+  const pool = candidates.length > 0
+    ? candidates
+    : FORGE_CHALLENGES.filter((value) => value !== currentValue)
+  return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))]
+}
+
+/** Hint: the smallest prime factor always splits the crystal correctly. */
+export function getHintDivisor(value: number): number | null {
+  const [smallest] = primeFactorization(value)
+  return smallest !== undefined && smallest < value ? smallest : null
 }
 
 export function layoutFactorTree(nodes: readonly ForgeNode[]): FactorNodeLayout[] {

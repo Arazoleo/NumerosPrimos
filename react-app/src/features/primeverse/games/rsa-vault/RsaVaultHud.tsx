@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   modularPower,
   RSA_INPUT_MAX_DIGITS,
@@ -246,7 +246,7 @@ function IntroPanel({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element
       mark="n"
       onStart={() => start()}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -271,7 +271,7 @@ function Topbar({ quality, onQualityChange }: RsaVaultHudProps): JSX.Element {
         <span className={`rsa-signal${phase === 'unlocking' ? ' is-unlocking' : ''}`}>
           <i /> {phase === 'unlocking' ? 'FERROLHOS EM MOVIMENTO' : 'CANAL SEGURO'}
         </span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         {vaultIndex === 0 && phase === 'playing' && !isTutorialActive ? (
           <button className="rsa-help" type="button" onClick={startTutorial}>Ajuda</button>
         ) : null}

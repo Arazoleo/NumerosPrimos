@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   SKYLINE_DIALOGUES,
   SKYLINE_OBJECTIVE_ORDER,
@@ -25,8 +25,6 @@ interface SkylineRunnerHudProps {
   readonly onCapture: () => void
   readonly onPause: () => void
   readonly onRestart: () => void
-  readonly soundEnabled: boolean
-  readonly onSoundToggle: () => void
   readonly selectedPrime: SkylinePrimeCoreValue
   readonly onPrimeSelect: (prime: SkylinePrimeCoreValue) => void
   readonly onTouchAction: (action: TouchAction, pressed: boolean) => void
@@ -167,8 +165,6 @@ export default function SkylineRunnerHud({
   onCapture,
   onPause,
   onRestart,
-  soundEnabled,
-  onSoundToggle,
   selectedPrime,
   onPrimeSelect,
   onTouchAction,
@@ -235,8 +231,7 @@ export default function SkylineRunnerHud({
         </Link>
         <div className="skyline-sector"><span>LOCALIZAÇÃO</span><strong>{telemetry.sector}</strong></div>
         <div className="skyline-topbar__right">
-          <QualityControl value={quality} onChange={onQualityChange} />
-          <button type="button" onClick={onSoundToggle} aria-pressed={soundEnabled}>{soundEnabled ? 'SOM ON' : 'SOM OFF'}</button>
+          <GameSettings value={quality} onChange={onQualityChange} />
           <button type="button" onClick={onRestart}>REINICIAR</button>
           <button type="button" onClick={onPause} aria-label="Pausar jogo">II</button>
         </div>

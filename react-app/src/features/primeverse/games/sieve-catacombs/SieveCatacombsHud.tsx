@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 
 import { MAX_PLAYER_HITS, hitsRemaining } from './gameLogic'
 import GameIntro from '../../ui/GameIntro'
+import VolumeControl from '../../ui/VolumeControl'
 import { CATACOMBS_SEAL_ORDER } from './campaignLogic'
 import { CAESAR_DISC_ID, decodeWithDisc, discPairs } from './caesarDisc'
 import type { CatacombsSnapshot, HeldControl, PulseControl } from './types'
@@ -13,10 +14,8 @@ interface SieveCatacombsHudProps {
   readonly active: boolean
   readonly snapshot: CatacombsSnapshot
   readonly objective: string
-  readonly soundEnabled: boolean
   readonly onStart: () => void
   readonly onRestart: () => void
-  readonly onToggleSound: () => void
   readonly onHeldControl: (control: HeldControl, pressed: boolean) => void
   readonly onPulseControl: (control: PulseControl) => void
 }
@@ -225,10 +224,8 @@ export default function SieveCatacombsHud({
   active,
   snapshot,
   objective,
-  soundEnabled,
   onStart,
   onRestart,
-  onToggleSound,
   onHeldControl,
   onPulseControl,
   onSubmitElevatorAnswer,
@@ -257,14 +254,7 @@ export default function SieveCatacombsHud({
           </div>
         )}
         <div className="scc-topbar__actions">
-          <button
-            className="scc-sound"
-            type="button"
-            aria-pressed={soundEnabled}
-            onClick={onToggleSound}
-          >
-            {soundEnabled ? 'SOM ATIVO' : 'SOM MUDO'}
-          </button>
+          <VolumeControl />
           <Link className="scc-back" to="/jogos/primeverse-online">ABANDONAR EXPEDIÇÃO <span>↗</span></Link>
         </div>
       </header>

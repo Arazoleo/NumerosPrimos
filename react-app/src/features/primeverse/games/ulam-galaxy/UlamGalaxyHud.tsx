@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import GameIntro from '../../ui/GameIntro'
 import { createUlamSpiral, getMissionPath, ULAM_ROUNDS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
@@ -63,7 +63,7 @@ function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       mark="41"
       onStart={() => start()}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -109,7 +109,7 @@ function Topbar({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       </div>
       <div className="ulam-topbar__actions">
         <span className={`ulam-live${phase === 'scanning' ? ' scanning' : ''}`}><i /> {phase === 'scanning' ? 'ESCANEANDO' : 'MAPA ESTÁVEL'}</span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" onClick={restart}>Reiniciar</button>
       </div>
     </header>

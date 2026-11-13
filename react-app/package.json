@@ -15,8 +15,9 @@
     "build:server": "tsc --noEmit -p tsconfig.server.json",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit && npm run build:server",
+    "typecheck": "tsc --noEmit && npm run build:server && tsc --noEmit -p tsconfig.e2e.json",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "voices:origins": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/generate-origin-voices.ts",
     "test:watch": "vitest"
   },
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
     "@types/express": "^5.0.6",
     "@types/node": "^26.4.1",
     "@types/react": "^18.3.31",

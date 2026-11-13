@@ -1,6 +1,8 @@
 import { create, type StoreApi, type UseBoundStore } from 'zustand'
 
 import { recordRsaVaultProgress } from './progressionAdapter'
+import { getRsaPracticeStep, getRsaTutorialCopy } from './rsaVaultTutorial'
+import { buildRsaLearningFeedback, type RsaLearningFeedback } from './rsaVaultLearningFeedback'
 import {
   calculateRsaStageScore,
   calculateRsaVaultXp,
@@ -11,7 +13,6 @@ import {
   RSA_VAULT_COUNT,
 } from './rsaVaultLogic'
 import {
-  RSA_TUTORIAL_LAST_STEP,
   type RsaFeedback,
   type RsaInputField,
   type RsaStage,
@@ -66,7 +67,10 @@ export interface RsaVaultState {
   clearFeedback: (feedbackId: number) => void
   isTutorialActive: boolean
   tutorialStep: RsaTutorialStep
+  tutorialReviewStep: RsaTutorialStep
+  prevTutorialStep: () => void
   nextTutorialStep: () => void
+  resumeTutorial: () => void
   skipTutorial: () => void
   startTutorial: () => void
 }
@@ -99,8 +103,9 @@ function nextFeedback(
   kind: RsaFeedback['kind'],
   title: string,
   detail: string,
+  learning?: RsaLearningFeedback,
 ): RsaFeedback {
-  return { id: (previous?.id ?? 0) + 1, kind, title, detail }
+  return { id: (previous?.id ?? 0) + 1, kind, title, detail, ...(learning ? { learning } : {}) }
 }
 
 function nextSound(
@@ -134,6 +139,7 @@ function resetRun(
     completedAt: null,
     isTutorialActive: true,
     tutorialStep: 1,
+    tutorialReviewStep: 0,
     feedback: nextFeedback(
       state.feedback,
       'info',
@@ -173,6 +179,7 @@ export function createRsaVaultStore(
     completedAt: null,
     isTutorialActive: false,
     tutorialStep: 0,
+    tutorialReviewStep: 0,
     feedback: null,
     lastSound: null,
     roundResults: [],
@@ -184,19 +191,27 @@ export function createRsaVaultStore(
     },
 
     setInput: (field, value) => {
-      if (get().phase !== 'playing') return
+      const state = get()
+      if (state.phase !== 'playing' || state.tutorialReviewStep !== 0) return
       set((state) => ({ inputs: { ...state.inputs, [field]: value } }))
     },
 
     submitStage: () => {
       const state = get()
-      if (state.phase !== 'playing' || state.isTutorialActive) return false
+      if (state.phase !== 'playing' || state.tutorialReviewStep !== 0) return false
+      if (state.isTutorialActive) {
+        const advance = getRsaTutorialCopy(state.tutorialStep)?.advance
+        if (advance?.kind !== 'stage-correct' || advance.stage !== state.stage) return false
+      }
 
       const evaluation = evaluateRsaStage(
         state.challenge,
         state.stage,
         state.inputs,
       )
+      const learning = state.vaultIndex === 0
+        ? buildRsaLearningFeedback(state.challenge, state.stage, state.inputs, evaluation)
+        : undefined
       const attempts = state.attempts + 1
       const stageAttempts = state.stageAttempts + 1
       const roundAttempts = state.roundAttempts + 1
@@ -213,6 +228,7 @@ export function createRsaVaultStore(
             'error',
             evaluation.title,
             evaluation.detail,
+            learning,
           ),
           lastSound: nextSound(state.lastSound, 'error'),
         })
@@ -244,6 +260,7 @@ export function createRsaVaultStore(
             'success',
             evaluation.title,
             `${evaluation.detail} O ferrolho central está recuando.`,
+            learning,
           ),
           lastSound: nextSound(state.lastSound, 'unlock'),
         })
@@ -253,6 +270,7 @@ export function createRsaVaultStore(
       const nextStage = RSA_STAGES[stageIndex + 1]
       set({
         stage: nextStage,
+        tutorialStep: state.isTutorialActive ? getRsaPracticeStep(nextStage) : state.tutorialStep,
         attempts,
         stageAttempts: 0,
         roundAttempts,
@@ -264,6 +282,7 @@ export function createRsaVaultStore(
           'success',
           evaluation.title,
           evaluation.detail,
+          learning,
         ),
         lastSound: nextSound(state.lastSound, 'stage'),
       })
@@ -288,6 +307,9 @@ export function createRsaVaultStore(
       if (!isFinalVault) {
         set({
           phase: 'vault-open',
+          isTutorialActive: false,
+          tutorialStep: 0,
+          tutorialReviewStep: 0,
           roundResults,
           feedback: nextFeedback(
             state.feedback,
@@ -321,6 +343,9 @@ export function createRsaVaultStore(
 
       set({
         phase: 'complete',
+        isTutorialActive: false,
+        tutorialStep: 0,
+        tutorialReviewStep: 0,
         completedAt,
         roundResults,
         result,
@@ -346,6 +371,9 @@ export function createRsaVaultStore(
       set({
         phase: 'playing',
         vaultIndex,
+        isTutorialActive: false,
+        tutorialStep: 0,
+        tutorialReviewStep: 0,
         challenge,
         stage: 'factor',
         completedStages: [],
@@ -389,6 +417,7 @@ export function createRsaVaultStore(
         completedAt: null,
         isTutorialActive: false,
         tutorialStep: 0,
+        tutorialReviewStep: 0,
         feedback: null,
         lastSound: null,
         roundResults: [],
@@ -397,28 +426,55 @@ export function createRsaVaultStore(
     },
 
     startTutorial: () => {
-      if (get().phase !== 'playing') return
-      set({ isTutorialActive: true, tutorialStep: 1 })
+      const state = get()
+      if (state.phase !== 'playing' || state.vaultIndex !== 0) return
+      if (state.isTutorialActive) {
+        if (state.tutorialReviewStep !== 0) set({ tutorialReviewStep: 0 })
+        return
+      }
+      set({
+        isTutorialActive: true,
+        tutorialStep: getRsaPracticeStep(state.stage),
+        tutorialReviewStep: 0,
+      })
+    },
+
+    prevTutorialStep: () => {
+      const state = get()
+      if (state.phase !== 'playing' || state.vaultIndex !== 0 || !state.isTutorialActive) return
+      const displayedStep = state.tutorialReviewStep || state.tutorialStep
+      if (displayedStep <= 1) return
+      set({ tutorialReviewStep: (displayedStep - 1) as RsaTutorialStep })
     },
 
     nextTutorialStep: () => {
       const state = get()
-      if (!state.isTutorialActive) return
-
-      if (state.tutorialStep >= RSA_TUTORIAL_LAST_STEP) {
-        set({ isTutorialActive: false, tutorialStep: 0, startedAt: state.startedAt ?? now() })
+      if (state.phase !== 'playing' || state.vaultIndex !== 0 || !state.isTutorialActive) return
+      if (state.tutorialReviewStep !== 0) {
+        const nextStep = state.tutorialReviewStep + 1
+        set({ tutorialReviewStep: nextStep >= state.tutorialStep ? 0 : nextStep as RsaTutorialStep })
         return
       }
+      if (getRsaTutorialCopy(state.tutorialStep)?.advance.kind !== 'manual') return
 
-      set((current) => ({
-        tutorialStep: (current.tutorialStep + 1) as RsaTutorialStep,
-      }))
+      const tutorialStep = (state.tutorialStep + 1) as RsaTutorialStep
+      const isPractice = getRsaTutorialCopy(tutorialStep)?.advance.kind === 'stage-correct'
+      set({
+        tutorialStep,
+        startedAt: isPractice ? state.startedAt ?? now() : state.startedAt,
+      })
+    },
+
+    resumeTutorial: () => {
+      const state = get()
+      if (state.phase !== 'playing' || state.vaultIndex !== 0 || !state.isTutorialActive || state.tutorialReviewStep === 0) return
+      set({ tutorialReviewStep: 0 })
     },
 
     skipTutorial: () => {
       const state = get()
       if (!get().isTutorialActive) return
-      set({ isTutorialActive: false, tutorialStep: 0, startedAt: state.startedAt ?? now() })
+      set({ isTutorialActive: false, tutorialStep: 0, tutorialReviewStep: 0, startedAt: state.startedAt ?? now() })
     },
 
     clearFeedback: (feedbackId) => {

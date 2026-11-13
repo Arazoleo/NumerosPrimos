@@ -1,3 +1,5 @@
+import type { RsaLearningFeedback } from './rsaVaultLearningFeedback'
+
 export type RsaVaultPhase =
   | 'intro'
   | 'playing'
@@ -5,9 +7,9 @@ export type RsaVaultPhase =
   | 'vault-open'
   | 'complete'
 
-export const RSA_TUTORIAL_LAST_STEP = 7 as const
+export const RSA_TUTORIAL_LAST_STEP = 6 as const
 
-export type RsaTutorialStep = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type RsaTutorialStep = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 export type RsaStage = 'factor' | 'totient' | 'inverse' | 'decrypt'
 
@@ -43,6 +45,7 @@ export interface RsaFeedback {
   readonly kind: RsaFeedbackKind
   readonly title: string
   readonly detail: string
+  readonly learning?: RsaLearningFeedback
 }
 
 export interface RsaVaultRoundResult {

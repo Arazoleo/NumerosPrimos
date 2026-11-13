@@ -1,6 +1,6 @@
 import { Line, Sparkles, Stars, Text } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type ElementRef } from 'react'
 import * as THREE from 'three'
 import type { QualityProfile } from '../../graphics/useQualitySettings'
 import AsteroidPool from './AsteroidPool'
@@ -103,8 +103,13 @@ function PrimeConstellation() {
   )
 }
 
+const BEAM_WIDTH = 2.1
+const BEAM_OPACITY = 0.85
+
 function ShotBeam({ shot }: { shot: HunterShot }) {
   const groupRef = useRef<THREE.Group>(null)
+  const lineRef = useRef<ElementRef<typeof Line>>(null)
+  const tipMaterialRef = useRef<THREE.MeshBasicMaterial>(null)
   const elapsedRef = useRef(0)
   const color = shot.kind === 'prime' ? '#ffdb4d' : shot.kind === 'composite' ? '#ef7781' : '#5fa8ff'
   const start: [number, number, number] = [0, -2.35, 5.1]
@@ -112,17 +117,22 @@ function ShotBeam({ shot }: { shot: HunterShot }) {
   useFrame((_, delta) => {
     elapsedRef.current += delta
     if (!groupRef.current) return
-    const opacity = Math.max(0, 1 - elapsedRef.current / 0.14)
-    groupRef.current.visible = opacity > 0
-    groupRef.current.scale.x = 0.65 + opacity * 0.35
+    const fade = Math.max(0, 1 - elapsedRef.current / 0.14)
+    groupRef.current.visible = fade > 0
+    // Anima só o material: escalar o grupo puxaria as pontas do feixe para x = 0.
+    if (lineRef.current) {
+      lineRef.current.material.linewidth = BEAM_WIDTH * (0.65 + fade * 0.35)
+      lineRef.current.material.opacity = BEAM_OPACITY * fade
+    }
+    if (tipMaterialRef.current) tipMaterialRef.current.opacity = BEAM_OPACITY * fade
   })
 
   return (
     <group ref={groupRef}>
-      <Line points={[start, shot.target]} color={color} transparent opacity={0.85} lineWidth={2.1} />
+      <Line ref={lineRef} points={[start, shot.target]} color={color} transparent opacity={BEAM_OPACITY} lineWidth={BEAM_WIDTH} />
       <mesh position={shot.target}>
         <sphereGeometry args={[0.11, 10, 10]} />
-        <meshBasicMaterial color={color} transparent opacity={0.85} />
+        <meshBasicMaterial ref={tipMaterialRef} color={color} transparent opacity={BEAM_OPACITY} />
       </mesh>
     </group>
   )

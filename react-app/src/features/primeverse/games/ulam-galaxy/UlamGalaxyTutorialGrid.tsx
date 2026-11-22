@@ -6,12 +6,12 @@ interface UlamTutorialGridProps {
   readonly mode: UlamTutorialGridMode
 }
 
-interface GridCell {
+export interface UlamTutorialGridCell {
   readonly value: number
   readonly diagonal: boolean
 }
 
-const GRID: readonly GridCell[] = [
+export const ULAM_TUTORIAL_GRID: readonly UlamTutorialGridCell[] = [
   { value: 17, diagonal: false },
   { value: 16, diagonal: false },
   { value: 15, diagonal: false },
@@ -26,7 +26,7 @@ const GRID: readonly GridCell[] = [
 
   { value: 19, diagonal: false },
   { value: 6, diagonal: false },
-  { value: 1, diagonal: true },
+  { value: 1, diagonal: false },
   { value: 2, diagonal: false },
   { value: 11, diagonal: false },
 
@@ -36,14 +36,18 @@ const GRID: readonly GridCell[] = [
   { value: 9, diagonal: false },
   { value: 10, diagonal: false },
 
-  { value: 21, diagonal: true },
+  { value: 21, diagonal: false },
   { value: 22, diagonal: false },
   { value: 23, diagonal: false },
   { value: 24, diagonal: false },
   { value: 25, diagonal: false },
 ]
 
-const PRIMES = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23])
+export const ULAM_TUTORIAL_PRIMES = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23])
+
+export function isUlamTutorialPrime(value: number): boolean {
+  return ULAM_TUTORIAL_PRIMES.has(value)
+}
 
 export default function UlamTutorialGrid({
   mode,
@@ -58,9 +62,10 @@ export default function UlamTutorialGrid({
           : 'Recorte de uma espiral de Ulam com números inteiros'
       }
     >
-      {GRID.map((cell) => {
-        const isPrime = PRIMES.has(cell.value)
-        const isHighlighted = mode === 'diagonal' && cell.diagonal
+      {ULAM_TUTORIAL_GRID.map((cell) => {
+        const isPrime = isUlamTutorialPrime(cell.value)
+        const isAnchor = mode === 'spiral' && cell.value === 1
+        const isHighlighted = mode === 'diagonal' && cell.diagonal && isPrime
 
         return (
           <span
@@ -68,6 +73,7 @@ export default function UlamTutorialGrid({
             className={[
               'ulam-tutorial-grid__cell',
               isPrime ? 'is-prime' : '',
+              isAnchor ? 'is-anchor' : '',
               isHighlighted ? 'is-diagonal' : '',
             ]
               .filter(Boolean)

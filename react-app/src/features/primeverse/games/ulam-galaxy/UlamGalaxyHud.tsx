@@ -7,25 +7,6 @@ import GameIntro from '../../ui/GameIntro'
 import { getMissionPath, ULAM_ROUNDS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
 import UlamGalaxyTutorialView from './UlamGalaxyTutorialView'
-import { ULAM_GALAXY_TUTORIAL_STEPS } from './ulamGalaxyTutorialCopy'
-
-const ULAM_TUTORIAL_SEEN_STORAGE_KEY = 'ulam-galaxy-tutorial-seen'
-
-function hasSeenUlamTutorial(): boolean {
-  try {
-    return window.localStorage.getItem(ULAM_TUTORIAL_SEEN_STORAGE_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function markUlamTutorialSeen(): void {
-  try {
-    window.localStorage.setItem(ULAM_TUTORIAL_SEEN_STORAGE_KEY, '1')
-  } catch {
-    // A próxima partida pode oferecer o tutorial novamente.
-  }
-}
 
 interface UlamGalaxyHudProps {
   quality: QualityLevel
@@ -66,8 +47,6 @@ function GalaxyBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 }
 
 function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
-
-  const start = useUlamGalaxyStore((state) => state.start)
   const startTutorial = useUlamGalaxyStore((state) => state.startTutorial)
   return (
     <GameIntro
@@ -77,7 +56,7 @@ function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       actionLabel="Escanear a espiral"
       accent="#a58cff"
       mark="41"
-      onStart={() => hasSeenUlamTutorial() ? start() : startTutorial()}
+      onStart={startTutorial}
     >
       <QualityControl value={quality} onChange={onQualityChange} />
     </GameIntro>
@@ -104,25 +83,31 @@ function Topbar({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
   )
 }
 
-function MissionConsole(): JSX.Element {
+function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
   const mission = useUlamGalaxyStore((state) => state.mission)
   const selected = useUlamGalaxyStore((state) => state.selectedDirection)
   const select = useUlamGalaxyStore((state) => state.selectDirection)
   const scan = useUlamGalaxyStore((state) => state.scan)
-  const disabled = phase !== 'playing'
+  const disabled = phase !== 'playing' && !(phase === 'tutorial' && tutorialStep === 5)
 
   return (
-    <section className="ulam-console" aria-labelledby="ulam-mission-title">
+    <section
+      className={`ulam-console${tutorialStep === 5 ? ' is-tutorial-target' : ''}`}
+      aria-labelledby="ulam-mission-title"
+    >
       <div className="ulam-console__label">REGIÃO 0{mission.difficulty} // MALHA {mission.size} × {mission.size}</div>
       <h2 id="ulam-mission-title">Qual diagonal concentra <em>mais primos?</em></h2>
       <p>Parta da âncora <strong>{mission.anchor.value}</strong> e compare os próximos {mission.pathLength} setores em cada direção.</p>
-      <div className="ulam-directions">
+      <div className={`ulam-directions${tutorialStep === 5 ? ' is-tutorial-highlight' : ''}`}>
         {mission.paths.map((path) => (
           <button
             type="button"
             key={path.direction.id}
-            className={selected === path.direction.id ? 'selected' : ''}
+            className={[
+              selected === path.direction.id ? 'selected' : '',
+              tutorialStep === 5 ? 'is-tutorial-highlight' : '',
+            ].filter(Boolean).join(' ')}
             disabled={disabled}
             aria-pressed={selected === path.direction.id}
             onClick={() => select(path.direction.id)}
@@ -132,7 +117,12 @@ function MissionConsole(): JSX.Element {
           </button>
         ))}
       </div>
-      <button type="button" className="ulam-primary ulam-scan" disabled={!selected || disabled} onClick={scan}>
+      <button
+        type="button"
+        className={`ulam-primary ulam-scan${tutorialStep === 5 ? ' is-tutorial-highlight' : ''}`}
+        disabled={tutorialStep === 5 ? false : (!selected || disabled)}
+        onClick={scan}
+      >
         {phase === 'scanning' ? 'Analisando trajetória…' : 'Analisar trajetória'} <span>⌁</span>
       </button>
       <details className="ulam-accessible-map">
@@ -150,7 +140,7 @@ function MissionConsole(): JSX.Element {
   )
 }
 
-function Telemetry(): JSX.Element {
+function Telemetry({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.Element {
   const mission = useUlamGalaxyStore((state) => state.mission)
   const scannerEnabled = useUlamGalaxyStore((state) => state.scannerEnabled)
   const toggleScanner = useUlamGalaxyStore((state) => state.toggleScanner)
@@ -158,13 +148,13 @@ function Telemetry(): JSX.Element {
   const mistakes = useUlamGalaxyStore((state) => state.mistakes)
   const elapsed = useMissionClock()
   return (
-    <aside className="ulam-telemetry">
-      <div className="ulam-telemetry__stats">
+    <aside className={`ulam-telemetry${tutorialStep === 4 ? ' is-tutorial-target' : ''}`}>
+      <div className={`ulam-telemetry__stats${tutorialStep === 4 ? ' is-tutorial-highlight' : ''}`}>
         <div><span>SCORE</span><strong>{score.toLocaleString('pt-BR')}</strong></div>
         <div><span>TEMPO</span><strong>{formatTime(elapsed)}</strong></div>
         <div><span>DESVIOS</span><strong>{String(mistakes).padStart(2, '0')}</strong></div>
       </div>
-      <button type="button" className={`ulam-scanner${scannerEnabled ? ' enabled' : ''}`} aria-pressed={scannerEnabled} onClick={toggleScanner}>
+      <button type="button" className={`ulam-scanner${scannerEnabled ? ' enabled' : ''}${tutorialStep === 4 ? ' is-tutorial-highlight' : ''}`} aria-pressed={scannerEnabled} onClick={toggleScanner}>
         <span><i /> SCANNER PRIMO</span><strong>{scannerEnabled ? 'ON' : 'OFF'}</strong>
       </button>
       <div className="ulam-legend"><span><i /> primo</span><span><i /> composto</span><span><i /> âncora</span></div>
@@ -243,26 +233,18 @@ export function UlamGalaxyHud(props: UlamGalaxyHudProps): JSX.Element {
   const previousTutorialStep = useUlamGalaxyStore((state) => state.previousTutorialStep)
   const skipTutorial = useUlamGalaxyStore((state) => state.skipTutorial)
   if (phase === 'intro') return <div className="ulam-hud"><Intro {...props} /></div>
-  const showMissionHud = phase === 'playing' || phase === 'scanning'
+  const showMissionHud = phase === 'playing' || phase === 'scanning' || phase === 'tutorial'
   return (
     <div className="ulam-hud">
       {phase === 'tutorial' ? (
         <UlamGalaxyTutorialView
           step={tutorialStep}
-          onNext={() => {
-            if (tutorialStep === ULAM_GALAXY_TUTORIAL_STEPS[ULAM_GALAXY_TUTORIAL_STEPS.length - 1]) {
-              markUlamTutorialSeen()
-            }
-            nextTutorialStep()
-          }}
+          onNext={nextTutorialStep}
           onPrevious={previousTutorialStep}
-          onSkip={() => {
-            markUlamTutorialSeen()
-            skipTutorial()
-          }}
+          onSkip={skipTutorial}
         />
       ) : null}
-      {showMissionHud ? <><Topbar {...props} /><MissionConsole /><Telemetry /></> : null}
+      {showMissionHud ? <><Topbar {...props} /><MissionConsole tutorialStep={phase === 'tutorial' ? tutorialStep : 0} /><Telemetry tutorialStep={phase === 'tutorial' ? tutorialStep : 0} /></> : null}
       {showMissionHud ? <Feedback /> : null}
       <RoundComplete />
       <Result />

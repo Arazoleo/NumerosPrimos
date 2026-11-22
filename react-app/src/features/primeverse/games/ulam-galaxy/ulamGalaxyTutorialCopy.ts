@@ -6,9 +6,7 @@ export type UlamGalaxyTutorialStep =
 
 export type UlamGalaxyTutorialVisual =
   | "spiral"
-  | "diagonal"
-  | "direction"
-  | "scanner";
+  | "diagonal";
 
 export interface UlamGalaxyTutorialCopy {
   readonly title: string;
@@ -24,12 +22,11 @@ export const ULAM_GALAXY_TUTORIAL_COPY: Readonly<
   1: {
     title: "Analise a Galáxia de Ulam",
     body: "A espiral contém centenas de inteiros e, na sua formação, as diagonais concentram números primos. A sua missão é identificar qual diagonal contém mais números primos.",
-    hint: "Você pode usar o scanner para facilitar a investigação de cada região!",
   },
   2: {
     title: "A espiral organiza os inteiros",
     body: "Os números partem de uma âncora e crescem ao seu redor formando uma espiral",
-    example:
+    hint:
       "Aqui você pode observar que o número 1 é a âncora e os outros valores se organizam ao redor dele",
     visual: "spiral",
   },
@@ -40,15 +37,14 @@ export const ULAM_GALAXY_TUTORIAL_COPY: Readonly<
     visual: "diagonal",
   },
   4: {
-    title: "Marque a diagonal dominante",
-    body: "Selecione a direção que contém a maior concentração de primos e clique em \"Analisar trajetória\".",
-    visual: "direction",
+    title: "Escaneie os números primos",
+    body: "Use o scanner para destacar os pontos da espiral que representam números primos.",
+    hint: "Fique de olho também em seu placar e tempo de jogo!"
   },
   5: {
-    title: "Escaneie as regiões",
-    body: "Confirme sua escolha com o scanner e avance pelas cinco regiões",
-    hint: "Para maximar sua pontuação evite erros e seja ágil!",
-    visual: "scanner",
+    title: "Marque a diagonal dominante",
+    body: "Selecione uma das direções possíveis. Depois, clique em \"Analisar trajetória\" para confirmar a escolha.",
+    hint: "Escolha a direção com a maior concentração de primos.",
   },
 };
 

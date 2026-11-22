@@ -5,6 +5,10 @@ import {
   ULAM_GALAXY_TUTORIAL_COPY,
   ULAM_GALAXY_TUTORIAL_STEPS,
 } from "./ulamGalaxyTutorialCopy";
+import {
+  isUlamTutorialPrime,
+  ULAM_TUTORIAL_GRID,
+} from "./UlamGalaxyTutorialGrid";
 
 describe("Ulam Galaxy tutorial copy", () => {
   it("contains at most five steps", () => {
@@ -29,23 +33,39 @@ describe("Ulam Galaxy tutorial copy", () => {
   it("has a visual diagonal example in step three", () => {
     expect(ULAM_GALAXY_TUTORIAL_COPY[3].visual).toBe("diagonal");
     expect(ULAM_GALAXY_TUTORIAL_COPY[3].body).toMatch(/diagonal/i);
+
+    const diagonalPrimes = ULAM_TUTORIAL_GRID.filter(
+      (cell) => cell.diagonal && isUlamTutorialPrime(cell.value),
+    );
+    expect(diagonalPrimes.map((cell) => cell.value)).toEqual([13, 3, 7]);
+    expect(ULAM_TUTORIAL_GRID.filter((cell) => cell.diagonal).map((cell) => cell.value)).toEqual([13, 3, 7]);
   });
 
-  it("explains what the player must select to score", () => {
+  it("highlights only primes in the spiral and diagonal grids", () => {
+    expect(isUlamTutorialPrime(2)).toBe(true);
+    expect(isUlamTutorialPrime(21)).toBe(false);
+    expect(isUlamTutorialPrime(1)).toBe(false);
+  });
+
+  it("explains that step four uses the scanner and telemetry", () => {
     const copy = ULAM_GALAXY_TUTORIAL_COPY[4];
 
-    expect(copy.visual).toBe("direction");
-    expect(copy.body).toMatch(/selecione/i);
-    expect(copy.body).toMatch(/maior concentração de primos/i);
-    expect(copy.body).toMatch(/Analisar trajetória/i);
+    expect(copy.visual).toBeUndefined();
+    expect(copy.title).toMatch(/scanner|escaneie/i);
+    expect(copy.body).toMatch(/scanner/i);
+    expect(copy.body).toMatch(/números primos/i);
+    expect(copy.hint).toMatch(/placar/i);
+    expect(copy.hint).toMatch(/tempo/i);
   });
 
-  it("shows scanner controls and the five regions in step five", () => {
+  it("explains that step five selects a direction and confirms with scan", () => {
     const copy = ULAM_GALAXY_TUTORIAL_COPY[5];
 
-    expect(copy.visual).toBe("scanner");
-    expect(copy.body).toMatch(/scanner/i);
-    expect(copy.body).toMatch(/cinco regiões/i);
+    expect(copy.visual).toBeUndefined();
+    expect(copy.title).toMatch(/diagonal dominante/i);
+    expect(copy.body).toMatch(/direções possíveis/i);
+    expect(copy.body).toMatch(/Analisar trajetória/i);
+    expect(copy.hint).toMatch(/maior concentração de primos/i);
   });
 
   it("returns null for step zero", () => {

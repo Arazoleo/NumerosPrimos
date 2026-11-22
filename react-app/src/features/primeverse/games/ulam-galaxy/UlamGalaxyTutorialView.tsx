@@ -34,7 +34,12 @@ export default function UlamGalaxyTutorialView({
   const isLastStep = stepIndex === ULAM_GALAXY_TUTORIAL_STEPS.length - 1
 
   return (
-    <section className="ulam-tutorial" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <section
+      className={`ulam-tutorial ulam-tutorial--step-${step}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div className="ulam-tutorial__card">
         <p className="ulam-tutorial__counter">
           TUTORIAL · PASSO {stepIndex + 1} DE {ULAM_GALAXY_TUTORIAL_STEPS.length}
@@ -44,31 +49,6 @@ export default function UlamGalaxyTutorialView({
         {copy.example ? <p className="ulam-tutorial__example">{copy.example}</p> : null}
         {copy.visual === 'spiral' || copy.visual === 'diagonal' ? (
           <UlamTutorialGrid mode={copy.visual} />
-        ) : null}
-        {copy.visual === 'direction' ? (
-          <div className="ulam-tutorial-controls" aria-label="Exemplo dos controles para escolher uma diagonal">
-            <div className="ulam-tutorial-controls__directions">
-              <span>↗ <strong>Nordeste</strong></span>
-              <span className="is-selected">↖ <strong>Noroeste</strong></span>
-              <span>↙ <strong>Sudeste</strong></span>
-              <span>↘ <strong>Sudoeste</strong></span>
-            </div>
-            <button type="button" className="ulam-tutorial-controls__scan" tabIndex={-1}>
-              Analisar trajetória <span>⌁</span>
-            </button>
-          </div>
-        ) : null}
-        {copy.visual === 'scanner' ? (
-          <div className="ulam-tutorial-controls ulam-tutorial-controls--scanner" aria-label="Exemplo do scanner para escanear regiões">
-            <button type="button" className="ulam-tutorial-controls__scanner" tabIndex={-1}>
-              <span><i /> SCANNER PRIMO</span><strong>ON</strong>
-            </button>
-            <div className="ulam-tutorial-controls__regions" aria-label="Cinco regiões da missão">
-              {[1, 2, 3, 4, 5].map((region) => (
-                <span key={region} className={region <= 2 ? 'is-active' : undefined}>0{region}</span>
-              ))}
-            </div>
-          </div>
         ) : null}
         {copy.hint ? <p className="ulam-tutorial__hint">{copy.hint}</p> : null}
         <div className="ulam-tutorial__progress" aria-hidden="true">

@@ -20,6 +20,19 @@ describe('Ulam Galaxy store', () => {
     store.getState().skipTutorial()
     expect(store.getState()).toMatchObject({ phase: 'playing', tutorialStep: 0 })
   })
+
+  it('restarts directly without starting the tutorial', () => {
+    const store = createUlamGalaxyStore({ missions: createUlamMissions() })
+
+    store.getState().start()
+    store.getState().restart()
+
+    expect(store.getState()).toMatchObject({
+      phase: 'playing',
+      tutorialStep: 0,
+      score: 0,
+    })
+  })
   it('runs all five scans and records a completed map', () => {
     let clock = 1_000
     const recordProgress = vi.fn(() => true)

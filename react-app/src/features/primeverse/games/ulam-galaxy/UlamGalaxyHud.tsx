@@ -6,6 +6,26 @@ import QualityControl from '../../ui/QualityControl'
 import GameIntro from '../../ui/GameIntro'
 import { getMissionPath, ULAM_ROUNDS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
+import UlamGalaxyTutorialView from './UlamGalaxyTutorialView'
+import { ULAM_GALAXY_TUTORIAL_STEPS } from './ulamGalaxyTutorialCopy'
+
+const ULAM_TUTORIAL_SEEN_STORAGE_KEY = 'ulam-galaxy-tutorial-seen'
+
+function hasSeenUlamTutorial(): boolean {
+  try {
+    return window.localStorage.getItem(ULAM_TUTORIAL_SEEN_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markUlamTutorialSeen(): void {
+  try {
+    window.localStorage.setItem(ULAM_TUTORIAL_SEEN_STORAGE_KEY, '1')
+  } catch {
+    // A próxima partida pode oferecer o tutorial novamente.
+  }
+}
 
 interface UlamGalaxyHudProps {
   quality: QualityLevel
@@ -48,6 +68,7 @@ function GalaxyBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
 
   const start = useUlamGalaxyStore((state) => state.start)
+  const startTutorial = useUlamGalaxyStore((state) => state.startTutorial)
   return (
     <GameIntro
       title="Ulam Galaxy"
@@ -56,7 +77,7 @@ function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       actionLabel="Escanear a espiral"
       accent="#a58cff"
       mark="41"
-      onStart={() => start()}
+      onStart={() => hasSeenUlamTutorial() ? start() : startTutorial()}
     >
       <QualityControl value={quality} onChange={onQualityChange} />
     </GameIntro>
@@ -217,10 +238,30 @@ function Result(): JSX.Element | null {
 
 export function UlamGalaxyHud(props: UlamGalaxyHudProps): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
+  const tutorialStep = useUlamGalaxyStore((state) => state.tutorialStep)
+  const nextTutorialStep = useUlamGalaxyStore((state) => state.nextTutorialStep)
+  const previousTutorialStep = useUlamGalaxyStore((state) => state.previousTutorialStep)
+  const skipTutorial = useUlamGalaxyStore((state) => state.skipTutorial)
   if (phase === 'intro') return <div className="ulam-hud"><Intro {...props} /></div>
   const showMissionHud = phase === 'playing' || phase === 'scanning'
   return (
     <div className="ulam-hud">
+      {phase === 'tutorial' ? (
+        <UlamGalaxyTutorialView
+          step={tutorialStep}
+          onNext={() => {
+            if (tutorialStep === ULAM_GALAXY_TUTORIAL_STEPS[ULAM_GALAXY_TUTORIAL_STEPS.length - 1]) {
+              markUlamTutorialSeen()
+            }
+            nextTutorialStep()
+          }}
+          onPrevious={previousTutorialStep}
+          onSkip={() => {
+            markUlamTutorialSeen()
+            skipTutorial()
+          }}
+        />
+      ) : null}
       {showMissionHud ? <><Topbar {...props} /><MissionConsole /><Telemetry /></> : null}
       {showMissionHud ? <Feedback /> : null}
       <RoundComplete />

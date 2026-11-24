@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  FORGE_CHALLENGES,
   createRootNode,
   formatPrimeProduct,
   getDivisorOptions,
+  getHintDivisor,
   getLeafNodes,
   getOptimalStepCount,
   isFactorTreeComplete,
   layoutFactorTree,
+  nextChallengeValue,
   splitFactorNode,
 } from './factorLogic'
 import type { ForgeNode } from './types'
@@ -71,5 +74,25 @@ describe('Factor Forge logic', () => {
 
     expect(layout).toHaveLength(nodes.length)
     expect(points.size).toBe(nodes.length)
+  })
+})
+
+describe('Factor Forge challenges', () => {
+  it('offers a large pool of challenges', () => {
+    expect(FORGE_CHALLENGES.length).toBeGreaterThan(100)
+  })
+
+  it('never repeats the current or recent challenges', () => {
+    const recent = FORGE_CHALLENGES.slice(0, 12)
+    for (let i = 0; i < 200; i += 1) {
+      const next = nextChallengeValue(84, recent)
+      expect(next).not.toBe(84)
+      expect(recent).not.toContain(next)
+    }
+  })
+
+  it('hints with a prime divisor that splits the crystal', () => {
+    expect(getHintDivisor(84)).toBe(2)
+    expect(getHintDivisor(7)).toBeNull()
   })
 })

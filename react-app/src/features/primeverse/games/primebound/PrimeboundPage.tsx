@@ -53,9 +53,10 @@ export default function PrimeboundPage(): JSX.Element {
     const previouslyFocused = document.activeElement instanceof HTMLElement
       ? document.activeElement
       : null
-    const focusableSelector = 'button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
+    const focusableSelector = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])'
     const focusables = Array.from(modal.querySelectorAll<HTMLElement>(focusableSelector))
-    focusables[0]?.focus()
+    const initialFocus = modal.querySelector<HTMLElement>('.primebound-primary') ?? focusables[0]
+    initialFocus?.focus()
 
     const trapFocus = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return

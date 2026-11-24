@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import { EMOTE_GLYPHS, type Emote, type WorldState } from './shared/protocol'
 import { countConnectedPlayers, PRIMEVERSE_RECONNECT_ATTEMPTS, type OnlineClientSnapshot } from './network/PrimeverseOnlineClient'
 import type { InteractionTarget } from './types'
@@ -132,7 +132,7 @@ export default function OnlineHud({ network, world, quality, onQualityChange, lo
         </div>
       </div>
 
-      <div className="pvo-quality-wrap"><QualityControl value={quality} onChange={onQualityChange} /></div>
+      <div className="pvo-quality-wrap"><GameSettings value={quality} onChange={onQualityChange} /></div>
 
       {debug && (
         <aside className="pvo-debug">

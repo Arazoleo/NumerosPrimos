@@ -55,6 +55,27 @@ describe('Prime Defense store', () => {
     expect(store.getState().placements).toEqual([])
   })
 
+  it('tutorial back button undoes the filters placed after the step it returns to', () => {
+    const store = createPrimeDefenseStore({ initialBestScore: 0 })
+    store.getState().start()
+    store.getState().placeTower(1, 0, 2)
+    store.getState().placeTower(2, 0, 3)
+    store.setState({ tutorialStep: 8 })
+
+    store.getState().prevTutorialStep()
+    expect(store.getState().tutorialStep).toBe(7)
+    expect(store.getState().placements).toMatchObject([{ lane: 1, divisor: 2 }])
+
+    store.setState({ tutorialStep: 5 })
+    store.getState().prevTutorialStep()
+    expect(store.getState().tutorialStep).toBe(4)
+    expect(store.getState().placements).toEqual([])
+
+    store.setState({ tutorialStep: 1 })
+    store.getState().prevTutorialStep()
+    expect(store.getState().tutorialStep).toBe(1)
+  })
+
   it('resolves prime, interception and breach outcomes one at a time', () => {
     const store = createPrimeDefenseStore({ initialBestScore: 0 })
     store.getState().start()

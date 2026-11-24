@@ -450,6 +450,23 @@
 .ulam-rift-result > a { margin-top: 1rem; color: rgba(206, 232, 239, 0.52); font-size: 0.5rem; text-decoration: none; }
 .ulam-rift-result > a:hover { color: var(--rift-cyan); }
 
+.ulam-rift-result > .ulam-rift-xp {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.75rem;
+  grid-template-columns: none;
+  margin: -0.4rem 0 1.6rem;
+  padding: 0.75rem 1.4rem;
+  border: 1px solid rgba(165, 140, 255, 0.4);
+  background: rgba(165, 140, 255, 0.08);
+}
+.ulam-rift-xp > span { color: rgba(206, 232, 239, 0.62); font-size: 0.5rem; border-right: 0; padding: 0; }
+.ulam-rift-xp > strong { color: #d9ccff; font-size: 0.92rem; font-weight: 600; letter-spacing: -0.01em; }
+.ulam-rift-xp > small { color: var(--rift-cyan); font-size: 0.46rem; }
+.ulam-rift-result--lost > .ulam-rift-xp { border-color: rgba(255, 150, 170, 0.35); background: rgba(190, 30, 73, 0.08); }
+
 .ulam-rift-touch { display: none; }
 
 .ulam-rift[data-quality='low']::after {
@@ -535,3 +552,4 @@
     transition-duration: 0.01ms !important;
   }
 }
+

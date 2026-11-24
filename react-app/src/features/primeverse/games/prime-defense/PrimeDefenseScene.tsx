@@ -366,7 +366,7 @@ function DefenseCamera({ reducedMotion }: { reducedMotion: boolean }): null {
   const camera = useThree((state) => state.camera)
   const pointer = useThree((state) => state.pointer)
   const desired = useMemo(() => new THREE.Vector3(), [])
-  const target = useMemo(() => new THREE.Vector3(0, 0.5, 1.2), [])
+  const target = useMemo(() => new THREE.Vector3(0, -4.5, 1.2), [])
 
   useEffect(() => {
     camera.position.set(0, 5, 11.5)

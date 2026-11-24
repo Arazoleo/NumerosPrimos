@@ -118,7 +118,6 @@ export default function SieveCatacombsCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [runId])
   const [snapshot, setSnapshot] = useState<CatacombsSnapshot>(initialSnapshot)
-  const [soundEnabled, setSoundEnabled] = useState(true)
   const getAudio = useAudioResource(createHorrorAudio)
   const getMusic = useAudioResource(() => createMusicDirector(CATACOMBS_TRACK))
   const audioMemory = useRef({
@@ -208,10 +207,6 @@ export default function SieveCatacombsCanvas({
     start()
   }, [start])
 
-  useEffect(() => {
-    getAudio().setEnabled(soundEnabled)
-    getMusic().setEnabled(soundEnabled)
-  }, [getAudio, getMusic, soundEnabled])
 
   // Autoplay policies silence a soundtrack started before any interaction.
   useEffect(() => {
@@ -325,10 +320,8 @@ export default function SieveCatacombsCanvas({
         active={active}
         snapshot={snapshot}
         objective={catacombsCampaignObjective(snapshot.campaign)}
-        soundEnabled={soundEnabled}
         onStart={start}
         onRestart={restart}
-        onToggleSound={() => setSoundEnabled((current) => !current)}
         onHeldControl={setHeldControl}
         onPulseControl={pulseControl}
         onSubmitElevatorAnswer={submitElevatorAnswer}

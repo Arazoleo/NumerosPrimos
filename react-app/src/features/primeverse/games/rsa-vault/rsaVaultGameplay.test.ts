@@ -7,6 +7,7 @@ import {
   RSA_VAULT_CHALLENGES,
 } from './rsaVaultLogic'
 import { createRsaVaultStore } from './rsaVaultStore'
+import { getRsaPracticeStep } from './rsaVaultTutorial'
 import type { RsaStage, RsaVaultInputs } from './types'
 
 const EMPTY_INPUTS: RsaVaultInputs = {
@@ -135,6 +136,8 @@ describe('RSA Vault gameplay', () => {
     const { result, score, phase } = store.getState()
     expect(phase).toBe('complete')
     expect(result).toMatchObject({
+      score: 13_800,
+      xp: 423,
       attempts: 16,
       mistakes: 0,
       elapsedMs: 1_200,
@@ -145,12 +148,13 @@ describe('RSA Vault gameplay', () => {
     expect(result?.vaults).toHaveLength(RSA_VAULT_CHALLENGES.length)
     expect(recordProgress).toHaveBeenCalledOnce()
     expect(recordProgress).toHaveBeenCalledWith({ score, xp: result?.xp })
+    expect(store.getState().feedback?.learning).toBeUndefined()
 
     expect(store.getState().resolveVault()).toBe(false)
     expect(recordProgress).toHaveBeenCalledOnce()
   })
 
-  it('does not count tutorial time and clamps negative elapsed time to zero', () => {
+  it('starts the clock at guided practice and clamps negative elapsed time to zero', () => {
     let clock = 9_000
     const store = createRsaVaultStore({
       now: () => clock,
@@ -158,7 +162,7 @@ describe('RSA Vault gameplay', () => {
     })
 
     store.getState().start()
-    for (let step = 1; step < 7; step += 1) store.getState().nextTutorialStep()
+    for (let step = 1; step < getRsaPracticeStep('factor') - 1; step += 1) store.getState().nextTutorialStep()
     expect(store.getState().startedAt).toBeNull()
 
     store.getState().nextTutorialStep()
@@ -192,5 +196,47 @@ describe('RSA Vault gameplay', () => {
       mistakes: 0,
       score: 0,
     })
+  })
+
+  it('keeps full-run score and progression unchanged when explanations are repeatedly reviewed', () => {
+    const baselineRecord = vi.fn(() => false)
+    const reviewedRecord = vi.fn(() => false)
+    const baseline = createRsaVaultStore({ now: () => 1_000, recordProgress: baselineRecord })
+    const reviewed = createRsaVaultStore({ now: () => 1_000, recordProgress: reviewedRecord })
+    baseline.getState().start()
+    baseline.getState().skipTutorial()
+    reviewed.getState().start()
+    for (let step = 1; step < getRsaPracticeStep('factor'); step += 1) reviewed.getState().nextTutorialStep()
+
+    for (let index = 0; index < RSA_VAULT_CHALLENGES.length; index += 1) {
+      for (const stage of RSA_STAGES) {
+        for (const store of [baseline, reviewed]) {
+          const inputs = correctInputs(stage, index)
+          for (const field of Object.keys(inputs) as (keyof RsaVaultInputs)[]) {
+            if (inputs[field]) store.getState().setInput(field, inputs[field])
+          }
+          if (store === reviewed && index === 0) {
+            const before = store.getState()
+            for (let count = 0; count < getRsaPracticeStep(stage); count += 1) store.getState().prevTutorialStep()
+            expect(store.getState().submitStage()).toBe(false)
+            expect(store.getState().score).toBe(before.score)
+            expect(store.getState().attempts).toBe(before.attempts)
+            store.getState().resumeTutorial()
+            expect(store.getState().inputs).toBe(before.inputs)
+          }
+          expect(store.getState().submitStage()).toBe(true)
+        }
+      }
+      for (const store of [baseline, reviewed]) {
+        expect(store.getState().resolveVault()).toBe(true)
+        expect(store.getState().tutorialReviewStep).toBe(0)
+        if (index < RSA_VAULT_CHALLENGES.length - 1) store.getState().nextVault()
+      }
+    }
+
+    expect(reviewed.getState().result).toEqual(baseline.getState().result)
+    expect(reviewed.getState().result).toMatchObject({ attempts: 16, mistakes: 0 })
+    expect(reviewedRecord).toHaveBeenCalledOnce()
+    expect(reviewedRecord.mock.calls).toEqual(baselineRecord.mock.calls)
   })
 })

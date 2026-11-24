@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   evaluateOrbitGuess,
   MAX_ORBIT_PULSES,
@@ -69,7 +69,7 @@ function IntroPanel({ quality, onQualityChange }: ModularOrbitHudProps): JSX.Ele
       mark="mod"
       onStart={() => start()}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -95,7 +95,7 @@ function MissionTopbar({ quality, onQualityChange }: Pick<ModularOrbitHudProps, 
         <span className={`orbit-signal ${phase === 'launching' ? 'is-launching' : ''}`}>
           <i /> {phase === 'launching' ? 'SONDA EM TRÂNSITO' : 'TELEMETRIA ATIVA'}
         </span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="orbit-restart" onClick={restart}>Reiniciar</button>
       </div>
     </header>

@@ -6,7 +6,7 @@ import * as THREE from 'three'
 
 import type { QualityLevel, QualityProfile } from '../../graphics/useQualitySettings'
 import { SceneBoundary } from '../../ui/SceneBoundary'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import type { PrimeverseExpeditionParty } from '../primeverse-online/party'
 import { PYLON_SEQUENCE, RESPAWN_DELAY_MS } from './arenaLogic'
 import { createMusicDirector, startMusicOnFirstGesture } from '../../audio/proceduralMusic'
@@ -805,7 +805,7 @@ export default function Nucleus257Arena({
             <p>{snapshot.online
               ? 'Seus controles estão suspensos, mas a batalha online continua. Retome para voltar a se defender.'
               : 'O relógio e os rivais estão congelados. Retome quando estiver pronto para reconectar a mira.'}</p>
-            <QualityControl value={quality} onChange={onQualityChange} />
+            <GameSettings value={quality} onChange={onQualityChange} />
             <div className="n257-modal__actions">
               <button type="button" className="is-primary" onClick={() => setPaused(false)}>RETOMAR</button>
               {!snapshot.online && <button type="button" onClick={restart}>REINICIAR</button>}

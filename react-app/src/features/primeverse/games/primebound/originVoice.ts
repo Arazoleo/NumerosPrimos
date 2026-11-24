@@ -1,4 +1,5 @@
 import type { HeroClassId, HeroGender } from './heroClassSystem'
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
 
 /**
  * Voice-over for the origin films.
@@ -69,9 +70,13 @@ export function createOriginVoicePlayer(): OriginVoicePlayer {
   let speaking = false
   let pending: QueuedLine | null = null
   let generation = 0
+  let releaseVolume = () => {}
+  let currentUtterance: SpeechSynthesisUtterance | null = null
 
   const finished = (forGeneration: number) => {
     if (forGeneration !== generation) return
+    releaseVolume()
+    currentUtterance = null
     speaking = false
     currentAudio = null
     const next = pending
@@ -87,6 +92,8 @@ export function createOriginVoicePlayer(): OriginVoicePlayer {
     }
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
+    currentUtterance = utterance
+    utterance.volume = effectiveAudioVolume()
     utterance.lang = 'pt-BR'
     const voice = pickPortugueseVoice()
     if (voice) utterance.voice = voice
@@ -107,13 +114,21 @@ export function createOriginVoicePlayer(): OriginVoicePlayer {
   // day by day as the free quota allows, and playback upgrades automatically.
   const start = (line: QueuedLine, forGeneration: number, url?: string) => {
     if (forGeneration !== generation) return
+    if (effectiveAudioVolume() === 0) { finished(forGeneration); return }
     const attempt = url ?? (line.url.endsWith('.mp3')
       ? line.url.replace(/\.mp3$/, '.m4a')
       : line.url)
     speaking = true
     const audio = new Audio(attempt)
     currentAudio = audio
-    audio.volume = 0.9
+    releaseVolume()
+    releaseVolume = subscribeAudioVolume(volume => {
+      audio.volume = 0.9 * volume
+      if (currentUtterance) {
+        currentUtterance.volume = volume
+        if (volume === 0) window.speechSynthesis?.cancel()
+      }
+    })
     let fellBack = false
     const fallBack = () => {
       if (fellBack) return
@@ -143,6 +158,8 @@ export function createOriginVoicePlayer(): OriginVoicePlayer {
       pending = { url, fallbackText, style }
     },
     stop() {
+      releaseVolume()
+      currentUtterance = null
       generation += 1
       speaking = false
       pending = null

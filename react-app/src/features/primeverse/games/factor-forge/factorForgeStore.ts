@@ -10,6 +10,7 @@ import {
   getCompositeLeaves,
   getOptimalStepCount,
   isFactorTreeComplete,
+  FORGE_RECENT_MEMORY,
   nextChallengeValue,
   splitFactorNode,
 } from './factorLogic'
@@ -24,6 +25,14 @@ import type {
 
 const BEST_RECORDS_KEY = 'primeverse.factor-forge.best.v1'
 
+// Challenges already played this session, so "next" does not repeat them soon.
+let recentChallenges: number[] = []
+
+function rememberChallenge(value: number): void {
+  recentChallenges = [...recentChallenges.filter((item) => item !== value), value]
+    .slice(-FORGE_RECENT_MEMORY)
+}
+
 interface ForgeState {
   phase: ForgePhase
   targetNumber: number
@@ -31,6 +40,7 @@ interface ForgeState {
   selectedNodeId: string | null
   steps: number
   invalidAttempts: number
+  hintsUsed: number
   startedAt: number | null
   completedAt: number | null
   feedback: ForgeFeedback | null
@@ -39,6 +49,7 @@ interface ForgeState {
   start: (value?: number) => void
   selectNode: (nodeId: string) => void
   submitDivisor: (divisor: number) => boolean
+  requestHint: () => void
   restart: () => void
   nextChallenge: () => void
   returnToIntro: () => void
@@ -82,6 +93,7 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
   selectedNodeId: 'root',
   steps: 0,
   invalidAttempts: 0,
+  hintsUsed: 0,
   startedAt: null,
   completedAt: null,
   feedback: null,
@@ -91,6 +103,7 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
   start: (value = get().targetNumber) => {
     const challenge = Number.isSafeInteger(value) && value > 3 && !isPrime(value) ? value : 84
     const now = Date.now()
+    rememberChallenge(challenge)
     set({
       phase: 'playing',
       targetNumber: challenge,
@@ -98,6 +111,7 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
       selectedNodeId: 'root',
       steps: 0,
       invalidAttempts: 0,
+      hintsUsed: 0,
       startedAt: now,
       completedAt: null,
       feedback: feedback(now, 'info', `Núcleo ${challenge} pronto. Escolha um divisor.`),
@@ -152,7 +166,11 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
         feedback: feedback(
           now,
           'error',
-          `${divisor || '?'} não divide ${selected.value} em dois fatores inteiros maiores que 1.`,
+          !Number.isSafeInteger(divisor) || divisor < 2
+            ? 'Digite um número inteiro a partir de 2.'
+            : divisor >= selected.value
+              ? `O divisor precisa ser menor que ${selected.value}.`
+              : `${divisor} não divide ${selected.value} sem deixar resto.`,
           selected.id,
         ),
       })
@@ -190,6 +208,7 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
       elapsedMs,
       steps: nextSteps,
       invalidAttempts: state.invalidAttempts,
+      hintsUsed: state.hintsUsed,
     })
     const xp = calculateForgeXp(score, state.invalidAttempts)
     const previousBest = state.bestRecords[state.targetNumber]
@@ -234,9 +253,14 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
     return true
   },
 
+  requestHint: () => {
+    if (get().phase !== 'playing') return
+    set((state) => ({ hintsUsed: state.hintsUsed + 1 }))
+  },
+
   restart: () => get().start(get().targetNumber),
 
-  nextChallenge: () => get().start(nextChallengeValue(get().targetNumber)),
+  nextChallenge: () => get().start(nextChallengeValue(get().targetNumber, recentChallenges)),
 
   returnToIntro: () => {
     const { targetNumber } = get()
@@ -246,6 +270,7 @@ export const useFactorForgeStore = create<ForgeState>((set, get) => ({
       selectedNodeId: 'root',
       steps: 0,
       invalidAttempts: 0,
+      hintsUsed: 0,
       startedAt: null,
       completedAt: null,
       feedback: null,

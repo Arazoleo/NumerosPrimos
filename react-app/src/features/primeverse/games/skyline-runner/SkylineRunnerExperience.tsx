@@ -3,6 +3,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import * as THREE from 'three'
 
 import type { QualityLevel, QualityProfile } from '../../graphics/useQualitySettings'
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
 import { SceneBoundary } from '../../ui/SceneBoundary'
 import {
   SKYLINE_LOCATIONS,
@@ -1421,13 +1422,12 @@ export default function SkylineRunnerExperience({
   const completedCallback = useRef(false)
   const endingTimer = useRef<number | null>(null)
   const [sceneKey, setSceneKey] = useState(0)
-  const [soundEnabled, setSoundEnabled] = useState(true)
   const [selectedPrime, setSelectedPrime] = useState<SkylinePrimeCoreValue>(2)
   const [reducedMotion, setReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   )
   const audioRef = useRef<SkylineAudioController | null>(null)
-  if (!audioRef.current) audioRef.current = createSkylineAudio({ volume: .46, reducedMotion })
+  if (!audioRef.current) audioRef.current = createSkylineAudio({ volume: .46 * effectiveAudioVolume(), reducedMotion })
   const audio = audioRef.current
   const audioDisposal = useMemo<{ timer: number | null }>(() => ({ timer: null }), [])
 
@@ -1504,6 +1504,9 @@ export default function SkylineRunnerExperience({
   useEffect(() => {
     audio.setReducedMotion(reducedMotion)
   }, [audio, reducedMotion])
+
+  // Keep the original mix balance while sharing the site's volume and mute.
+  useEffect(() => subscribeAudioVolume(volume => audio.setVolume(.46 * volume)), [audio])
 
   useEffect(() => {
     if (audioDisposal.timer !== null) window.clearTimeout(audioDisposal.timer)
@@ -1735,15 +1738,8 @@ export default function SkylineRunnerExperience({
         onCapture={captureControls}
         onPause={() => onPauseChange(true)}
         onRestart={restart}
-        soundEnabled={soundEnabled}
         selectedPrime={selectedPrime}
         onPrimeSelect={setSelectedPrime}
-        onSoundToggle={() => {
-          const next = !soundEnabled
-          setSoundEnabled(next)
-          audio.setEnabled(next)
-          if (next) unlockAudio()
-        }}
         onTouchAction={handleTouchAction}
         onTouchMove={(x, z) => {
           input.current.touchX = x

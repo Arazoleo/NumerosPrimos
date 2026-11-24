@@ -143,13 +143,6 @@
 .pvo-avatar-preview__orbit i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
 .pvo-avatar-preview__orbit i:nth-child(1) { top: 16px; left: 31px; }.pvo-avatar-preview__orbit i:nth-child(2) { right: -2px; top: 78px; }.pvo-avatar-preview__orbit i:nth-child(3) { bottom: 9px; left: 56px; }
 .pvo-avatar-preview__bot { position: relative; width: 80px; height: 139px; filter: drop-shadow(0 14px 20px rgba(0,0,0,.6)); }
-.pvo-avatar-preview__bot i { position: absolute; display: block; }
-.pvo-avatar-preview__bot .head { left: 24px; top: 13px; width: 34px; height: 31px; border-radius: 45% 45% 35% 35%; background: var(--body); border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent); }
-.pvo-avatar-preview__bot .visor { z-index: 2; left: 28px; top: 24px; width: 26px; height: 8px; border-radius: 50%; background: var(--visor); box-shadow: 0 0 14px var(--accent); }
-.pvo-avatar-preview__bot .body { left: 20px; top: 48px; width: 42px; height: 49px; border-radius: 12px 12px 16px 16px; background: var(--body); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
-.pvo-avatar-preview__bot .core { z-index: 2; left: 35px; top: 60px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent); }
-.pvo-avatar-preview__bot .arm { top: 53px; width: 10px; height: 48px; border-radius: 8px; background: var(--body); }.pvo-avatar-preview__bot .arm.left { left: 6px; transform: rotate(8deg); }.pvo-avatar-preview__bot .arm.right { right: 4px; transform: rotate(-8deg); }
-.pvo-avatar-preview__bot .leg { top: 94px; width: 13px; height: 39px; border-radius: 4px 4px 7px 7px; background: var(--body); }.pvo-avatar-preview__bot .leg.left { left: 22px; }.pvo-avatar-preview__bot .leg.right { right: 20px; }
 
 .pvo-field { display: block; margin: 18px 20px 15px; }
 .pvo-field > span { display: flex; justify-content: space-between; margin-bottom: 8px; color: #93a2b4; font: 600 8px/1 'JetBrains Mono', monospace; letter-spacing: .14em; }

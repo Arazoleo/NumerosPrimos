@@ -510,6 +510,14 @@
   color: var(--ff-white);
 }
 
+.factor-forge__controls-hint {
+  color: var(--ff-muted);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  line-height: 1.5;
+  margin: -6px 0 12px;
+}
+
 .factor-forge__divisor-form label {
   height: 1px;
   margin: -1px;
@@ -820,6 +828,21 @@
   text-transform: none;
 }
 
+@media (pointer: coarse) {
+  .factor-forge button,
+  .factor-forge a,
+  .factor-forge input,
+  .factor-forge select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .factor-forge .pv-volume :is(button, input) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 @keyframes ff-panel-in {
   from { opacity: 0; transform: translateY(18px) scale(0.985); }
   to { opacity: 1; transform: translateY(0) scale(1); }
@@ -857,12 +880,38 @@
 }
 
 @media (max-width: 680px) {
+  .factor-forge .game-intro {
+    align-content: start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(32px, env(safe-area-inset-top))
+      max(24px, env(safe-area-inset-right))
+      max(112px, calc(env(safe-area-inset-bottom) + 96px))
+      max(24px, env(safe-area-inset-left));
+  }
+
+  .factor-forge .game-intro__back {
+    position: fixed;
+  }
+
   .factor-forge button,
   .factor-forge a,
   .factor-forge input,
   .factor-forge select {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  .factor-forge .game-intro__action {
+    align-items: center;
+    padding: 4px 8px;
+  }
+
+  .factor-forge .game-intro__back {
+    align-items: center;
+    display: inline-flex;
+    padding: 4px 8px;
   }
 
   .factor-forge[data-phase='playing'] .factor-forge__canvas {
@@ -877,12 +926,36 @@
 
   .factor-forge__intro,
   .factor-forge__result {
-    max-height: calc(100svh - 20px);
-    padding: 25px 20px;
+    max-height: calc(100svh - 32px);
+    padding: 18px 16px;
+    width: min(340px, calc(100% - 24px));
   }
 
   .factor-forge__intro h1 {
     font-size: clamp(44px, 17vw, 64px);
+  }
+
+  .factor-forge__result h2 {
+    font-size: clamp(32px, 12vw, 46px);
+  }
+
+  .factor-forge__result-equation {
+    font-size: clamp(22px, 6vw, 30px);
+    margin: 14px 0 8px;
+  }
+
+  .factor-forge__result > p {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+
+  .factor-forge__result-grid > div {
+    padding: 10px 6px;
+  }
+
+  .factor-forge__xp-award {
+    margin-bottom: 14px;
   }
 
   .factor-forge__instructions {
@@ -1028,6 +1101,105 @@
 }
 
 @media (max-height: 720px) and (min-width: 681px) {
+  .factor-forge__console {
+    max-height: calc(100svh - 76px);
+  }
+
+  .factor-forge .game-intro {
+    align-content: start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(20px, env(safe-area-inset-top))
+      max(36px, env(safe-area-inset-right))
+      max(76px, calc(env(safe-area-inset-bottom) + 56px))
+      max(36px, env(safe-area-inset-left));
+  }
+
+  .factor-forge .game-intro__action,
+  .factor-forge .game-intro__back {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .factor-forge .game-intro__back {
+    position: fixed;
+  }
+
+  .factor-forge__modal-wrap--result {
+    padding: 8px 18px;
+  }
+
+  .factor-forge__result {
+    max-height: calc(100svh - 16px);
+    overflow: hidden;
+    padding: 8px 20px;
+  }
+
+  .factor-forge__completion-mark {
+    font-size: 14px;
+    height: 28px;
+    margin-bottom: 3px;
+    width: 28px;
+  }
+
+  .factor-forge__result .factor-forge__eyebrow {
+    margin-bottom: 2px;
+  }
+
+  .factor-forge__result h2 {
+    font-size: clamp(28px, 3.8vw, 34px);
+    line-height: 0.82;
+  }
+
+  .factor-forge__result-equation {
+    font-size: clamp(20px, 2.5vw, 26px);
+    line-height: 1.15;
+    margin: 3px 0;
+  }
+
+  .factor-forge__result > p {
+    font-size: 10px;
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+
+  .factor-forge__result-grid {
+    margin-bottom: 3px;
+  }
+
+  .factor-forge__result-grid > div {
+    padding: 5px 6px;
+  }
+
+  .factor-forge__result-grid strong {
+    font-size: 13px;
+  }
+
+  .factor-forge__xp-award {
+    margin-bottom: 3px;
+    padding: 4px 12px;
+  }
+
+  .factor-forge__result-actions {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .factor-forge__result-actions .factor-forge__primary-action,
+  .factor-forge__result-actions .factor-forge__secondary-action {
+    font-size: 10px;
+    gap: 12px;
+    min-height: 44px;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+
+  .factor-forge__result-actions .factor-forge__back {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
   .factor-forge__intro {
     padding-bottom: 28px;
     padding-top: 28px;
@@ -1136,4 +1308,151 @@
 
 .factor-forge__hint small {
   color: #708d9a;
+}
+
+@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+  .factor-forge .game-intro {
+    align-content: start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(24px, env(safe-area-inset-right))
+      max(60px, env(safe-area-inset-bottom))
+      max(24px, env(safe-area-inset-left));
+  }
+
+  .factor-forge .game-intro__body {
+    max-width: min(700px, 100%);
+  }
+
+  .factor-forge .game-intro__title {
+    font-size: clamp(38px, 11vh, 52px);
+  }
+
+  .factor-forge .game-intro__instruction {
+    font-size: clamp(10px, 2.4vw, 12px);
+    line-height: 1.45;
+    margin-top: 10px;
+    padding-top: 12px;
+  }
+
+  .factor-forge .game-intro__action {
+    font-size: 24px;
+    margin-top: 12px;
+    min-height: 44px;
+  }
+
+  .factor-forge .game-intro__keys {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    line-height: 1.4;
+    margin-top: 8px;
+  }
+
+  .factor-forge .game-intro__extra {
+    margin-top: 10px;
+  }
+
+  .factor-forge .game-intro__back {
+    bottom: max(6px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+    padding: 4px 8px;
+    position: absolute;
+  }
+
+  .factor-forge__topbar {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .factor-forge__brand {
+    font-size: 14px;
+  }
+
+  .factor-forge__top-actions {
+    gap: 8px;
+  }
+
+  .factor-forge[data-phase='playing'] .factor-forge__canvas {
+    right: 340px;
+    top: 56px;
+  }
+
+  .factor-forge__metrics {
+    left: 12px;
+    right: 352px;
+    top: 66px;
+    gap: 6px;
+  }
+
+  .factor-forge__metrics > div {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .factor-forge__console {
+    bottom: 10px;
+    left: auto;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    right: 10px;
+    top: 66px;
+    width: min(320px, 42vw);
+  }
+
+  .factor-forge__console-head {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .factor-forge__console-head strong {
+    font-size: 26px;
+  }
+
+  .factor-forge__console-prompt,
+  .factor-forge__console-empty {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .factor-forge__controls-hint {
+    margin: -2px 0 8px;
+  }
+
+  .factor-forge__suggestions,
+  .factor-forge__pending-nodes {
+    margin-top: 10px;
+  }
+
+  .factor-forge__equation {
+    bottom: 10px;
+    left: 12px;
+    max-width: calc(100vw - 360px);
+    min-width: 0;
+    padding: 8px 12px;
+  }
+
+  .factor-forge__feedback {
+    animation: none;
+    left: 12px;
+    max-width: calc(100vw - 372px);
+    top: 138px;
+    transform: none;
+  }
+
+  .factor-forge__modal-wrap--result {
+    padding: 10px;
+  }
+
+  .factor-forge__result {
+    max-height: calc(100svh - 20px);
+    overflow: auto;
+    padding: 14px 18px;
+    width: min(680px, calc(100vw - 20px));
+  }
 }

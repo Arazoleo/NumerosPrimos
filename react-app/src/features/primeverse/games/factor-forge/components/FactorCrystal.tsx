@@ -36,9 +36,23 @@ export function FactorCrystal({
   const accent = isPrime ? '#ffc83d' : isSelected ? '#7ff4ff' : '#25cbea'
   const baseScale = node.depth === 0 ? 1.18 : 0.9
 
-  useEffect(() => () => {
-    if (hovered) document.body.style.cursor = ''
-  }, [hovered])
+  useEffect(() => {
+    const clearTransientInteraction = () => {
+      setHovered(false)
+      document.body.style.cursor = ''
+    }
+
+    window.addEventListener('blur', clearTransientInteraction)
+    window.addEventListener('orientationchange', clearTransientInteraction)
+    document.addEventListener('visibilitychange', clearTransientInteraction)
+
+    return () => {
+      window.removeEventListener('blur', clearTransientInteraction)
+      window.removeEventListener('orientationchange', clearTransientInteraction)
+      document.removeEventListener('visibilitychange', clearTransientInteraction)
+      document.body.style.cursor = ''
+    }
+  }, [])
 
   useFrame((state, delta) => {
     const visualGroup = visualGroupRef.current
@@ -98,6 +112,7 @@ export function FactorCrystal({
           castShadow={quality !== 'low'}
           onPointerEnter={(event) => {
             event.stopPropagation()
+            if (event.nativeEvent.pointerType === 'touch') return
             setHovered(true)
             document.body.style.cursor = 'pointer'
           }}

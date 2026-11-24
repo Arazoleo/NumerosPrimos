@@ -42,6 +42,28 @@ function useForgeClock(): number {
   return (completedAt ?? now) - startedAt
 }
 
+function detectTouchDevice(): boolean {
+  return typeof window !== 'undefined' && (
+    window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0
+  )
+}
+
+function useTouchDevice(): boolean {
+  const [isTouchDevice, setIsTouchDevice] = useState(detectTouchDevice)
+
+  useEffect(() => {
+    const coarsePointer = window.matchMedia('(pointer: coarse)')
+    const update = () => setIsTouchDevice(
+      coarsePointer.matches || navigator.maxTouchPoints > 0,
+    )
+    coarsePointer.addEventListener('change', update)
+    update()
+    return () => coarsePointer.removeEventListener('change', update)
+  }, [])
+
+  return isTouchDevice
+}
+
 function BackLink({ onBack, compact = false }: { onBack?: () => void; compact?: boolean }): JSX.Element {
   return (
     <a
@@ -88,6 +110,7 @@ function IntroPanel({
 }: Omit<FactorForgeHudProps, 'onSoundEvent'>): JSX.Element {
   const targetNumber = useFactorForgeStore((state) => state.targetNumber)
   const start = useFactorForgeStore((state) => state.start)
+  const isTouchDevice = useTouchDevice()
   const selectedChallenge = targetNumber
 
   return (
@@ -98,6 +121,9 @@ function IntroPanel({
       actionLabel="Ativar forja"
       accent="#ffb347"
       mark="12"
+      keys={isTouchDevice
+        ? 'TOQUE EM UM CRISTAL PARA SELECIONAR · TOQUE EM UM DIVISOR PARA FORJAR'
+        : 'TAB PARA NAVEGAR · ENTER PARA ATIVAR OU DIVIDIR'}
       onBack={onBack}
       onStart={() => start(selectedChallenge)}
     >
@@ -177,6 +203,7 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
   const submitDivisor = useFactorForgeStore((state) => state.submitDivisor)
   const selectNode = useFactorForgeStore((state) => state.selectNode)
   const requestHint = useFactorForgeStore((state) => state.requestHint)
+  const isTouchDevice = useTouchDevice()
   const [input, setInput] = useState('')
   const [hintShown, setHintShown] = useState(false)
   const selected = nodes.find((node) => node.id === selectedNodeId) ?? null
@@ -213,6 +240,11 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
         <>
           <p className="factor-forge__console-prompt">
             Qual divisor deve partir <strong>{selected.value}</strong>?
+          </p>
+          <p className="factor-forge__controls-hint">
+            {isTouchDevice
+              ? 'Toque em um cristal para selecioná-lo e em um divisor para forjar.'
+              : 'Use Tab para navegar e Enter para selecionar ou forjar.'}
           </p>
           <form
             className="factor-forge__divisor-form"
@@ -264,8 +296,8 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
         <p className="factor-forge__console-empty">Selecione um cristal azul na árvore.</p>
       )}
 
-      {compositeLeaves.length > 1 ? (
-        <div className="factor-forge__pending-nodes">
+      {compositeLeaves.length > 0 ? (
+        <div className="factor-forge__pending-nodes" role="group" aria-label="Núcleos compostos pendentes">
           <span>NÚCLEOS PENDENTES</span>
           <div>
             {compositeLeaves.map((node) => (
@@ -273,6 +305,8 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
                 key={node.id}
                 type="button"
                 className={node.id === selectedNodeId ? 'is-active' : ''}
+                aria-pressed={node.id === selectedNodeId}
+                aria-label={`Selecionar núcleo ${node.value}${node.id === selectedNodeId ? ', ativo' : ''}`}
                 onClick={() => selectNode(node.id)}
               >
                 {node.value}

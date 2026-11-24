@@ -6,6 +6,13 @@ export interface SkylineBuilding extends ParkourPlatform {
   readonly roofColor: string
   readonly accent: string
   readonly sector: string
+  /**
+   * Rendering hint for the distance-LOD layer in SkylineWorld.tsx. Does not
+   * affect physics. 'full' keeps the detailed facade/trim/props visual even at
+   * range (used for mission-critical landmarks); 'simple' allows the far batched
+   * instanced path to take over. Defaults to 'simple' when omitted.
+   */
+  readonly detail?: 'full' | 'simple'
 }
 
 export interface RooftopProp {
@@ -29,50 +36,173 @@ function bounds(
 }
 
 export const SKYLINE_BUILDINGS: readonly SkylineBuilding[] = [
+  // --- Mission-critical landmarks (ids + bounds preserved; always full detail) ---
   {
     id: 'relay-base', name: 'Terminal Aurora', sector: 'BASE // AURORA',
-    bounds: bounds(-8, -29, 8, 8, 0, 23), wallRunnable: true,
+    bounds: bounds(-8, -29, 8, 8, 0, 23), wallRunnable: true, detail: 'full',
     color: '#213745', roofColor: '#49626a', accent: '#6be4e7',
   },
   {
     id: 'binary-terrace', name: 'Terraço Binário', sector: 'SETOR // 02',
-    bounds: bounds(0, -28, -1, 9, 1.6, 6.2), wallRunnable: true,
+    bounds: bounds(0, -28, -1, 9, 1.6, 6.2), wallRunnable: true, detail: 'full',
     color: '#273d48', roofColor: '#526d70', accent: '#f1a55a',
   },
   {
     id: 'triad-fanway', name: 'Corredor Tríade', sector: 'SETOR // 03',
-    bounds: bounds(-8.2, -27, -13.3, 1.2, 3.8, -5), wallRunnable: true,
+    bounds: bounds(-8.2, -27, -13.3, 1.2, 3.8, -5), wallRunnable: true, detail: 'full',
     color: '#1d3442', roofColor: '#47636c', accent: '#65e8e9',
   },
   {
     id: 'nilo-relay', name: 'Torre de Nilo', sector: 'RELAY // 05',
-    bounds: bounds(-6.4, -26, -32, 7, 6.1, -17), wallRunnable: true,
+    bounds: bounds(-6.4, -26, -32, 7, 6.1, -17), wallRunnable: true, detail: 'full',
     color: '#263a43', roofColor: '#5e6d69', accent: '#e8ac5a',
   },
   {
     id: 'sentinel-four-roof', name: 'Pátio Quatro', sector: 'QUARENTENA // 04',
-    bounds: bounds(-8.2, -25, -41.5, 1, 6.1, -33), wallRunnable: true,
+    bounds: bounds(-8.2, -25, -41.5, 1, 6.1, -33), wallRunnable: true, detail: 'full',
     color: '#243642', roofColor: '#53656a', accent: '#ed7c63',
   },
   {
     id: 'sentinel-six-roof', name: 'Pátio Seis', sector: 'QUARENTENA // 06',
-    bounds: bounds(0, -24, -49.2, 9, 7.6, -40.8), wallRunnable: true,
+    bounds: bounds(0, -24, -49.2, 9, 7.6, -40.8), wallRunnable: true, detail: 'full',
     color: '#263846', roofColor: '#586c70', accent: '#ed7c63',
   },
   {
     id: 'sentinel-nine-roof', name: 'Pátio Nove', sector: 'QUARENTENA // 09',
-    bounds: bounds(-8.2, -23, -57.3, 1, 9.2, -48.8), wallRunnable: true,
+    bounds: bounds(-8.2, -23, -57.3, 1, 9.2, -48.8), wallRunnable: true, detail: 'full',
     color: '#233641', roofColor: '#51686b', accent: '#ed7c63',
   },
   {
     id: 'sentinel-ten-roof', name: 'Pátio Dez', sector: 'QUARENTENA // 10',
-    bounds: bounds(0, -22, -65.2, 9, 10.7, -56.8), wallRunnable: true,
+    bounds: bounds(0, -22, -65.2, 9, 10.7, -56.8), wallRunnable: true, detail: 'full',
     color: '#273a46', roofColor: '#5c6f70', accent: '#ed7c63',
   },
   {
     id: 'apex-spire', name: 'Agulha Apex', sector: 'APEX // FAROL',
-    bounds: bounds(-6.2, -20, -79, 6.2, 12.1, -66), wallRunnable: true,
+    bounds: bounds(-6.2, -20, -79, 6.2, 12.1, -66), wallRunnable: true, detail: 'full',
     color: '#223a47', roofColor: '#647471', accent: '#75eef0',
+  },
+
+  // --- Open-world city grid (new playable buildings around the spawn) ---
+  // The mission corridor runs along -z; these entries open the map in every
+  // direction (+x east, -x west, +z south behind spawn, and wide -z flanks) so
+  // the player can pick a route instead of a single rooftop line. Heights vary
+  // to keep wall-run / grapple / mantle traversal interesting.
+
+  // East district (+x), stepping down the corridor.
+  {
+    id: 'east-market-01', name: 'Mercado Leste', sector: 'LESTE // 01',
+    bounds: bounds(12, -30, 4, 24, 2.4, 18), wallRunnable: true,
+    color: '#223a44', roofColor: '#4d666c', accent: '#6be4e7',
+  },
+  {
+    id: 'east-spire-02', name: 'Agulha Leste', sector: 'LESTE // 02',
+    bounds: bounds(14, -32, -12, 23, 8.5, -2), wallRunnable: true,
+    color: '#1f3742', roofColor: '#4a636a', accent: '#65e8e9',
+  },
+  {
+    id: 'east-stack-03', name: 'Pilha Leste', sector: 'LESTE // 03',
+    bounds: bounds(12.5, -30, -28, 22.5, 5.2, -16), wallRunnable: true,
+    color: '#273d48', roofColor: '#53696d', accent: '#f1a55a',
+  },
+  {
+    id: 'east-span-04', name: 'Viaduto Leste', sector: 'LESTE // 04',
+    bounds: bounds(13, -28, -46, 24.5, 9.8, -32), wallRunnable: true,
+    color: '#243744', roofColor: '#4f666a', accent: '#6be4e7',
+  },
+  {
+    id: 'east-tower-05', name: 'Torre Leste', sector: 'LESTE // 05',
+    bounds: bounds(12.5, -26, -64, 22, 13.4, -48), wallRunnable: true,
+    color: '#223a47', roofColor: '#5a6f72', accent: '#75eef0',
+  },
+
+  // West district (-x).
+  {
+    id: 'west-gate-01', name: 'Portão Oeste', sector: 'OESTE // 01',
+    bounds: bounds(-24, -30, 2, -12, 3.1, 17), wallRunnable: true,
+    color: '#213845', roofColor: '#4c656b', accent: '#e8ac5a',
+  },
+  {
+    id: 'west-loft-02', name: 'Sótão Oeste', sector: 'OESTE // 02',
+    bounds: bounds(-23, -31, -14, -13, 6.6, -1), wallRunnable: true,
+    color: '#1d3442', roofColor: '#47636c', accent: '#65e8e9',
+  },
+  {
+    id: 'west-stack-03', name: 'Pilha Oeste', sector: 'OESTE // 03',
+    bounds: bounds(-24.5, -30, -30, -12.5, 4.4, -17), wallRunnable: true,
+    color: '#263a43', roofColor: '#536a6c', accent: '#f1a55a',
+  },
+  {
+    id: 'west-span-04', name: 'Viaduto Oeste', sector: 'OESTE // 04',
+    bounds: bounds(-24, -28, -48, -13, 10.6, -33), wallRunnable: true,
+    color: '#243642', roofColor: '#53656a', accent: '#6be4e7',
+  },
+  {
+    id: 'west-tower-05', name: 'Torre Oeste', sector: 'OESTE // 05',
+    bounds: bounds(-23.5, -26, -66, -12, 14.2, -50), wallRunnable: true,
+    color: '#223a47', roofColor: '#5a6f72', accent: '#75eef0',
+  },
+
+  // South district (+z, behind the spawn) — lets the player turn around.
+  {
+    id: 'south-dock-01', name: 'Doca Sul', sector: 'SUL // 01',
+    bounds: bounds(-9, -30, 28, 3, 2.2, 40), wallRunnable: true,
+    color: '#273d48', roofColor: '#52696d', accent: '#f1a55a',
+  },
+  {
+    id: 'south-ridge-02', name: 'Crista Sul', sector: 'SUL // 02',
+    bounds: bounds(6, -31, 27, 18, 5.6, 39), wallRunnable: true,
+    color: '#1f3742', roofColor: '#4a636a', accent: '#65e8e9',
+  },
+  {
+    id: 'south-block-03', name: 'Bloco Sul', sector: 'SUL // 03',
+    bounds: bounds(-22, -30, 26, -11, 4.0, 38), wallRunnable: true,
+    color: '#213845', roofColor: '#4c656b', accent: '#e8ac5a',
+  },
+  {
+    id: 'south-spire-04', name: 'Agulha Sul', sector: 'SUL // 04',
+    bounds: bounds(-6, -32, 44, 6, 9.1, 56), wallRunnable: true,
+    color: '#223a47', roofColor: '#5a6f72', accent: '#75eef0',
+  },
+
+  // Far-west flank along the corridor and apex approach (wide -z, low detail).
+  {
+    id: 'flank-west-06', name: 'Flanco Oeste', sector: 'FLANCO // 06',
+    bounds: bounds(-35, -26, -46, -26, 7.4, -30), wallRunnable: true,
+    color: '#1d3442', roofColor: '#47636c', accent: '#65e8e9',
+  },
+  {
+    id: 'flank-west-07', name: 'Flanco Oeste', sector: 'FLANCO // 07',
+    bounds: bounds(-34, -24, -70, -26, 11.5, -52), wallRunnable: true,
+    color: '#263a43', roofColor: '#536a6c', accent: '#6be4e7',
+  },
+  // Far-east flank.
+  {
+    id: 'flank-east-06', name: 'Flanco Leste', sector: 'FLANCO // 06',
+    bounds: bounds(26, -26, -48, 35, 7.0, -32), wallRunnable: true,
+    color: '#243744', roofColor: '#4f666a', accent: '#f1a55a',
+  },
+  {
+    id: 'flank-east-07', name: 'Flanco Leste', sector: 'FLANCO // 07',
+    bounds: bounds(26, -24, -72, 34, 12.0, -54), wallRunnable: true,
+    color: '#223a47', roofColor: '#5a6f72', accent: '#75eef0',
+  },
+
+  // Deep-north skyline past the Apex (-z), framing the far horizon as real roofs.
+  {
+    id: 'north-ward-08', name: 'Distrito Norte', sector: 'NORTE // 08',
+    bounds: bounds(-20, -22, -98, -8, 15.5, -82), wallRunnable: true,
+    color: '#1f3742', roofColor: '#4a636a', accent: '#65e8e9',
+  },
+  {
+    id: 'north-ward-09', name: 'Distrito Norte', sector: 'NORTE // 09',
+    bounds: bounds(8, -22, -98, 20, 16.8, -82), wallRunnable: true,
+    color: '#223a47', roofColor: '#5a6f72', accent: '#75eef0',
+  },
+  {
+    id: 'north-ward-10', name: 'Distrito Norte', sector: 'NORTE // 10',
+    bounds: bounds(-7, -21, -112, 7, 18.2, -98), wallRunnable: true,
+    color: '#263a43', roofColor: '#536a6c', accent: '#6be4e7',
   },
 ] as const
 
@@ -123,6 +253,18 @@ export const SKYLINE_WORLD_BOUNDS = {
   npcInteractionRadius: 3,
   coreCollectionRadius: 1.55,
   attackRange: 4.5,
+  /**
+   * Horizontal extents of the hand-authored city grid, in world units. Widened
+   * from the original -z corridor so the open grid in world.ts stays inside a
+   * known play area (used by rendering/LOD and any future soft boundary). Kept
+   * well outside the outermost building bounds on every axis.
+   */
+  extents: {
+    minX: -38,
+    maxX: 38,
+    minZ: -116,
+    maxZ: 60,
+  },
 } as const
 
 export function aabbCenter(aabb: Aabb): readonly [number, number, number] {

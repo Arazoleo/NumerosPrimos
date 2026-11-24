@@ -358,6 +358,15 @@
 .skyline-objective p { color: rgba(229, 245, 245, .5); font-size: 10px; line-height: 1.45; margin: 0; }
 .skyline-objective__progress { background: rgba(206, 241, 241, .12); height: 2px; margin-top: 12px; overflow: hidden; }
 .skyline-objective__progress i { background: var(--sr-cyan); box-shadow: 0 0 8px var(--sr-cyan); display: block; height: 100%; transition: width .4s ease; }
+.skyline-contracts { display: flex; flex-direction: column; gap: 5px; list-style: none; margin: 12px 0 0; padding: 0; }
+.skyline-contracts__item { align-items: center; color: rgba(229, 245, 245, .5); display: grid; font: 700 7px 'JetBrains Mono', monospace; gap: 7px; grid-template-columns: 7px 1fr auto; letter-spacing: .08em; }
+.skyline-contracts__item b { background: rgba(206, 241, 241, .22); border-radius: 50%; display: block; height: 7px; width: 7px; }
+.skyline-contracts__item small { color: rgba(206, 241, 241, .4); font: 700 6px 'JetBrains Mono', monospace; letter-spacing: .14em; }
+.skyline-contracts__item--active { color: var(--sr-cyan); }
+.skyline-contracts__item--active b { background: var(--sr-cyan); box-shadow: 0 0 8px var(--sr-cyan); }
+.skyline-contracts__item--active small { color: var(--sr-cyan); }
+.skyline-contracts__item--completed b { background: rgba(120, 232, 180, .85); box-shadow: 0 0 6px rgba(120, 232, 180, .7); }
+.skyline-contracts__item--completed small { color: rgba(120, 232, 180, .7); }
 
 .skyline-vitals {
   align-items: flex-end;

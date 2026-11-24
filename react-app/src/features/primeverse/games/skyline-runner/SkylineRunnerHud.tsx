@@ -5,12 +5,14 @@ import type { QualityLevel } from '../../graphics/useQualitySettings'
 import GameSettings from '../../ui/GameSettings'
 import {
   SKYLINE_DIALOGUES,
-  SKYLINE_OBJECTIVE_ORDER,
+  SKYLINE_MISSION_IDS,
+  SKYLINE_MISSIONS,
   SKYLINE_PRIME_CORE_VALUES,
   SKYLINE_SENTINELS,
+  type SkylineMissionId,
   type SkylinePrimeCoreValue,
 } from './missionData'
-import { getNextSkylineObjective } from './missionLogic'
+import { getNextSkylineObjective, isMissionActive } from './missionLogic'
 import { PRIME_POWERS } from './primeCombat'
 import {
   getObjectiveProgress,
@@ -148,7 +150,7 @@ function PrimeSpellBar({
         })}
       </div>
       <div className="skyline-spells__status" aria-live="polite">
-        <span>{unlocked ? selectedPower.label : 'MAGIA SELADA // ENCONTRE NILO'}</span>
+        <span>{unlocked ? selectedPower.label : 'MAGIA SELADA // ATIVE AS SENTINELAS'}</span>
         <b>{unlocked
           ? cooldown > .02
             ? 'RECARGA'
@@ -185,9 +187,12 @@ export default function SkylineRunnerHud({
   const clearToast = useSkylineRunnerStore((state) => state.clearToast)
   const objective = getNextSkylineObjective(mission)
   const progress = getObjectiveProgress(useSkylineRunnerStore.getState())
-  const objectiveIndex = objective.id === 'mission-complete'
-    ? SKYLINE_OBJECTIVE_ORDER.length
-    : SKYLINE_OBJECTIVE_ORDER.indexOf(objective.id)
+  const missionStates = SKYLINE_MISSION_IDS.map((id) => ({
+    id,
+    title: SKYLINE_MISSIONS[id].title,
+    status: mission.missionStatuses[id],
+  }))
+  const completedMissions = missionStates.filter((entry) => entry.status === 'completed').length
   const [damageVisible, setDamageVisible] = useState(false)
   const isCoarse = useMemo(
     () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches,
@@ -197,19 +202,28 @@ export default function SkylineRunnerHud({
     return localStorage.getItem(TUTORIAL_STORAGE_KEY) === 'true' ? 0 : 1
   })
 
+  // The explanatory overlay ("how to play") only TEACHES. Dismissing it (via
+  // the last step or the "Pular" button) hides it and remembers that it was
+  // seen, but it does NOT teleport. The teleport into the procedural world is
+  // driven solely by completing the first playable mission (the lia-tutorial
+  // contract), handled inside the store on the lia-tutorial completion edge.
+  const dismissTutorialOverlay = () => {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
+    setTutorialStep(0)
+  }
+
   const handleNextStep = () => {
-    setTutorialStep((prev) => {
-      const next = prev < 5 ? prev + 1 : 0
-      if (next === 0) {
-        localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
-      }
-      return next
-    })
+    if (tutorialStep < 5) {
+      setTutorialStep(tutorialStep + 1)
+      return
+    }
+    dismissTutorialOverlay()
   }
 
   const handleSkipTutorial = () => {
-    localStorage.setItem(TUTORIAL_STORAGE_KEY, 'true')
-    setTutorialStep(0)
+    // "Pular" leaves the player IN the first static mission: it only closes the
+    // overlay, it never teleports.
+    dismissTutorialOverlay()
   }
 
   useEffect(() => {
@@ -229,17 +243,22 @@ export default function SkylineRunnerHud({
     ? SKYLINE_DIALOGUES[activeDialogue.id].lines[activeDialogue.lineIndex]
     : null
   const speaker = line?.speaker === 'lia' ? 'LIA' : line?.speaker === 'nilo' ? 'NILO' : 'RUNNER 07'
+  const nearbyMissionId = nearby?.startsWith('mission:')
+    ? (nearby.slice('mission:'.length) as SkylineMissionId)
+    : null
   const prompt = nearby === 'npc:lia'
     ? 'FALAR COM LIA'
     : nearby === 'npc:nilo'
       ? mission.coresDeliveredToNilo ? 'REVER PROTOCOLO COM NILO' : 'ENTREGAR A NILO'
       : nearby === 'beacon'
         ? 'ATIVAR FAROL'
-        : null
+        : nearbyMissionId
+          ? `ACEITAR: ${SKYLINE_MISSIONS[nearbyMissionId].title.toUpperCase()}`
+          : null
   const enemy = telemetry.enemyTarget ? SKYLINE_SENTINELS[telemetry.enemyTarget] : null
   const remainingEnemyFactors = useSkylineRunnerStore((state) => state.enemyFactors)
   const enemyFactors = enemy ? remainingEnemyFactors[enemy.id] : []
-  const magicUnlocked = mission.coresDeliveredToNilo
+  const magicUnlocked = isMissionActive(mission, 'composite-sentinels')
   const primeMatchesTarget = magicUnlocked && enemy ? enemyFactors.includes(selectedPrime) : false
   const selectedPower = PRIME_POWERS[selectedPrime]
   const aimingAtSurface = telemetry.grappleTarget?.startsWith('surface:') ?? false
@@ -260,10 +279,19 @@ export default function SkylineRunnerHud({
       </header>
 
       <aside className="skyline-objective" aria-live="polite">
-        <span>OBJETIVO {String(Math.min(objectiveIndex + 1, 6)).padStart(2, '0')} // 06</span>
+        <span>CONTRATOS {String(completedMissions).padStart(2, '0')} / {String(SKYLINE_MISSION_IDS.length).padStart(2, '0')}</span>
         <h2>{objective.title}</h2>
         <p>{objective.detail}{progress.required > 1 ? ` · ${progress.current}/${progress.required}` : ''}</p>
         <div className="skyline-objective__progress"><i style={{ width: `${progress.percent}%` }} /></div>
+        <ul className="skyline-contracts">
+          {missionStates.map((entry) => (
+            <li key={entry.id} className={`skyline-contracts__item skyline-contracts__item--${entry.status}`}>
+              <b aria-hidden="true" />
+              <span>{entry.title}</span>
+              <small>{entry.status === 'completed' ? 'CONCLUÍDO' : entry.status === 'active' ? 'ATIVO' : 'DISPONÍVEL'}</small>
+            </li>
+          ))}
+        </ul>
       </aside>
 
       <aside className="skyline-vitals">
@@ -295,7 +323,7 @@ export default function SkylineRunnerHud({
           <strong>{enemy.label.toUpperCase()} // RESTA {enemyFactors.join(' × ') || '0'}</strong>
           <span>
             <kbd>{isCoarse ? 'MAGIA' : 'F'}</kbd>{!magicUnlocked
-              ? ' BLINDAGEM SELADA · ENCONTRE NILO'
+              ? ' BLINDAGEM SELADA · ATIVE AS SENTINELAS'
               : ` CONJURAR ${selectedPrime} · ${primeMatchesTarget ? 'FATOR COMPATÍVEL' : 'TROQUE O PRIMO'}`}
           </span>
         </div>
@@ -313,7 +341,7 @@ export default function SkylineRunnerHud({
 
       <div className="skyline-motion-state"><span>{telemetry.movement}</span><div><strong>{Math.round(telemetry.speed * 3.6)}</strong><small>KM/H</small></div></div>
       <div className="skyline-mission-track" aria-hidden="true">
-        {SKYLINE_OBJECTIVE_ORDER.map((id, index) => <span key={id} className={index < objectiveIndex ? 'done' : index === objectiveIndex ? 'active' : ''} />)}
+        {missionStates.map((entry) => <span key={entry.id} className={entry.status === 'completed' ? 'done' : entry.status === 'active' ? 'active' : ''} />)}
       </div>
 
       {prompt && !activeDialogue && <div className="skyline-prompt"><kbd>E</kbd>{prompt}</div>}

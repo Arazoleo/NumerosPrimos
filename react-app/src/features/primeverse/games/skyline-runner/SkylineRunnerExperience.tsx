@@ -6,16 +6,15 @@ import type { QualityLevel, QualityProfile } from '../../graphics/useQualitySett
 import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
 import { SceneBoundary } from '../../ui/SceneBoundary'
 import {
-  SKYLINE_LOCATIONS,
-  SKYLINE_NPCS,
+  SKYLINE_MISSION_IDS,
+  SKYLINE_MISSIONS,
   SKYLINE_PRIME_CORE_VALUES,
-  SKYLINE_PRIME_CORES,
   SKYLINE_SENTINEL_IDS,
-  SKYLINE_SENTINELS,
+  type SkylineMissionId,
   type SkylinePrimeCoreValue,
   type SkylineSentinelId,
 } from './missionData'
-import { getNextSkylineObjective } from './missionLogic'
+import { getNextSkylineObjective, isMissionActive } from './missionLogic'
 import {
   calculateGrapplePull,
   canJumpWithCoyoteTime,
@@ -44,14 +43,8 @@ import {
 } from './skylineRunnerStore'
 import SkylineWorld from './SkylineWorld'
 import type { Aabb, GrappleAnchor, PlayerMotion, Vec3 } from './types'
-import {
-  PLAYER_SPAWN,
-  SKYLINE_ANCHORS,
-  SKYLINE_BUILDINGS,
-  SKYLINE_CHECKPOINTS,
-  SKYLINE_COLLIDERS,
-  SKYLINE_WORLD_BOUNDS,
-} from './world'
+import { getActiveWorldSnapshot } from './activeWorld'
+import { PLAYER_SPAWN } from './world'
 
 export type SkylineRunResult = SkylineRunnerResult
 
@@ -113,7 +106,11 @@ const GRAPPLE_RANGE = 52
 const GRAPPLE_SURFACE_OFFSET = .06
 const PRIME_AIM_ALIGNMENT = .97
 const TEMP_VECTOR = new THREE.Vector3()
-const GRAPPLE_OBSTACLES = SKYLINE_COLLIDERS.map((platform) => platform.bounds)
+
+/** Grapple obstacle AABBs for the CURRENT active world (tutorial or generated). */
+function activeGrappleObstacles(): readonly Aabb[] {
+  return getActiveWorldSnapshot().colliders.map((platform) => platform.bounds)
+}
 
 function cloneMotion(motion: PlayerMotion): PlayerMotion {
   return {
@@ -173,8 +170,9 @@ function resolveHorizontalCollision(
   let vaulted = false
   const feet = previous.y - PLAYER_HALF_HEIGHT
 
+  const colliders = getActiveWorldSnapshot().colliders
   const resolveAxis = (axis: 'x' | 'z') => {
-    for (const platform of SKYLINE_COLLIDERS) {
+    for (const platform of colliders) {
       if (!bodyOverlaps(position, platform.bounds)) continue
       const climb = platform.bounds.max.y - feet
       if (wantsVault && climb > .08 && climb <= 1.72) {
@@ -196,7 +194,7 @@ function resolveHorizontalCollision(
 function findGroundTop(position: Vec3): number | null {
   const feet = position.y - PLAYER_HALF_HEIGHT
   let ground: number | null = null
-  for (const platform of SKYLINE_COLLIDERS) {
+  for (const platform of getActiveWorldSnapshot().colliders) {
     const top = platform.bounds.max.y
     if (Math.abs(feet - top) > .14) continue
     if (
@@ -211,9 +209,10 @@ function findGroundTop(position: Vec3): number | null {
 }
 
 function sectorAt(position: Vec3): string {
-  let best = SKYLINE_BUILDINGS[0]
+  const buildings = getActiveWorldSnapshot().buildings
+  let best = buildings[0]
   let bestDistance = Number.POSITIVE_INFINITY
-  for (const building of SKYLINE_BUILDINGS) {
+  for (const building of buildings) {
     const x = (building.bounds.min.x + building.bounds.max.x) / 2
     const z = (building.bounds.min.z + building.bounds.max.z) / 2
     const distance = Math.hypot(position.x - x, position.z - z)
@@ -730,6 +729,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
   const enemyFactors = useSkylineRunnerStore((state) => state.enemyFactors)
   const nearby = useSkylineRunnerStore((state) => state.nearby)
   const activeDialogue = useSkylineRunnerStore((state) => state.activeDialogue)
+  const worldSnapshot = useSkylineRunnerStore((state) => state.worldSnapshot)
   const [activeAnchor, setActiveAnchor] = useState<GrappleAnchor | null>(null)
   const [aimedAnchorId, setAimedAnchorId] = useState<string | null>(null)
   const [shotTrace, setShotTrace] = useState<ShotTrace | null>(null)
@@ -738,7 +738,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
   const grappleMuzzleRef = useRef<THREE.Group>(null)
   const spellMuzzleRef = useRef<THREE.Group>(null)
   const motion = useRef<PlayerMotion>({
-    position: { ...PLAYER_SPAWN },
+    position: { ...getActiveWorldSnapshot().spawn },
     velocity: { x: 0, y: 0, z: 0 },
     grounded: true,
     lastGroundedAtMs: 0,
@@ -746,7 +746,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
   const jumpConsumed = useRef(false)
   const ropeLength = useRef(0)
   const activeAnchorRef = useRef<GrappleAnchor | null>(null)
-  const activeCheckpoint = useRef(SKYLINE_CHECKPOINTS[0])
+  const activeCheckpoint = useRef(getActiveWorldSnapshot().checkpoints[0])
   const wallRoll = useRef(0)
   const lastTelemetryAt = useRef(0)
   const simulationTimeMs = useRef(0)
@@ -812,15 +812,32 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     setPrimeShots([])
   }, [activeDialogue, input, paused])
 
+  // On mount AND whenever the active world changes (the tutorial->world
+  // teleport), snap the camera and the physics body onto the active spawn.
   useEffect(() => {
-    camera.position.set(PLAYER_SPAWN.x, PLAYER_SPAWN.y + EYE_OFFSET, PLAYER_SPAWN.z)
+    const spawn = worldSnapshot.spawn
+    camera.position.set(spawn.x, spawn.y + EYE_OFFSET, spawn.z)
     camera.rotation.order = 'YXZ'
     perspectiveCamera.fov = 75
     perspectiveCamera.updateProjectionMatrix()
-  }, [camera, perspectiveCamera])
+    motion.current = {
+      position: { ...spawn },
+      velocity: { x: 0, y: 0, z: 0 },
+      grounded: true,
+      lastGroundedAtMs: 0,
+    }
+    activeCheckpoint.current = worldSnapshot.checkpoints[0]
+    activeAnchorRef.current = null
+    setActiveAnchor(null)
+  }, [camera, perspectiveCamera, worldSnapshot])
 
   useFrame(({ clock }, rawDelta) => {
     const state = useSkylineRunnerStore.getState()
+    // Resolve the active world once per frame. In tutorial mode this is the
+    // static constants (identical results to Round 1); in world mode it is the
+    // generated city + re-anchored missions.
+    const world = state.worldSnapshot
+    const grappleObstacles = activeGrappleObstacles()
     const frozen = paused || Boolean(state.activeDialogue) || Boolean(state.result) || state.defeated
     const dt = Math.min(.04, Math.max(0, rawDelta))
 
@@ -880,7 +897,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
           velocity: current.velocity,
           playerRadius: PLAYER_RADIUS,
           playerHalfHeight: PLAYER_HALF_HEIGHT,
-          platforms: SKYLINE_BUILDINGS,
+          platforms: world.buildings,
           maxDistance: .6,
           minAlongWallSpeed: 4.2,
         })
@@ -936,8 +953,8 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     const surfaceCandidate = selectGrappleSurface({
       origin: grappleOrigin,
       viewDirection,
-      surfaces: SKYLINE_COLLIDERS,
-      obstacles: SKYLINE_COLLIDERS,
+      surfaces: world.colliders,
+      obstacles: world.colliders,
       maxRange: GRAPPLE_RANGE,
       obstaclePadding: .02,
       surfaceOffset: GRAPPLE_SURFACE_OFFSET,
@@ -945,8 +962,8 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     const guideCandidate = selectGrappleAnchor({
       origin: grappleOrigin,
       viewDirection,
-      anchors: SKYLINE_ANCHORS,
-      obstacles: GRAPPLE_OBSTACLES,
+      anchors: world.anchors,
+      obstacles: grappleObstacles,
       maxRange: GRAPPLE_RANGE,
       minimumAlignment: .54,
       alignmentWeight: .84,
@@ -974,7 +991,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     }
 
     if (attached && grappleHeld && stamina.current > 0) {
-      const cableClear = hasLineOfSight(grappleOrigin, attached.position, GRAPPLE_OBSTACLES, .02)
+      const cableClear = hasLineOfSight(grappleOrigin, attached.position, grappleObstacles, .02)
       if (!cableClear) {
         attached = null
         activeAnchorRef.current = null
@@ -1043,7 +1060,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
           nextPosition: next.position,
           playerRadius: PLAYER_RADIUS,
           playerHalfHeight: PLAYER_HALF_HEIGHT,
-          platforms: SKYLINE_COLLIDERS,
+          platforms: world.colliders,
         })
       : null
     if (landing) {
@@ -1076,11 +1093,11 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
       }
     }
 
-    if (shouldRespawn(next.position, SKYLINE_WORLD_BOUNDS.killPlaneY)) {
+    if (shouldRespawn(next.position, world.killPlaneY)) {
       const defeated = useSkylineRunnerStore.getState().recordFall()
       audio.play('damage', 1.3)
       if (!defeated) {
-        next = respawnAtCheckpoint({ checkpoint: activeCheckpoint.current, fallbackPosition: PLAYER_SPAWN }).motion
+        next = respawnAtCheckpoint({ checkpoint: activeCheckpoint.current, fallbackPosition: world.spawn }).motion
         look.current.pitch = 0
       }
       attached = null
@@ -1091,7 +1108,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     const reachedCheckpoint = selectReachedCheckpoint({
       position: next.position,
       previousPosition,
-      checkpoints: SKYLINE_CHECKPOINTS,
+      checkpoints: world.checkpoints,
       currentOrder: activeCheckpoint.current.order,
       triggerPadding: PLAYER_RADIUS,
     })
@@ -1103,30 +1120,52 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
 
     const liveState = useSkylineRunnerStore.getState()
     if (!liveState.activeDialogue) {
-      let near: 'npc:lia' | 'npc:nilo' | 'beacon' | null = null
-      if (tupleDistance(next.position, SKYLINE_NPCS.lia.position) <= SKYLINE_WORLD_BOUNDS.npcInteractionRadius) near = 'npc:lia'
-      else if (tupleDistance(next.position, SKYLINE_NPCS.nilo.position) <= SKYLINE_WORLD_BOUNDS.npcInteractionRadius) near = 'npc:nilo'
-      else if (tupleDistance(next.position, SKYLINE_LOCATIONS.apexBeacon) <= 2.8) near = 'beacon'
+      let near:
+        | 'npc:lia'
+        | 'npc:nilo'
+        | 'beacon'
+        | `mission:${SkylineMissionId}`
+        | null = null
+      const npcRadius = world.radii.npcInteractionRadius
+      if (tupleDistance(next.position, world.npcs.lia.position) <= npcRadius) near = 'npc:lia'
+      else if (tupleDistance(next.position, world.npcs.nilo.position) <= npcRadius) near = 'npc:nilo'
+      else if (tupleDistance(next.position, world.locations.apexBeacon) <= 2.8) near = 'beacon'
+      else {
+        // Pick up any still-`available` contract by standing on its anchor. In
+        // world mode the three playable contracts come from the generated
+        // snapshot; in tutorial mode they come from the static registry.
+        const contracts = world.mode === 'world' ? world.contracts : SKYLINE_MISSION_IDS.map((id) => SKYLINE_MISSIONS[id])
+        for (const contract of contracts) {
+          if (contract.autoActivate) continue
+          if (
+            liveState.mission.missionStatuses[contract.id] === 'available'
+            && tupleDistance(next.position, contract.activationAnchor) <= npcRadius
+          ) {
+            near = `mission:${contract.id}`
+            break
+          }
+        }
+      }
       liveState.setNearby(near)
     }
 
-    if (liveState.mission.spokenNpcIds.includes('lia') && !liveState.mission.coresDeliveredToNilo) {
+    if (isMissionActive(liveState.mission, 'prime-cores') && !liveState.mission.coresDeliveredToNilo) {
       for (const value of SKYLINE_PRIME_CORE_VALUES) {
         if (!liveState.mission.collectedPrimeCores.includes(value)
-          && tupleDistance(next.position, SKYLINE_PRIME_CORES[value].position) <= SKYLINE_WORLD_BOUNDS.coreCollectionRadius) {
+          && tupleDistance(next.position, world.primeCores[value].position) <= world.radii.coreCollectionRadius) {
           if (liveState.collectCore(value)) audio.play('collect')
           break
         }
       }
     }
 
-    if (!liveState.mission.apexReached && tupleDistance(next.position, SKYLINE_LOCATIONS.apexSpire) < 4.2) {
+    if (!liveState.mission.apexReached && tupleDistance(next.position, world.locations.apexSpire) < 4.2) {
       liveState.reachApex()
     }
 
     const playerEye = { ...next.position, y: next.position.y + EYE_OFFSET }
     const primeTargets = SKYLINE_SENTINEL_IDS.map((id) => {
-      const definition = SKYLINE_SENTINELS[id]
+      const definition = world.sentinels[id]
       return {
         id,
         compositeNumber: definition.compositeNumber,
@@ -1145,16 +1184,17 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
       viewDirection,
       targets: primeTargets,
       minimumAlignment: PRIME_AIM_ALIGNMENT,
-      hasLineOfSight: (origin, target) => hasLineOfSight(origin, target.position, GRAPPLE_OBSTACLES, .025),
+      hasLineOfSight: (origin, target) => hasLineOfSight(origin, target.position, grappleObstacles, .025),
     })
     const enemyTarget: SkylineSentinelId | null = targetSelection?.target.id ?? null
 
     if (input.current.attackQueued) {
       const power = PRIME_POWERS[selectedPrime]
       const ready = nowMs - lastCastAtMs.current[selectedPrime] >= power.cadenceMs
-      if (!liveState.mission.coresDeliveredToNilo && enemyTarget) {
+      const sentinelsArmed = isMissionActive(liveState.mission, 'composite-sentinels')
+      if (!sentinelsArmed && enemyTarget) {
         liveState.castPrimeAtEnemy(enemyTarget, selectedPrime)
-      } else if (ready && liveState.mission.coresDeliveredToNilo) {
+      } else if (ready && sentinelsArmed) {
         lastCastAtMs.current[selectedPrime] = nowMs
         setCastSerial((serial) => serial + 1)
         audio.play('pulse', selectedPrime === 5 ? 1.35 : selectedPrime === 3 ? 1.08 : .88)
@@ -1187,16 +1227,16 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
     }
 
     const combatState = useSkylineRunnerStore.getState()
-    if (combatState.mission.coresDeliveredToNilo) {
+    if (isMissionActive(combatState.mission, 'composite-sentinels')) {
       for (const id of SKYLINE_SENTINEL_IDS) {
         if (useSkylineRunnerStore.getState().defeated) break
         if (combatState.mission.defeatedSentinelIds.includes(id)) continue
-        const definition = SKYLINE_SENTINELS[id]
+        const definition = world.sentinels[id]
         const enemyPosition: Vec3 = { x: definition.position[0], y: definition.position[1], z: definition.position[2] }
         const distance = vectorDistance(next.position, enemyPosition)
         const playerEye = { ...next.position, y: next.position.y + EYE_OFFSET }
         if (distance < 11.5
-          && hasLineOfSight(enemyPosition, playerEye, GRAPPLE_OBSTACLES, .025)
+          && hasLineOfSight(enemyPosition, playerEye, grappleObstacles, .025)
           && clock.elapsedTime >= enemyFireAt.current[id]) {
           enemyFireAt.current[id] = clock.elapsedTime + 1.45 + definition.compositeNumber * .035
           combatState.takeDamage(distance < 5 ? 9 : 6)
@@ -1219,7 +1259,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
 
     for (const id of SKYLINE_SENTINEL_IDS) {
       if (combatState.mission.defeatedSentinelIds.includes(id)) continue
-      const enemy = SKYLINE_SENTINELS[id].position
+      const enemy = world.sentinels[id].position
       if (Math.abs(next.position.y - enemy[1]) > 1.8) continue
       const offsetX = next.position.x - enemy[0]
       const offsetZ = next.position.z - enemy[2]
@@ -1258,7 +1298,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
         facing: { x: move.x, y: 0, z: move.z },
         playerRadius: PLAYER_RADIUS,
         playerHalfHeight: PLAYER_HALF_HEIGHT,
-        platforms: SKYLINE_COLLIDERS.map((platform) => platform.bounds),
+        platforms: grappleObstacles,
       })
       if (ledge) {
         mantle.current = { from: { ...next.position }, to: ledge.target, untilMs: nowMs + MANTLE_DURATION_MS }
@@ -1355,6 +1395,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
   return (
     <>
       <SkylineWorld
+        world={worldSnapshot}
         profile={profile}
         quality={quality}
         reducedMotion={reducedMotion}
@@ -1386,7 +1427,7 @@ function SkylineRunnerScene({ paused, quality, profile, reducedMotion, input, lo
         quality={quality}
         selectedPrime={selectedPrime}
         castSerial={castSerial}
-        spellUnlocked={mission.coresDeliveredToNilo}
+        spellUnlocked={isMissionActive(mission, 'composite-sentinels')}
         grappleMuzzleRef={grappleMuzzleRef}
         spellMuzzleRef={spellMuzzleRef}
       />

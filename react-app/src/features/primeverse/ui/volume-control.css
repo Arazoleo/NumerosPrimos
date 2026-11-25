@@ -1,0 +1,65 @@
+.pv-game-settings { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; width: max-content; max-width: 100%; }
+.pv-volume {
+  --audio-accent: var(--pv-yellow, #ffcc1a);
+  --audio-ink: var(--pv-ink, #edf1f5);
+  --audio-line: var(--pv-line, rgb(237 241 245 / 18%));
+  --audio-panel: #0d1119;
+  --audio-radius: 2px;
+  --audio-track-height: 2px;
+  position: relative; display: inline-flex; flex: 0 0 auto; align-items: center;
+  color: var(--audio-ink); font: 500 11px/1 var(--audio-font, 'JetBrains Mono', monospace);
+  pointer-events: auto;
+}
+.pv-volume .pv-volume__trigger,
+.pv-volume .pv-volume__mute {
+  position: relative; display: grid; place-items: center; flex: 0 0 auto;
+  width: 30px; min-width: 30px; height: 30px; min-height: 30px; padding: 0; margin: 0;
+  border: 1px solid var(--audio-line); border-radius: var(--audio-radius);
+  background: var(--audio-panel); color: var(--audio-ink); cursor: pointer;
+}
+.pv-volume button::before { content: ''; position: absolute; inset: -6px; }
+.pv-volume button svg { width: 14px; height: 14px; pointer-events: none; }
+.pv-volume .pv-volume__trigger[aria-expanded="true"],
+.pv-volume button:hover { border-color: var(--audio-accent); color: var(--audio-accent); }
+.pv-volume .pv-volume__panel {
+  position: absolute; z-index: 80; right: calc(100% + 6px); top: 50%; transform: translateY(-50%);
+  display: flex; align-items: center; gap: 8px; width: max-content; padding: 5px 8px 5px 5px;
+  border: 1px solid var(--audio-line); border-radius: var(--audio-radius); background: var(--audio-panel);
+}
+.pv-volume__panel::after { content: ''; position: absolute; top: 0; bottom: 0; left: 100%; width: 8px; }
+.pv-volume[data-side="right"] .pv-volume__panel { right: auto; left: calc(100% + 6px); }
+.pv-volume[data-side="right"] .pv-volume__panel::after { left: auto; right: 100%; }
+.pv-volume .pv-volume__panel[hidden] { display: none; }
+.pv-volume .pv-volume__mute { width: 26px; min-width: 26px; height: 26px; min-height: 26px; border-color: transparent; }
+.pv-volume input[type="range"] { appearance: none; display: block; width: 82px; max-width: 82px; height: 28px; margin: 0; padding: 0; border: 0; background: transparent; color: var(--audio-accent); cursor: pointer; touch-action: pan-y; }
+.pv-volume input::-webkit-slider-runnable-track { height: var(--audio-track-height); background: linear-gradient(var(--audio-accent), var(--audio-accent)) no-repeat var(--audio-line); background-size: var(--volume-percent) 100%; }
+.pv-volume input::-moz-range-track { height: var(--audio-track-height); background: var(--audio-line); }
+.pv-volume input::-moz-range-progress { height: var(--audio-track-height); background: var(--audio-accent); }
+.pv-volume input::-webkit-slider-thumb { appearance: none; width: 8px; height: 8px; margin-top: calc((var(--audio-track-height) - 8px) / 2); border: 0; border-radius: var(--audio-thumb-radius, 50%); background: var(--audio-accent); }
+.pv-volume input::-moz-range-thumb { width: 8px; height: 8px; border: 0; border-radius: var(--audio-thumb-radius, 50%); background: var(--audio-accent); }
+.pv-volume__value { min-width: 4ch; padding: 0; font: inherit; font-variant-numeric: tabular-nums; color: var(--audio-ink); }
+.pv-volume :is(button, input):focus-visible { outline: 1px solid var(--audio-accent); outline-offset: 3px; }
+.n257-modal .pv-game-settings { margin: 16px 0; }
+
+/* Reuse each game's own HUD palette and geometry. */
+.factor-forge .pv-volume { --audio-accent: var(--ff-cyan); --audio-ink: var(--ff-white); --audio-line: var(--ff-line); --audio-panel: var(--ff-panel-solid); }
+.modular-orbit .pv-volume { --audio-accent: var(--orbit-cyan); --audio-ink: var(--orbit-ink); --audio-line: var(--orbit-line); --audio-panel: var(--orbit-bg); }
+.ulam-galaxy .pv-volume { --audio-accent: var(--ulam-violet); --audio-ink: var(--ulam-ink); --audio-line: var(--ulam-line); --audio-panel: var(--ulam-bg); }
+.crypto-escape .pv-volume { --audio-accent: var(--escape-cyan); --audio-ink: var(--escape-ink); --audio-line: var(--escape-line); --audio-panel: var(--escape-bg); --audio-radius: 0px; --audio-track-height: 1px; }
+.diffie-hellman .pv-volume { --audio-accent: var(--dh-cyan); --audio-ink: var(--dh-ink); --audio-line: var(--dh-line); --audio-panel: var(--dh-bg); }
+.prime-defense .pv-volume { --audio-accent: var(--pd-cyan); --audio-ink: var(--pd-white); --audio-line: var(--pd-line); --audio-panel: var(--pd-panel-solid); }
+.rsa-vault .pv-volume { --audio-accent: var(--rsa-gold); --audio-ink: var(--rsa-ink); --audio-line: var(--rsa-line); --audio-panel: var(--rsa-panel-solid); }
+.pvo-page .pv-volume { --audio-accent: var(--pvo-cyan); --audio-ink: var(--pvo-ink); --audio-line: var(--pvo-line); --audio-panel: var(--pvo-panel-solid); --audio-radius: 4px; }
+.ulam-rift .pv-volume { --audio-accent: var(--rift-cyan); --audio-line: rgb(105 244 218 / 22%); --audio-panel: var(--rift-ink); --audio-radius: 0px; --audio-track-height: 1px; }
+.euclid-siege .pv-volume { --audio-accent: var(--euclid-gold); --audio-ink: var(--euclid-cream); --audio-line: var(--euclid-line); --audio-panel: var(--euclid-ink); --audio-radius: 0px; --audio-thumb-radius: 0px; }
+.scc-page .pv-volume { --audio-accent: var(--scc-green); --audio-ink: var(--scc-ink); --audio-line: var(--scc-line); --audio-panel: #010504; --audio-radius: 0px; --audio-track-height: 1px; }
+.n257-page .pv-volume { --audio-accent: var(--n257-accent); --audio-ink: var(--n257-ink); --audio-line: var(--n257-line); --audio-panel: #071016; --audio-font: 'DM Mono', monospace; --audio-radius: 0px; --audio-track-height: 1px; }
+.primebound .pv-volume { --audio-accent: var(--pb-gold); --audio-ink: var(--pb-paper); --audio-line: rgb(242 193 92 / 28%); --audio-panel: var(--pb-ink); --audio-radius: 0px; --audio-thumb-radius: 0px; --audio-track-height: 3px; }
+.primebound .primebound-hud__actions .pv-volume .pv-volume__panel { right: calc(100% + 6px); left: auto; }
+.primebound .primebound-hud__actions .pv-volume .pv-volume__panel::after { left: 100%; right: auto; }
+.skyline-runner .pv-volume { --audio-accent: var(--sr-cyan); --audio-ink: var(--sr-paper); --audio-line: var(--sr-line); --audio-panel: var(--sr-ink); --audio-radius: 0px; --audio-track-height: 1px; }
+
+@media (max-width: 760px), (pointer: coarse) {
+  .pvo-landing__footer > .pv-game-settings { display: flex; }
+  .pvo-page .pvo-quality-wrap { display: block; right: 12px; bottom: 82px; }
+}

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import {
   analyzeDefensePlan,
   createWaveEnemies,
@@ -80,7 +80,7 @@ function IntroPanel({ quality, onQualityChange }: PrimeDefenseHudProps): JSX.Ele
       mark="5"
       onStart={() => start()}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
   )
 }
@@ -121,7 +121,7 @@ function MissionTopbar({ quality, onQualityChange }: Pick<PrimeDefenseHudProps, 
         <span className={`defense-signal${phase === 'running' ? ' is-running' : ''}`}>
           <i /> {phase === 'running' ? 'ONDA EM CURSO' : 'MALHA ONLINE'}
         </span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" className="defense-restart" onClick={restart}>Reiniciar</button>
       </div>
     </header>
@@ -343,13 +343,10 @@ function DefenseBoard({ onSoundEvent }: Pick<PrimeDefenseHudProps, 'onSoundEvent
 }
 
 function Telemetry(): JSX.Element {
-  const phase = usePrimeDefenseStore((state) => state.phase)
   const score = usePrimeDefenseStore((state) => state.score)
   const coreCharge = usePrimeDefenseStore((state) => state.coreCharge)
   const intercepted = usePrimeDefenseStore((state) => state.intercepted)
-  const recentOutcomes = usePrimeDefenseStore((state) => state.recentOutcomes)
   const elapsed = useDefenseClock()
-  const latest = recentOutcomes[recentOutcomes.length - 1]
 
   return (
     <aside className="defense-telemetry" aria-label="Telemetria da defesa">
@@ -358,17 +355,6 @@ function Telemetry(): JSX.Element {
         <div><span>TEMPO</span><strong>{formatTime(elapsed)}</strong></div>
         <div><span>NÚCLEO</span><strong>{coreCharge}<small> primos</small></strong></div>
         <div><span>INTERCEPTADOS</span><strong>{intercepted}</strong></div>
-      </div>
-      <div className="defense-proof">
-        <span>PROVA MAIS RECENTE</span>
-        {latest ? (
-          <div className={`is-${latest.kind}`}>
-            <strong>{latest.enemy.value}</strong>
-            <p>{latest.explanation}</p>
-          </div>
-        ) : (
-          <p>{phase === 'planning' ? 'Execute a onda para abrir o canal de análise.' : 'Aguardando telemetria…'}</p>
-        )}
       </div>
     </aside>
   )
@@ -491,6 +477,7 @@ function TutorialOverlay(): JSX.Element | null {
   const tutorialStep = usePrimeDefenseStore((state) => state.tutorialStep)
   const skipTutorial = usePrimeDefenseStore((state) => state.skipTutorial)
   const nextTutorialStep = usePrimeDefenseStore((state) => state.nextTutorialStep)
+  const prevTutorialStep = usePrimeDefenseStore((state) => state.prevTutorialStep)
 
   if (!isTutorialActive) return null
 
@@ -543,6 +530,12 @@ function TutorialOverlay(): JSX.Element | null {
       <div className="tutorial-dialog" style={{ position: 'fixed', top: '10%', left: '50%', transform: 'translateX(-50%)', zIndex: 101, background: '#0a1012', padding: '24px 32px', border: '1px solid #4a9e9e', borderRadius: '4px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}>
         <p style={{ color: '#fff', marginBottom: '16px', fontSize: '1.1rem', fontWeight: 500, maxWidth: '600px' }}>{message}</p>
         
+        {tutorialStep > 1 && (
+          <button type="button" onClick={prevTutorialStep} style={{ padding: '8px 16px', marginRight: '16px', background: 'transparent', color: '#4a9e9e', border: '1px solid #4a9e9e', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Voltar
+          </button>
+        )}
+
         {showNextButton && (
           <button type="button" onClick={nextTutorialStep} style={{ padding: '8px 16px', marginRight: '16px', background: '#4a9e9e', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
             Próximo

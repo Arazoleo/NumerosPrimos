@@ -32,6 +32,7 @@ export default function FactorForge({
   onSoundEvent,
 }: FactorForgeProps): JSX.Element {
   useDocumentTitle('Factor Forge · Primeverse')
+  const phase = useFactorForgeStore((state) => state.phase)
   const detectedQuality = useForgeQuality()
   const [manualQuality, setManualQuality] = useState<ForgeQuality | null>(null)
   const quality = manualQuality ?? requestedQuality ?? detectedQuality
@@ -52,7 +53,7 @@ export default function FactorForge({
   }, [onSoundEvent])
 
   return (
-    <main className="factor-forge" data-quality={quality}>
+    <main className="factor-forge" data-phase={phase} data-quality={quality}>
       <div className="factor-forge__canvas">
         <FactorForgeBoundary>
           <Canvas
@@ -61,7 +62,7 @@ export default function FactorForge({
             dpr={[settings.dpr[0], settings.dpr[1]]}
             shadows={settings.shadows}
             gl={{
-              antialias: quality !== 'low',
+              antialias: true,
               alpha: false,
               powerPreference: quality === 'low' ? 'low-power' : 'high-performance',
             }}

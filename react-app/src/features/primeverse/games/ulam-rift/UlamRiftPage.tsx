@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
-
 import { audioBus, type AudioCue } from '../../audio/audioBus'
 import { useQualitySettings } from '../../graphics/useQualitySettings'
 import { useDocumentTitle } from '../../useDocumentTitle'
@@ -10,6 +9,11 @@ import { useAudioResource } from '../../audio/useAudioResource'
 import UlamRiftCanvas, { useUlamRiftControls } from './UlamRiftCanvas'
 import UlamRiftHud from './UlamRiftHud'
 import type { UlamRiftTelemetry } from './UlamRiftScene'
+import {
+  createUlamRiftProgressRecorder,
+  type UlamRiftProgressRecord,
+  type UlamRiftProgressRecorder,
+} from './progressionAdapter'
 import {
   ULAM_RIFT_SPAWN,
   createUlamRiftState,
@@ -45,12 +49,25 @@ const INITIAL_TELEMETRY: UlamRiftTelemetry = {
   objectiveDistance: 0,
 }
 
-export default function UlamRiftPage(): JSX.Element {
+export interface UlamRiftPageProps {
+  readonly createProgressRecorder?: () => UlamRiftProgressRecorder
+}
+
+export default function UlamRiftPage({
+  createProgressRecorder = createUlamRiftProgressRecorder,
+}: UlamRiftPageProps = {}): JSX.Element {
   useDocumentTitle('Fenda de Ulam · Primeverse')
   const { quality, setQuality, profile } = useQualitySettings()
   const reducedMotion = useReducedMotion()
   const [state, dispatch] = useReducer(ulamRiftReducer, undefined, () => createUlamRiftState())
+  const progressRecorder = useRef<UlamRiftProgressRecorder | null>(null)
+  if (progressRecorder.current === null) {
+    progressRecorder.current = createProgressRecorder()
+  }
+  const latestState = useRef(state)
+  latestState.current = state
   const [telemetry, setTelemetry] = useState<UlamRiftTelemetry>(INITIAL_TELEMETRY)
+  const [progressRecord, setProgressRecord] = useState<UlamRiftProgressRecord | null>(null)
   const [interaction, setInteraction] = useState<string | null>(null)
   const [paused, setPaused] = useState(false)
   const playedFeedback = useRef(0)
@@ -72,19 +89,21 @@ export default function UlamRiftPage(): JSX.Element {
   }, [getMusic, paused, state.phase])
 
   useEffect(() => {
-    // Speed and airtime push the arrangement; the lead belongs to full flight.
     const pace = Math.min(1, telemetry.speed / 9.2)
     getMusic().setIntensity(0.18 + pace * 0.6 + (telemetry.grounded ? 0 : 0.2))
   }, [getMusic, telemetry.grounded, telemetry.speed])
+
   const sendPartyTransform = party.sendTransform
 
   const start = useCallback(() => {
     setPaused(false)
     dispatch({ type: 'start', nowMs: clock() })
   }, [])
+
   const restart = useCallback(() => {
     setPaused(false)
     setInteraction(null)
+    setProgressRecord(null)
     dispatch({ type: 'restart', nowMs: clock() })
   }, [])
 
@@ -101,6 +120,19 @@ export default function UlamRiftPage(): JSX.Element {
     )
     return () => window.clearTimeout(timer)
   }, [state.feedback, state.phase])
+
+  useEffect(() => {
+    if (state.phase === 'won' || state.phase === 'lost') {
+      const record = progressRecorder.current?.record(state)
+      if (record) setProgressRecord(record)
+    }
+  }, [state])
+
+  useEffect(() => {
+    return () => {
+      progressRecorder.current?.record(latestState.current)
+    }
+  }, [])
 
   useEffect(() => {
     const animation = state.phase !== 'running' || paused
@@ -131,6 +163,7 @@ export default function UlamRiftPage(): JSX.Element {
       <UlamRiftHud
         state={state}
         telemetry={telemetry}
+        progressRecord={progressRecord}
         interaction={interaction}
         paused={paused}
         quality={quality}

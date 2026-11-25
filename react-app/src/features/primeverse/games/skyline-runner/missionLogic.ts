@@ -1,16 +1,27 @@
 import {
+  SKYLINE_MISSION_IDS,
+  SKYLINE_MISSIONS,
   SKYLINE_NPCS,
   SKYLINE_OBJECTIVES,
   SKYLINE_PRIME_CORE_VALUES,
   SKYLINE_SENTINEL_IDS,
   SKYLINE_SENTINELS,
+  type SkylineMissionId,
+  type SkylineMissionStatus,
   type SkylineNpcId,
   type SkylineObjective,
+  type SkylineObjectiveId,
   type SkylinePrimeCoreValue,
   type SkylineSentinelId,
 } from './missionData'
 
+export type SkylineMissionStatusMap = Readonly<
+  Record<SkylineMissionId, SkylineMissionStatus>
+>
+
 export interface SkylineMissionProgress {
+  /** Per-mission activation state for the open-world contract registry. */
+  readonly missionStatuses: SkylineMissionStatusMap
   readonly spokenNpcIds: readonly SkylineNpcId[]
   readonly collectedPrimeCores: readonly SkylinePrimeCoreValue[]
   readonly coresDeliveredToNilo: boolean
@@ -19,7 +30,20 @@ export interface SkylineMissionProgress {
   readonly beaconActivated: boolean
 }
 
+/**
+ * Seeds every contract from the registry: the LIA tutorial auto-activates,
+ * every other mission starts `available` and must be activated by the player.
+ */
+const INITIAL_MISSION_STATUSES: SkylineMissionStatusMap =
+  SKYLINE_MISSION_IDS.reduce((statuses, missionId) => {
+    statuses[missionId] = SKYLINE_MISSIONS[missionId].autoActivate
+      ? 'active'
+      : 'available'
+    return statuses
+  }, {} as Record<SkylineMissionId, SkylineMissionStatus>)
+
 export const INITIAL_SKYLINE_MISSION_PROGRESS: SkylineMissionProgress = {
+  missionStatuses: INITIAL_MISSION_STATUSES,
   spokenNpcIds: [],
   collectedPrimeCores: [],
   coresDeliveredToNilo: false,
@@ -46,6 +70,10 @@ function isKnownSentinelId(
   return Object.prototype.hasOwnProperty.call(SKYLINE_SENTINELS, sentinelId)
 }
 
+function isKnownMissionId(missionId: string): missionId is SkylineMissionId {
+  return Object.prototype.hasOwnProperty.call(SKYLINE_MISSIONS, missionId)
+}
+
 export function hasAllPrimeCores(progress: SkylineMissionProgress): boolean {
   return includesAll(
     progress.collectedPrimeCores,
@@ -62,7 +90,119 @@ export function hasDefeatedAllSentinels(
   )
 }
 
-/** Records a conversation once and preserves strict campaign order. */
+export function getMissionStatus(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId | string,
+): SkylineMissionStatus | undefined {
+  if (!isKnownMissionId(missionId)) return undefined
+  return progress.missionStatuses[missionId]
+}
+
+export function isMissionAvailable(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId | string,
+): boolean {
+  return getMissionStatus(progress, missionId) === 'available'
+}
+
+export function isMissionActive(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId | string,
+): boolean {
+  return getMissionStatus(progress, missionId) === 'active'
+}
+
+export function isMissionCompleted(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId | string,
+): boolean {
+  return getMissionStatus(progress, missionId) === 'completed'
+}
+
+function withMissionStatus(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId,
+  status: SkylineMissionStatus,
+): SkylineMissionProgress {
+  if (progress.missionStatuses[missionId] === status) return progress
+  return {
+    ...progress,
+    missionStatuses: { ...progress.missionStatuses, [missionId]: status },
+  }
+}
+
+/**
+ * Picks up an `available` contract and sets it `active`. Unknown ids and
+ * missions that are already active or completed are no-ops (same reference).
+ */
+export function activateMission(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId | string,
+): SkylineMissionProgress {
+  if (!isKnownMissionId(missionId)) return progress
+  if (progress.missionStatuses[missionId] !== 'available') return progress
+  return withMissionStatus(progress, missionId, 'active')
+}
+
+/** True once every objective of the given contract is satisfied. */
+function areMissionObjectivesDone(
+  progress: SkylineMissionProgress,
+  missionId: SkylineMissionId,
+): boolean {
+  return SKYLINE_MISSIONS[missionId].objectiveIds.every((objectiveId) =>
+    isObjectiveSatisfied(progress, objectiveId),
+  )
+}
+
+function isObjectiveSatisfied(
+  progress: SkylineMissionProgress,
+  objectiveId: SkylineObjectiveId,
+): boolean {
+  switch (objectiveId) {
+    case 'talk-to-lia':
+      return progress.spokenNpcIds.includes('lia')
+    case 'collect-prime-cores':
+      return hasAllPrimeCores(progress)
+    case 'deliver-cores-to-nilo':
+      return progress.coresDeliveredToNilo
+    case 'defeat-composite-sentinels':
+      return hasDefeatedAllSentinels(progress)
+    case 'reach-apex-spire':
+      return progress.apexReached
+    case 'activate-apex-beacon':
+      return progress.beaconActivated
+    case 'mission-complete':
+      return true
+    default:
+      return false
+  }
+}
+
+/**
+ * Marks any `active` contract whose objectives are all satisfied as
+ * `completed`. Returns the same reference when nothing transitions.
+ */
+export function completeMissionsIfDone(
+  progress: SkylineMissionProgress,
+): SkylineMissionProgress {
+  let next = progress
+  for (const missionId of SKYLINE_MISSION_IDS) {
+    if (
+      next.missionStatuses[missionId] === 'active'
+      && areMissionObjectivesDone(next, missionId)
+    ) {
+      next = withMissionStatus(next, missionId, 'completed')
+    }
+  }
+  return next
+}
+
+/**
+ * Records a conversation once. LIA belongs to the auto-active tutorial, so she
+ * can always be approached; NILO only responds once the prime-cores contract
+ * is active and the full set has been collected. Completes any finished
+ * contract afterwards.
+ */
 export function recordNpcConversation(
   progress: SkylineMissionProgress,
   npcId: SkylineNpcId | string,
@@ -71,39 +211,43 @@ export function recordNpcConversation(
     return progress
   }
 
-  const canSpeak = npcId === 'lia' || (
-    progress.spokenNpcIds.includes('lia') && hasAllPrimeCores(progress)
-  )
+  const canSpeak = npcId === 'lia'
+    ? isMissionActive(progress, 'lia-tutorial')
+      || isMissionCompleted(progress, 'lia-tutorial')
+    : isMissionActive(progress, 'prime-cores') && hasAllPrimeCores(progress)
   if (!canSpeak) return progress
 
-  return {
+  const spoken: SkylineMissionProgress = {
     ...progress,
     spokenNpcIds: [...progress.spokenNpcIds, npcId],
   }
+  return completeMissionsIfDone(spoken)
 }
 
-/** Collects each prime core at most once, after LIA has opened the mission. */
+/** Collects each prime core at most once while the cores contract is active. */
 export function collectPrimeCore(
   progress: SkylineMissionProgress,
   value: SkylinePrimeCoreValue | number,
 ): SkylineMissionProgress {
   if (
     !isPrimeCoreValue(value)
-    || !progress.spokenNpcIds.includes('lia')
+    || !isMissionActive(progress, 'prime-cores')
     || progress.coresDeliveredToNilo
     || progress.collectedPrimeCores.includes(value)
   ) return progress
 
-  return {
+  const collected: SkylineMissionProgress = {
     ...progress,
     collectedPrimeCores: [...progress.collectedPrimeCores, value],
   }
+  return completeMissionsIfDone(collected)
 }
 
 export function canDeliverPrimeCores(
   progress: SkylineMissionProgress,
 ): boolean {
   return !progress.coresDeliveredToNilo
+    && isMissionActive(progress, 'prime-cores')
     && progress.spokenNpcIds.includes('nilo')
     && hasAllPrimeCores(progress)
 }
@@ -113,7 +257,7 @@ export function deliverPrimeCores(
   progress: SkylineMissionProgress,
 ): SkylineMissionProgress {
   if (!canDeliverPrimeCores(progress)) return progress
-  return { ...progress, coresDeliveredToNilo: true }
+  return completeMissionsIfDone({ ...progress, coresDeliveredToNilo: true })
 }
 
 export function recordSentinelDefeat(
@@ -122,39 +266,38 @@ export function recordSentinelDefeat(
 ): SkylineMissionProgress {
   if (
     !isKnownSentinelId(sentinelId)
-    || !progress.coresDeliveredToNilo
+    || !isMissionActive(progress, 'composite-sentinels')
     || progress.defeatedSentinelIds.includes(sentinelId)
   ) return progress
 
-  return {
+  const defeated: SkylineMissionProgress = {
     ...progress,
     defeatedSentinelIds: [...progress.defeatedSentinelIds, sentinelId],
   }
+  return completeMissionsIfDone(defeated)
 }
 
 export function canReachApexSpire(
   progress: SkylineMissionProgress,
 ): boolean {
-  return progress.coresDeliveredToNilo
-    && hasDefeatedAllSentinels(progress)
+  return isMissionActive(progress, 'apex-extraction')
 }
 
 export function reachApexSpire(
   progress: SkylineMissionProgress,
 ): SkylineMissionProgress {
   if (progress.apexReached || !canReachApexSpire(progress)) return progress
-  return { ...progress, apexReached: true }
+  return completeMissionsIfDone({ ...progress, apexReached: true })
 }
 
 export function canActivateApexBeacon(
   progress: SkylineMissionProgress,
 ): boolean {
-  return progress.apexReached
-    && hasAllPrimeCores(progress)
-    && hasDefeatedAllSentinels(progress)
+  return isMissionActive(progress, 'apex-extraction')
+    && progress.apexReached
 }
 
-/** Activating the Apex beacon also completes the extraction. */
+/** Activating the Apex beacon also completes the extraction contract. */
 export function activateApexBeacon(
   progress: SkylineMissionProgress,
 ): SkylineMissionProgress {
@@ -163,37 +306,71 @@ export function activateApexBeacon(
     || !canActivateApexBeacon(progress)
   ) return progress
 
-  return { ...progress, beaconActivated: true }
+  return completeMissionsIfDone({ ...progress, beaconActivated: true })
+}
+
+/** True once every contract in the registry has been completed. */
+export function areAllMissionsComplete(
+  progress: SkylineMissionProgress,
+): boolean {
+  return SKYLINE_MISSION_IDS.every(
+    (missionId) => progress.missionStatuses[missionId] === 'completed',
+  )
+}
+
+/**
+ * True once every contract EXCEPT the Apex extraction is completed. The runtime
+ * treats the Apex beacon as the finale: it must stay inert (and give the player
+ * a "finish the others first" hint) until the cores, sentinels and tutorial
+ * contracts are done, so lighting it always produces the victory end-state.
+ */
+export function areApexPrerequisitesComplete(
+  progress: SkylineMissionProgress,
+): boolean {
+  return SKYLINE_MISSION_IDS.every(
+    (missionId) =>
+      missionId === 'apex-extraction'
+      || progress.missionStatuses[missionId] === 'completed',
+  )
 }
 
 export function isSkylineMissionComplete(
   progress: SkylineMissionProgress,
 ): boolean {
-  return progress.beaconActivated
-    && canActivateApexBeacon(progress)
+  return areAllMissionsComplete(progress)
 }
 
-/** Returns the first unfinished stage, or the terminal victory objective. */
+/**
+ * Returns a sensible current objective for the HUD in the open-world model.
+ *
+ * Rule: walk SKYLINE_MISSION_IDS and return the first objective that
+ * belongs to an ACTIVE contract and is not yet satisfied. When no active
+ * contract has pending work, return 'mission-complete' if every contract is
+ * done, otherwise fall back to the first objective of an available contract
+ * (what the player should go activate next). Deterministic regardless of the
+ * order contracts were taken.
+ */
 export function getNextSkylineObjective(
   progress: SkylineMissionProgress,
 ): SkylineObjective {
-  if (!progress.spokenNpcIds.includes('lia')) {
-    return SKYLINE_OBJECTIVES['talk-to-lia']
+  for (const missionId of SKYLINE_MISSION_IDS) {
+    if (progress.missionStatuses[missionId] !== 'active') continue
+    for (const objectiveId of SKYLINE_MISSIONS[missionId].objectiveIds) {
+      if (!isObjectiveSatisfied(progress, objectiveId)) {
+        return SKYLINE_OBJECTIVES[objectiveId]
+      }
+    }
   }
-  if (!hasAllPrimeCores(progress)) {
-    return SKYLINE_OBJECTIVES['collect-prime-cores']
+
+  if (areAllMissionsComplete(progress)) {
+    return SKYLINE_OBJECTIVES['mission-complete']
   }
-  if (!progress.coresDeliveredToNilo) {
-    return SKYLINE_OBJECTIVES['deliver-cores-to-nilo']
+
+  for (const missionId of SKYLINE_MISSION_IDS) {
+    if (progress.missionStatuses[missionId] === 'available') {
+      return SKYLINE_OBJECTIVES[SKYLINE_MISSIONS[missionId].objectiveIds[0]]
+    }
   }
-  if (!hasDefeatedAllSentinels(progress)) {
-    return SKYLINE_OBJECTIVES['defeat-composite-sentinels']
-  }
-  if (!progress.apexReached) {
-    return SKYLINE_OBJECTIVES['reach-apex-spire']
-  }
-  if (!progress.beaconActivated) {
-    return SKYLINE_OBJECTIVES['activate-apex-beacon']
-  }
+
   return SKYLINE_OBJECTIVES['mission-complete']
 }

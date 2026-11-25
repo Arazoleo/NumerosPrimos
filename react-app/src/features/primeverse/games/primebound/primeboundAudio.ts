@@ -29,6 +29,8 @@ export interface PrimeboundSfx {
   dispose(): Promise<void>
 }
 
+import { effectiveAudioVolume, subscribeAudioVolume } from '../../audio/audioPreferences'
+
 type AudioContextConstructor = new (options?: AudioContextOptions) => AudioContext
 
 interface LegacyAudioWindow extends Window {
@@ -171,6 +173,7 @@ function contextConstructor(): AudioContextConstructor | null {
 }
 
 export function createPrimeboundSfx(): PrimeboundSfx {
+  let preferenceVolume = effectiveAudioVolume()
   let context: AudioContext | null = null
   let master: GainNode | null = null
   let noiseBuffer: AudioBuffer | null = null
@@ -186,7 +189,7 @@ export function createPrimeboundSfx(): PrimeboundSfx {
       const created = new Context()
       const gain = created.createGain()
       const limiter = created.createDynamicsCompressor()
-      gain.gain.value = enabled ? 1 : SILENCE
+      gain.gain.value = enabled ? preferenceVolume : SILENCE
       limiter.threshold.value = -12
       limiter.ratio.value = 8
       gain.connect(limiter)
@@ -272,7 +275,8 @@ export function createPrimeboundSfx(): PrimeboundSfx {
     setEnabled(next) {
       enabled = next
       if (!master || !context || context.state === 'closed') return
-      master.gain.setTargetAtTime(next ? 1 : SILENCE, context.currentTime, 0.05)
+      master.gain.cancelScheduledValues(context.currentTime)
+      master.gain.setTargetAtTime(next ? preferenceVolume : SILENCE, context.currentTime, 0.05)
     },
 
     async unlock() {
@@ -287,6 +291,7 @@ export function createPrimeboundSfx(): PrimeboundSfx {
     },
 
     async dispose() {
+      unsubscribePreferences()
       disposed = true
       if (context && context.state !== 'closed') await context.close().catch(() => undefined)
       context = null
@@ -295,5 +300,9 @@ export function createPrimeboundSfx(): PrimeboundSfx {
     },
   }
 
+  const unsubscribePreferences = subscribeAudioVolume(volume => {
+    preferenceVolume = volume
+    sfx.setEnabled(enabled)
+  })
   return sfx
 }

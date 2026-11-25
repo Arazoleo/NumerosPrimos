@@ -321,3 +321,202 @@ export const SKYLINE_MISSION = {
   requiredPrimeCores: SKYLINE_PRIME_CORE_VALUES,
   sentinelIds: SKYLINE_SENTINEL_IDS,
 } as const
+
+/**
+ * Open-world mission (contract) registry.
+ *
+ * The campaign is no longer a single rigid chain. The six objectives are
+ * grouped into four INDEPENDENT contracts the player can take on in varied
+ * order from an activation anchor in the world:
+ *
+ * - `lia-tutorial`  -> talk-to-lia                    (auto-active at spawn)
+ * - `prime-cores`   -> collect-prime-cores +
+ *                      deliver-cores-to-nilo
+ * - `composite-sentinels` -> defeat-composite-sentinels
+ * - `apex-extraction`     -> reach-apex-spire +
+ *                            activate-apex-beacon
+ *
+ * Only the LIA tutorial contract starts `active`; the others start
+ * `available` and must be activated before their objective-advancing logic
+ * takes effect. Objective ids are REUSED from SKYLINE_OBJECTIVES; no new
+ * mission content is introduced here.
+ */
+export type SkylineMissionId =
+  | 'lia-tutorial'
+  | 'prime-cores'
+  | 'composite-sentinels'
+  | 'apex-extraction'
+
+export type SkylineMissionStatus = 'available' | 'active' | 'completed'
+
+export interface SkylineMissionContract {
+  readonly id: SkylineMissionId
+  readonly title: string
+  readonly detail: string
+  /** Objective ids (members of SKYLINE_OBJECTIVES) that make up this contract. */
+  readonly objectiveIds: readonly SkylineObjectiveId[]
+  /** Where the contract can be picked up / anchored in the world. */
+  readonly activationAnchor: SkylinePosition3D
+  /** Only the LIA tutorial is active at spawn. */
+  readonly autoActivate: boolean
+}
+
+export const SKYLINE_MISSION_IDS = [
+  'lia-tutorial',
+  'prime-cores',
+  'composite-sentinels',
+  'apex-extraction',
+] as const satisfies readonly SkylineMissionId[]
+
+export const SKYLINE_MISSIONS: Readonly<
+  Record<SkylineMissionId, SkylineMissionContract>
+> = {
+  'lia-tutorial': {
+    id: 'lia-tutorial',
+    title: 'Briefing com LIA',
+    detail: 'Abra o canal com a operadora e receba o protocolo da cidade.',
+    objectiveIds: ['talk-to-lia'],
+    activationAnchor: SKYLINE_NPCS.lia.position,
+    autoActivate: true,
+  },
+  'prime-cores': {
+    id: 'prime-cores',
+    title: 'Tríade prima',
+    detail: 'Recupere os núcleos 2, 3 e 5 e entregue a carga a NILO.',
+    objectiveIds: ['collect-prime-cores', 'deliver-cores-to-nilo'],
+    activationAnchor: SKYLINE_PRIME_CORES[2].position,
+    autoActivate: false,
+  },
+  'composite-sentinels': {
+    id: 'composite-sentinels',
+    title: 'Caçada às Sentinelas',
+    detail: 'Rompa, um a um, os fatores das Sentinelas 4, 6, 9 e 10.',
+    objectiveIds: ['defeat-composite-sentinels'],
+    activationAnchor: SKYLINE_SENTINELS['sentinel-four'].position,
+    autoActivate: false,
+  },
+  'apex-extraction': {
+    id: 'apex-extraction',
+    title: 'Extração na Agulha',
+    detail: 'Alcance a Agulha Apex e acenda o farol de extração.',
+    objectiveIds: ['reach-apex-spire', 'activate-apex-beacon'],
+    activationAnchor: SKYLINE_LOCATIONS.apexSpire,
+    autoActivate: false,
+  },
+}
+
+/* -------------------------------------------------------------------------- *
+ * Procedural-world mission factory (Round 2, FEAT-006)
+ *
+ * The static constants above stay the single source of truth for the TUTORIAL.
+ * When the player is teleported into the seeded procedural world, the SAME three
+ * playable contracts (prime-cores / composite-sentinels / apex-extraction) are
+ * re-anchored onto generated rooftops. `createSkylineMissionsForWorld` is a PURE
+ * function that maps a seeded placement (computed by worldMissions.ts from a
+ * SkylineWorldData) into the EXACT shapes the renderer / store already consume
+ * (SKYLINE_PRIME_CORES / SKYLINE_SENTINELS / SKYLINE_MISSIONS / SKYLINE_LOCATIONS),
+ * reusing every label, clue, prime factor, composite number, objective id and
+ * dialogue from the static data. No new mission content is introduced, and the
+ * static exports are neither mutated nor removed.
+ *
+ * The placement argument is typed structurally (not imported from
+ * worldMissions.ts) so missionData.ts keeps no dependency on the generator and
+ * no import cycle forms.
+ * -------------------------------------------------------------------------- */
+
+/** One placed element: a world position bound to the rooftop it sits on. */
+export interface SkylinePlacedElement {
+  readonly roofId: string
+  readonly position: SkylinePosition3D
+}
+
+/** Seeded placement consumed by {@link createSkylineMissionsForWorld}. */
+export interface SkylineWorldMissionPlacement {
+  readonly cores: readonly (SkylinePlacedElement & {
+    readonly value: SkylinePrimeCoreValue
+  })[]
+  readonly sentinels: readonly (SkylinePlacedElement & {
+    readonly id: SkylineSentinelId
+  })[]
+  readonly apexSpire: SkylinePlacedElement
+  readonly apexBeacon: SkylinePlacedElement
+  readonly activation: {
+    readonly primeCores: SkylinePlacedElement
+    readonly compositeSentinels: SkylinePlacedElement
+    readonly apexExtraction: SkylinePlacedElement
+  }
+}
+
+/** The world-mode mission content, shaped like the static exports. */
+export interface SkylineWorldMissionContent {
+  readonly primeCores: Readonly<Record<SkylinePrimeCoreValue, SkylinePrimeCore>>
+  readonly sentinels: Readonly<Record<SkylineSentinelId, SkylineSentinel>>
+  readonly locations: {
+    readonly runnerSpawn: SkylinePosition3D
+    readonly apexSpire: SkylinePosition3D
+    readonly apexBeacon: SkylinePosition3D
+  }
+  readonly missions: Readonly<
+    Record<
+      Exclude<SkylineMissionId, 'lia-tutorial'>,
+      SkylineMissionContract
+    >
+  >
+}
+
+/**
+ * Maps a seeded {@link SkylineWorldMissionPlacement} into world-mode mission
+ * content. Labels, clues, prime factors, composite numbers, objective ids,
+ * titles and details are all REUSED from the static constants; only positions
+ * (and the roof-derived activation anchors) come from the placement.
+ *
+ * Pure: returns NEW objects and never touches the static exports.
+ */
+export function createSkylineMissionsForWorld(
+  placement: SkylineWorldMissionPlacement,
+): SkylineWorldMissionContent {
+  const coreByValue = new Map(placement.cores.map((c) => [c.value, c]))
+  const primeCores = {} as Record<SkylinePrimeCoreValue, SkylinePrimeCore>
+  for (const value of SKYLINE_PRIME_CORE_VALUES) {
+    const base = SKYLINE_PRIME_CORES[value]
+    const placed = coreByValue.get(value)
+    primeCores[value] = {
+      ...base,
+      position: placed ? placed.position : base.position,
+    }
+  }
+
+  const sentinelById = new Map(placement.sentinels.map((s) => [s.id, s]))
+  const sentinels = {} as Record<SkylineSentinelId, SkylineSentinel>
+  for (const id of SKYLINE_SENTINEL_IDS) {
+    const base = SKYLINE_SENTINELS[id]
+    const placed = sentinelById.get(id)
+    sentinels[id] = {
+      ...base,
+      position: placed ? placed.position : base.position,
+    }
+  }
+
+  const locations = {
+    runnerSpawn: SKYLINE_LOCATIONS.runnerSpawn,
+    apexSpire: placement.apexSpire.position,
+    apexBeacon: placement.apexBeacon.position,
+  }
+
+  const missions = {
+    'prime-cores': {
+      ...SKYLINE_MISSIONS['prime-cores'],
+      activationAnchor: placement.activation.primeCores.position,
+    },
+    'composite-sentinels': {
+      ...SKYLINE_MISSIONS['composite-sentinels'],
+      activationAnchor: placement.activation.compositeSentinels.position,
+    },
+    'apex-extraction': {
+      ...SKYLINE_MISSIONS['apex-extraction'],
+      activationAnchor: placement.activation.apexExtraction.position,
+    },
+  }
+
+  return { primeCores, sentinels, locations, missions }
+}

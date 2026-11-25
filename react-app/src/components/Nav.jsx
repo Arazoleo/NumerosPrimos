@@ -51,6 +51,7 @@ export default function Nav() {
               <a href="#relogio" onClick={close}>Aritmética Modular</a>
               <a href="#criptografia" onClick={close}>Criptografia</a>
               <a href="#rsa-game" onClick={close}>Minijogo RSA</a>
+              <a href="#primeverse" onClick={close}>Portal Primeverse</a>
             </div>
           </div>
           <a href="#missao" onClick={close}>Sobre Nós</a>

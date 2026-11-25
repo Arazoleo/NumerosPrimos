@@ -11,6 +11,7 @@ import FrequencyAnalysis from '../components/FrequencyAnalysis'
 import ModClock from '../components/ModClock'
 import CryptoDemo from '../components/CryptoDemo'
 import RsaGame from '../components/RsaGame'
+import PrimeverseSection from '../components/PrimeverseSection'
 import Mission from '../components/Mission'
 import TeamCarousel from '../components/TeamCarousel'
 import FinalCTA from '../components/FinalCTA'
@@ -54,6 +55,7 @@ export default function LandingPage() {
       <ModClock />
       <CryptoDemo />
       <RsaGame />
+      <PrimeverseSection />
       <Mission />
       <TeamCarousel />
       <FinalCTA />

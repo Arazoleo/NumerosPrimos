@@ -7,7 +7,20 @@ import {
   SKYLINE_ANCHORS,
   SKYLINE_BUILDINGS,
   SKYLINE_COLLIDERS,
+  SKYLINE_WORLD_BOUNDS,
 } from './world'
+
+const ORIGINAL_MISSION_BUILDINGS = [
+  { id: 'relay-base', bounds: { min: { x: -8, y: -29, z: 8 }, max: { x: 8, y: 0, z: 23 } } },
+  { id: 'binary-terrace', bounds: { min: { x: 0, y: -28, z: -1 }, max: { x: 9, y: 1.6, z: 6.2 } } },
+  { id: 'triad-fanway', bounds: { min: { x: -8.2, y: -27, z: -13.3 }, max: { x: 1.2, y: 3.8, z: -5 } } },
+  { id: 'nilo-relay', bounds: { min: { x: -6.4, y: -26, z: -32 }, max: { x: 7, y: 6.1, z: -17 } } },
+  { id: 'sentinel-four-roof', bounds: { min: { x: -8.2, y: -25, z: -41.5 }, max: { x: 1, y: 6.1, z: -33 } } },
+  { id: 'sentinel-six-roof', bounds: { min: { x: 0, y: -24, z: -49.2 }, max: { x: 9, y: 7.6, z: -40.8 } } },
+  { id: 'sentinel-nine-roof', bounds: { min: { x: -8.2, y: -23, z: -57.3 }, max: { x: 1, y: 9.2, z: -48.8 } } },
+  { id: 'sentinel-ten-roof', bounds: { min: { x: 0, y: -22, z: -65.2 }, max: { x: 9, y: 10.7, z: -56.8 } } },
+  { id: 'apex-spire', bounds: { min: { x: -6.2, y: -20, z: -79 }, max: { x: 6.2, y: 12.1, z: -66 } } },
+] as const
 
 describe('skyline world', () => {
   it('places every prime core over a playable rooftop', () => {
@@ -82,5 +95,48 @@ describe('skyline world', () => {
   it('uses unique ids for colliders and anchors', () => {
     expect(new Set(SKYLINE_COLLIDERS.map(({ id }) => id)).size).toBe(SKYLINE_COLLIDERS.length)
     expect(new Set(SKYLINE_ANCHORS.map(({ id }) => id)).size).toBe(SKYLINE_ANCHORS.length)
+  })
+
+  it('preserves every original mission building with identical bounds', () => {
+    for (const original of ORIGINAL_MISSION_BUILDINGS) {
+      const building = SKYLINE_BUILDINGS.find(({ id }) => id === original.id)
+      expect(building, original.id).toBeDefined()
+      expect(building?.bounds).toEqual(original.bounds)
+    }
+  })
+
+  it('expands the map into an open grid spanning every direction', () => {
+    expect(SKYLINE_BUILDINGS.length).toBeGreaterThan(ORIGINAL_MISSION_BUILDINGS.length)
+
+    const centers = SKYLINE_BUILDINGS.map((building) => ({
+      x: (building.bounds.min.x + building.bounds.max.x) / 2,
+      z: (building.bounds.min.z + building.bounds.max.z) / 2,
+    }))
+
+    // A grid, not a single -z corridor: both signs of x and both signs of z.
+    expect(centers.some((center) => center.x > 11)).toBe(true)
+    expect(centers.some((center) => center.x < -11)).toBe(true)
+    expect(centers.some((center) => center.z > 24)).toBe(true)
+    expect(centers.some((center) => center.z < -24)).toBe(true)
+  })
+
+  it('keeps every building Aabb well-formed and above the kill plane', () => {
+    for (const building of SKYLINE_BUILDINGS) {
+      expect(building.bounds.min.x, building.id).toBeLessThan(building.bounds.max.x)
+      expect(building.bounds.min.y, building.id).toBeLessThan(building.bounds.max.y)
+      expect(building.bounds.min.z, building.id).toBeLessThan(building.bounds.max.z)
+      // The playable rooftop must sit above the kill plane.
+      expect(building.bounds.max.y, building.id).toBeGreaterThan(SKYLINE_WORLD_BOUNDS.killPlaneY)
+    }
+  })
+
+  it('contains every building inside the widened world extents', () => {
+    const { extents } = SKYLINE_WORLD_BOUNDS
+    for (const building of SKYLINE_BUILDINGS) {
+      expect(building.bounds.min.x, building.id).toBeGreaterThanOrEqual(extents.minX)
+      expect(building.bounds.max.x, building.id).toBeLessThanOrEqual(extents.maxX)
+      expect(building.bounds.min.z, building.id).toBeGreaterThanOrEqual(extents.minZ)
+      expect(building.bounds.max.z, building.id).toBeLessThanOrEqual(extents.maxZ)
+    }
   })
 })

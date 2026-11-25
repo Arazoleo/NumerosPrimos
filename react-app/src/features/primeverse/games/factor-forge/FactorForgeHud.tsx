@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isPrime } from '../../../../lib/math/primes'
 import GameIntro from '../../ui/GameIntro'
+import VolumeControl from '../../ui/VolumeControl'
 
-import { getDivisorOptions, getLeafNodes } from './factorLogic'
+import { getHintDivisor, getLeafNodes } from './factorLogic'
 import { useFactorForgeStore } from './factorForgeStore'
 import type { ForgeQuality, ForgeSoundEvent } from './types'
 
@@ -12,6 +13,9 @@ interface FactorForgeHudProps {
   onBack?: () => void
   onSoundEvent?: (event: ForgeSoundEvent) => void
 }
+
+/** Time the player gets to admire the finished tree before the result appears. */
+const RESULT_DELAY_MS = 3_500
 
 function formatTime(milliseconds: number): string {
   const safeMilliseconds = Math.max(0, milliseconds)
@@ -38,6 +42,28 @@ function useForgeClock(): number {
   return (completedAt ?? now) - startedAt
 }
 
+function detectTouchDevice(): boolean {
+  return typeof window !== 'undefined' && (
+    window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0
+  )
+}
+
+function useTouchDevice(): boolean {
+  const [isTouchDevice, setIsTouchDevice] = useState(detectTouchDevice)
+
+  useEffect(() => {
+    const coarsePointer = window.matchMedia('(pointer: coarse)')
+    const update = () => setIsTouchDevice(
+      coarsePointer.matches || navigator.maxTouchPoints > 0,
+    )
+    coarsePointer.addEventListener('change', update)
+    update()
+    return () => coarsePointer.removeEventListener('change', update)
+  }, [])
+
+  return isTouchDevice
+}
+
 function BackLink({ onBack, compact = false }: { onBack?: () => void; compact?: boolean }): JSX.Element {
   return (
     <a
@@ -62,7 +88,7 @@ function QualityPicker({
   onQualityChange: (quality: ForgeQuality) => void
 }): JSX.Element {
   return (
-    <label className="factor-forge__quality">
+    <div className="pv-game-settings"><label className="factor-forge__quality">
       <span>Qualidade</span>
       <select
         aria-label="Qualidade gráfica"
@@ -73,7 +99,7 @@ function QualityPicker({
         <option value="medium">Média</option>
         <option value="high">Alta</option>
       </select>
-    </label>
+    </label><VolumeControl /></div>
   )
 }
 
@@ -84,6 +110,7 @@ function IntroPanel({
 }: Omit<FactorForgeHudProps, 'onSoundEvent'>): JSX.Element {
   const targetNumber = useFactorForgeStore((state) => state.targetNumber)
   const start = useFactorForgeStore((state) => state.start)
+  const isTouchDevice = useTouchDevice()
   const selectedChallenge = targetNumber
 
   return (
@@ -94,6 +121,9 @@ function IntroPanel({
       actionLabel="Ativar forja"
       accent="#ffb347"
       mark="12"
+      keys={isTouchDevice
+        ? 'TOQUE EM UM CRISTAL PARA SELECIONAR · TOQUE EM UM DIVISOR PARA FORJAR'
+        : 'TAB PARA NAVEGAR · ENTER PARA ATIVAR OU DIVIDIR'}
       onBack={onBack}
       onStart={() => start(selectedChallenge)}
     >
@@ -102,19 +132,90 @@ function IntroPanel({
   )
 }
 
+const TUTORIAL_KEY = 'primeverse.factor-forge.tutorial.v1'
+
+const TUTORIAL_STEPS = [
+  {
+    title: 'Todo número se quebra em primos',
+    body: 'Um cristal composto (azul) pode ser dividido em dois fatores. Seu objetivo é continuar dividindo até que todos os cristais sejam primos (dourados), que não dividem mais.',
+    example: '12 → 3 × 4 → 3 × 2 × 2',
+  },
+  {
+    title: 'Digite um divisor',
+    body: 'No console, escreva um número que divida o cristal ativo sem deixar resto e clique em Dividir. Qualquer divisor serve: não existe caminho errado, só números que não dividem.',
+    example: 'Em 84, você pode usar 2, 3, 4, 6, 7, 12, 14, 21, 28 ou 42.',
+  },
+  {
+    title: 'Chegue sempre à mesma assinatura',
+    body: 'Não importa o caminho: os primos finais serão sempre os mesmos. Quanto menos tentativas erradas, dicas e tempo, maior o score. Travou? O botão Dica revela um divisor, mas custa pontos.',
+    example: '84 = 2² × 3 × 7',
+  },
+] as const
+
+function hasSeenTutorial(): boolean {
+  try {
+    return window.localStorage.getItem(TUTORIAL_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markTutorialSeen(): void {
+  try {
+    window.localStorage.setItem(TUTORIAL_KEY, '1')
+  } catch {
+    // Tutorial will simply show again next time.
+  }
+}
+
+function TutorialCard({ onClose }: { onClose: () => void }): JSX.Element {
+  const [index, setIndex] = useState(0)
+  const step = TUTORIAL_STEPS[index]
+  const isLast = index === TUTORIAL_STEPS.length - 1
+
+  return (
+    <div className="factor-forge__modal-wrap">
+      <section className="factor-forge__tutorial" role="dialog" aria-modal="true" aria-labelledby="factor-forge-tutorial-title">
+        <p className="factor-forge__eyebrow">TUTORIAL · PASSO {index + 1} DE {TUTORIAL_STEPS.length}</p>
+        <h2 id="factor-forge-tutorial-title">{step.title}</h2>
+        <p>{step.body}</p>
+        <p className="factor-forge__tutorial-example">{step.example}</p>
+        <div className="factor-forge__tutorial-actions">
+          <button type="button" className="factor-forge__secondary-action" onClick={onClose}>
+            Pular
+          </button>
+          <button
+            type="button"
+            className="factor-forge__primary-action"
+            onClick={() => (isLast ? onClose() : setIndex(index + 1))}
+          >
+            {isLast ? 'Começar' : 'Próximo'}
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEvent'>): JSX.Element {
   const nodes = useFactorForgeStore((state) => state.nodes)
   const selectedNodeId = useFactorForgeStore((state) => state.selectedNodeId)
   const submitDivisor = useFactorForgeStore((state) => state.submitDivisor)
   const selectNode = useFactorForgeStore((state) => state.selectNode)
+  const requestHint = useFactorForgeStore((state) => state.requestHint)
+  const isTouchDevice = useTouchDevice()
   const [input, setInput] = useState('')
+  const [hintShown, setHintShown] = useState(false)
   const selected = nodes.find((node) => node.id === selectedNodeId) ?? null
   const leaves = useMemo(() => getLeafNodes(nodes), [nodes])
   const compositeLeaves = leaves.filter((node) => !isPrime(node.value))
   const primeLeaves = leaves.filter((node) => isPrime(node.value))
-  const options = selected ? getDivisorOptions(selected.value) : []
+  const hint = selected ? getHintDivisor(selected.value) : null
 
-  useEffect(() => setInput(''), [selectedNodeId])
+  useEffect(() => {
+    setInput('')
+    setHintShown(false)
+  }, [selectedNodeId])
 
   const forge = (divisor: number) => {
     const valid = submitDivisor(divisor)
@@ -140,8 +241,14 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
           <p className="factor-forge__console-prompt">
             Qual divisor deve partir <strong>{selected.value}</strong>?
           </p>
+          <p className="factor-forge__controls-hint">
+            {isTouchDevice
+              ? 'Toque em um cristal para selecioná-lo e em um divisor para forjar.'
+              : 'Use Tab para navegar e Enter para selecionar ou forjar.'}
+          </p>
           <form
             className="factor-forge__divisor-form"
+            noValidate
             onSubmit={(event) => {
               event.preventDefault()
               forge(Number(input))
@@ -151,15 +258,14 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
             <div>
               <input
                 id="forge-divisor"
-                type="number"
-                min="2"
-                max={selected.value - 1}
-                step="1"
+                type="text"
                 inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={9}
                 placeholder="ex: 7"
                 autoComplete="off"
                 value={input}
-                onChange={(event) => setInput(event.target.value)}
+                onChange={(event) => setInput(event.target.value.replace(/\D/g, ''))}
               />
               <button type="submit" disabled={input.trim() === ''}>
                 Dividir
@@ -168,22 +274,30 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
           </form>
 
           <div className="factor-forge__suggestions">
-            <span>SUGESTÕES DE CALIBRAÇÃO</span>
-            <div>
-              {options.map((divisor) => (
-                <button key={divisor} type="button" onClick={() => forge(divisor)}>
-                  {divisor} <small>× {selected.value / divisor}</small>
-                </button>
-              ))}
-            </div>
+            {hintShown && hint !== null ? (
+              <p className="factor-forge__hint">
+                Dica: tente dividir por <strong>{hint}</strong> <small>({selected.value} = {hint} × {selected.value / hint})</small>
+              </p>
+            ) : (
+              <button
+                type="button"
+                className="factor-forge__hint-button"
+                onClick={() => {
+                  requestHint()
+                  setHintShown(true)
+                }}
+              >
+                Pedir dica <small>(−score)</small>
+              </button>
+            )}
           </div>
         </>
       ) : (
         <p className="factor-forge__console-empty">Selecione um cristal azul na árvore.</p>
       )}
 
-      {compositeLeaves.length > 1 ? (
-        <div className="factor-forge__pending-nodes">
+      {compositeLeaves.length > 0 ? (
+        <div className="factor-forge__pending-nodes" role="group" aria-label="Núcleos compostos pendentes">
           <span>NÚCLEOS PENDENTES</span>
           <div>
             {compositeLeaves.map((node) => (
@@ -191,6 +305,8 @@ function DivisorConsole({ onSoundEvent }: Pick<FactorForgeHudProps, 'onSoundEven
                 key={node.id}
                 type="button"
                 className={node.id === selectedNodeId ? 'is-active' : ''}
+                aria-pressed={node.id === selectedNodeId}
+                aria-label={`Selecionar núcleo ${node.value}${node.id === selectedNodeId ? ', ativo' : ''}`}
                 onClick={() => selectNode(node.id)}
               >
                 {node.value}
@@ -210,6 +326,11 @@ function PlayingHud(props: FactorForgeHudProps): JSX.Element {
   const invalidAttempts = useFactorForgeStore((state) => state.invalidAttempts)
   const restart = useFactorForgeStore((state) => state.restart)
   const elapsed = useForgeClock()
+  const [tutorialOpen, setTutorialOpen] = useState(() => !hasSeenTutorial())
+  const closeTutorial = () => {
+    markTutorialSeen()
+    setTutorialOpen(false)
+  }
   const leaves = getLeafNodes(nodes)
   const expression = leaves.map((node) => node.value).sort((a, b) => a - b).join(' × ')
   const precision = steps + invalidAttempts === 0
@@ -225,6 +346,7 @@ function PlayingHud(props: FactorForgeHudProps): JSX.Element {
         </div>
         <div className="factor-forge__top-actions">
           <QualityPicker quality={props.quality} onQualityChange={props.onQualityChange} />
+          <button type="button" onClick={() => setTutorialOpen(true)}>Como jogar</button>
           <button type="button" onClick={restart}>Reiniciar</button>
         </div>
       </header>
@@ -236,6 +358,8 @@ function PlayingHud(props: FactorForgeHudProps): JSX.Element {
       </div>
 
       <DivisorConsole onSoundEvent={props.onSoundEvent} />
+
+      {tutorialOpen ? <TutorialCard onClose={closeTutorial} /> : null}
 
       <div className="factor-forge__equation" aria-label={`Decomposição atual: ${targetNumber} igual a ${expression}`}>
         <span>DECOMPOSIÇÃO ATUAL</span>
@@ -306,7 +430,7 @@ export function FactorForgeHud(props: FactorForgeHudProps): JSX.Element {
       return undefined
     }
 
-    const timeout = window.setTimeout(() => setResultVisible(true), 650)
+    const timeout = window.setTimeout(() => setResultVisible(true), RESULT_DELAY_MS)
     return () => window.clearTimeout(timeout)
   }, [phase])
 

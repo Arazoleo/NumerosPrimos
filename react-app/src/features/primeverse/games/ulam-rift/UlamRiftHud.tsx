@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import GameIntro from '../../ui/GameIntro'
+import type { UlamRiftProgressRecord } from './progressionAdapter'
 import type { UlamRiftTelemetry } from './UlamRiftScene'
 import {
   ULAM_RIFT_PRIMES,
@@ -17,6 +18,7 @@ import {
 interface UlamRiftHudProps {
   readonly state: UlamRiftState
   readonly telemetry: UlamRiftTelemetry
+  readonly progressRecord?: UlamRiftProgressRecord | null
   readonly interaction: string | null
   readonly paused: boolean
   readonly quality: QualityLevel
@@ -112,6 +114,7 @@ function TouchControls({ onMove, onSprint, onJump, onInteract }: {
 export default function UlamRiftHud({
   state,
   telemetry,
+  progressRecord = null,
   interaction,
   paused,
   quality,
@@ -140,7 +143,7 @@ export default function UlamRiftHud({
         </Link>
         <div className="ulam-rift-sector"><small>SETOR ATUAL</small><strong>{telemetry.sector}</strong></div>
         <div className="ulam-rift-topbar__actions">
-          <QualityControl value={quality} onChange={onQualityChange} />
+          <GameSettings value={quality} onChange={onQualityChange} />
           <button type="button" onClick={onRestart}>REINICIAR</button>
           <button type="button" onClick={() => onPauseChange(!paused)} aria-label={paused ? 'Continuar' : 'Pausar'}>{paused ? '▶' : 'Ⅱ'}</button>
         </div>
@@ -237,6 +240,12 @@ export default function UlamRiftHud({
             <span><small>QUEDAS</small><b>{state.falls}</b></span>
             <span><small>DANOS</small><b>{state.hits}</b></span>
           </div>
+          {progressRecord && (
+            <div className="ulam-rift-xp">
+              <span>XP RECEBIDO</span><strong>+{progressRecord.xp} XP</strong>
+              {progressRecord.isNewBest ? <small>NOVO RECORDE</small> : null}
+            </div>
+          )}
           <button type="button" onClick={onRestart}>{state.phase === 'won' ? 'NOVA TRAVESSIA' : 'TENTAR NOVAMENTE'}</button>
           <Link to="/jogos/primeverse-online">VOLTAR AO PRIMEVERSE ONLINE</Link>
         </section>

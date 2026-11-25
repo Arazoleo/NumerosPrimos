@@ -4,9 +4,7 @@ export type UlamGalaxyTutorialStep =
   | 0
   | (typeof ULAM_GALAXY_TUTORIAL_STEPS)[number];
 
-export type UlamGalaxyTutorialVisual =
-  | "spiral"
-  | "diagonal";
+export type UlamGalaxyTutorialVisual = "spiral" | "diagonal";
 
 export interface UlamGalaxyTutorialCopy {
   readonly title: string;
@@ -26,8 +24,7 @@ export const ULAM_GALAXY_TUTORIAL_COPY: Readonly<
   2: {
     title: "A espiral organiza os inteiros",
     body: "Os números partem de uma âncora e crescem ao seu redor formando uma espiral",
-    hint:
-      "Aqui você pode observar que o número 1 é a âncora e os outros valores se organizam ao redor dele",
+    hint: "Aqui você pode observar que o número 1 é a âncora e os outros valores se organizam ao redor dele",
     visual: "spiral",
   },
   3: {
@@ -39,11 +36,11 @@ export const ULAM_GALAXY_TUTORIAL_COPY: Readonly<
   4: {
     title: "Escaneie os números primos",
     body: "Use o scanner para destacar os pontos da espiral que representam números primos.",
-    hint: "Fique de olho também em seu placar e tempo de jogo!"
+    hint: "Fique atento em sua pontuação e tempo de jogo!",
   },
   5: {
     title: "Marque a diagonal dominante",
-    body: "Selecione uma das direções possíveis. Depois, clique em \"Analisar trajetória\" para confirmar a escolha.",
+    body: 'Selecione uma das direções possíveis. Depois, clique em "Analisar trajetória" para confirmar a escolha.',
     hint: "Escolha a direção com a maior concentração de primos.",
   },
 };

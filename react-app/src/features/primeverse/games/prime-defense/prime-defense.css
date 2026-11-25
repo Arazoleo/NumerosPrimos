@@ -47,7 +47,7 @@
 .defense-palette, .defense-telemetry { padding: 26px 28px; }
 .defense-palette__heading { align-items: start; display: flex; justify-content: space-between; gap: 12px; }
 .defense-palette__heading > div { display: flex; flex-direction: column; gap: 4px; }
-.defense-palette__heading span, .defense-energy span, .defense-board__head > div:first-child > span, .defense-forecast > span, .defense-proof > span { color: var(--pd-cyan); font: 700 8px/1 'JetBrains Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
+.defense-palette__heading span, .defense-energy span, .defense-board__head > div:first-child > span, .defense-forecast > span { color: var(--pd-cyan); font: 700 8px/1 'JetBrains Mono', monospace; letter-spacing: .14em; text-transform: uppercase; }
 .defense-palette__heading strong { font-size: 13px; }
 .defense-palette__heading > small { background: var(--pd-cyan-soft); color: var(--pd-cyan); font: 700 10px/1 'JetBrains Mono', monospace; padding: 6px 7px; text-transform: uppercase; white-space: nowrap; }
 .defense-energy { border-bottom: 1px solid var(--pd-line); margin: 22px 0; padding-bottom: 20px; }
@@ -121,13 +121,9 @@
 .defense-telemetry__metrics span, .defense-final__grid span, .defense-wave-stats span { color: var(--pd-muted); font: 600 7px 'JetBrains Mono', monospace; letter-spacing: .1em; }
 .defense-telemetry__metrics strong { font: 700 16px 'Space Grotesk', sans-serif; margin-top: 6px; }
 .defense-telemetry__metrics strong small { color: var(--pd-muted); font-size: 8px; font-weight: 500; }
-.defense-proof { border-top: 1px solid var(--pd-line); margin-top: 18px; padding-top: 18px; }
-.defense-proof > div { border-left: 2px solid currentColor; margin-top: 12px; padding-left: 12px; }
-.defense-proof > div.is-intercepted, .defense-wave-log > div.is-intercepted { color: var(--pd-gold); }
-.defense-proof > div.is-prime-passed, .defense-wave-log > div.is-prime-passed { color: var(--pd-cyan); }
-.defense-proof > div.is-breach, .defense-wave-log > div.is-breach { color: var(--pd-danger); }
-.defense-proof strong { font: 700 22px 'Space Grotesk', sans-serif; }
-.defense-proof p { color: #adc0c5; font-size: 10px; line-height: 1.55; margin: 6px 0 0; }
+.defense-wave-log > div.is-intercepted { color: var(--pd-gold); }
+.defense-wave-log > div.is-prime-passed { color: var(--pd-cyan); }
+.defense-wave-log > div.is-breach { color: var(--pd-danger); }
 .defense-feedback { align-items: center; backdrop-filter: blur(17px); background: rgba(5, 16, 21, .93); border: 1px solid var(--pd-line); top: 92px; display: flex; gap: 11px; left: 50%; max-width: min(480px, calc(100vw - 30px)); padding: 10px 12px; pointer-events: auto; position: absolute; transform: translateX(-50%); width: max-content; z-index: 6; }
 .defense-feedback > i { background: var(--toast-color); border-radius: 50%; box-shadow: 0 0 12px var(--toast-color); height: 7px; width: 7px; }
 .defense-feedback > div { display: flex; flex-direction: column; max-width: 380px; }
@@ -258,7 +254,7 @@
 @media (max-height: 720px) and (min-width: 761px) {
   .defense-topbar { height: 64px; }
   .defense-mission-layout { bottom: 14px; top: 76px; }
-  .defense-palette__tip, .defense-proof, .defense-board__head p { display: none; }
+  .defense-palette__tip, .defense-board__head p { display: none; }
   .defense-palette, .defense-telemetry { padding: 16px; }
   .defense-filter-list button { min-height: 44px; }
   .defense-lane { min-height: 60px; }

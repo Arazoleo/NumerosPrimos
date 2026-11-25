@@ -2,15 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import type { QualityLevel } from '../../graphics/useQualitySettings'
-import QualityControl from '../../ui/QualityControl'
+import GameSettings from '../../ui/GameSettings'
 import GameIntro from '../../ui/GameIntro'
-import { getMissionPath, ULAM_ROUNDS } from './ulamLogic'
+import { createUlamSpiral, getMissionPath, ULAM_ROUNDS } from './ulamLogic'
 import { useUlamGalaxyStore } from './ulamStore'
 import UlamGalaxyTutorialView from './UlamGalaxyTutorialView'
+import { ULAM_ZOOM, type UlamCellSelection, type UlamViewport } from './ulamInput'
 
 interface UlamGalaxyHudProps {
   quality: QualityLevel
   onQualityChange: (quality: QualityLevel) => void
+  selectedCell?: UlamCellSelection | null
+  viewport?: UlamViewport
+  onZoom?: (delta: number) => void
+  onPan?: (dx: number, dy: number) => void
+  onResetViewport?: () => void
 }
 
 function formatTime(milliseconds: number): string {
@@ -30,7 +36,7 @@ function useMissionClock(): number {
     if (!startedAt || phase === 'intro' || phase === 'complete') return undefined
     setNow(Date.now())
     const timer = window.setInterval(() => setNow(Date.now()), 250)
-    return () => window.clearInterval(timer)
+    return () => window.clearTimeout(timer)
   }, [phase, startedAt])
 
   if (!startedAt) return 0
@@ -58,8 +64,36 @@ function Intro({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       mark="41"
       onStart={startTutorial}
     >
-      <QualityControl value={quality} onChange={onQualityChange} />
+      <GameSettings value={quality} onChange={onQualityChange} />
     </GameIntro>
+  )
+}
+
+function ViewportControls({
+  viewport,
+  onZoom,
+  onPan,
+  onReset,
+}: {
+  viewport: UlamViewport
+  onZoom: (delta: number) => void
+  onPan: (dx: number, dy: number) => void
+  onReset: () => void
+}): JSX.Element {
+  return (
+    <div className="ulam-viewport-controls" aria-label="Controles da espiral">
+      <span className="vc-title">ESPIRAL</span>
+      <button type="button" className="vc-up" aria-label="Mover espiral para cima" onClick={() => onPan(0, -0.18)}>↑</button>
+      <button type="button" className="vc-left" aria-label="Mover espiral para a esquerda" onClick={() => onPan(0.18, 0)}>←</button>
+      <button type="button" className="vc-reset" aria-label="Restaurar posição e zoom" onClick={onReset}>0</button>
+      <button type="button" className="vc-right" aria-label="Mover espiral para a direita" onClick={() => onPan(-0.18, 0)}>→</button>
+      <button type="button" className="vc-down" aria-label="Mover espiral para baixo" onClick={() => onPan(0, 0.18)}>↓</button>
+      <button type="button" className="vc-zin" aria-label="Aumentar zoom" onClick={() => onZoom(ULAM_ZOOM.step)}>+</button>
+      <output className="vc-zval" aria-label={`Zoom ${Math.round(viewport.zoom * 100)} por cento`}>
+        {Math.round(viewport.zoom * 100)}%
+      </output>
+      <button type="button" className="vc-zout" aria-label="Reduzir zoom" onClick={() => onZoom(-ULAM_ZOOM.step)}>−</button>
+    </div>
   )
 }
 
@@ -76,20 +110,42 @@ function Topbar({ quality, onQualityChange }: UlamGalaxyHudProps): JSX.Element {
       </div>
       <div className="ulam-topbar__actions">
         <span className={`ulam-live${phase === 'scanning' ? ' scanning' : ''}`}><i /> {phase === 'scanning' ? 'ESCANEANDO' : 'MAPA ESTÁVEL'}</span>
-        <QualityControl value={quality} onChange={onQualityChange} />
+        <GameSettings value={quality} onChange={onQualityChange} />
         <button type="button" onClick={restart}>Reiniciar</button>
       </div>
     </header>
   )
 }
 
-function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.Element {
+function MissionConsole({
+  tutorialStep = 0,
+  selectedCell,
+}: {
+  tutorialStep?: number
+  selectedCell?: UlamCellSelection | null
+}): JSX.Element {
   const phase = useUlamGalaxyStore((state) => state.phase)
   const mission = useUlamGalaxyStore((state) => state.mission)
   const selected = useUlamGalaxyStore((state) => state.selectedDirection)
   const select = useUlamGalaxyStore((state) => state.selectDirection)
   const scan = useUlamGalaxyStore((state) => state.scan)
   const disabled = phase !== 'playing' && !(phase === 'tutorial' && tutorialStep === 5)
+
+  const selectedCellPrime = selectedCell
+    ? createUlamSpiral(mission.size).find((c) => c.value === selectedCell.value)?.prime
+    : false
+
+  const sortedPaths = [...mission.paths].sort((a, b) => {
+    const aIsTop = a.direction.dy > 0;
+    const aIsRight = a.direction.dx > 0;
+    const aScore = (aIsTop ? 0 : 2) + (aIsRight ? 1 : 0);
+
+    const bIsTop = b.direction.dy > 0;
+    const bIsRight = b.direction.dx > 0;
+    const bScore = (bIsTop ? 0 : 2) + (bIsRight ? 1 : 0);
+
+    return aScore - bScore;
+  });
 
   return (
     <section
@@ -99,8 +155,17 @@ function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.El
       <div className="ulam-console__label">REGIÃO 0{mission.difficulty} // MALHA {mission.size} × {mission.size}</div>
       <h2 id="ulam-mission-title">Qual diagonal concentra <em>mais primos?</em></h2>
       <p>Parta da âncora <strong>{mission.anchor.value}</strong> e compare os próximos {mission.pathLength} setores em cada direção.</p>
+      {selectedCell ? (
+        <p className="ulam-selected-cell" aria-live="polite">
+          Célula <strong>{selectedCell.value}</strong> · coordenadas ({selectedCell.x}, {selectedCell.y}) ·{' '}
+          {selectedCellPrime ? 'primo' : 'composto'}
+        </p>
+      ) : (
+        <p className="ulam-selected-cell" aria-live="polite">Nenhuma célula selecionada.</p>
+      )}
+
       <div className={`ulam-directions${tutorialStep === 5 ? ' is-tutorial-highlight' : ''}`}>
-        {mission.paths.map((path) => (
+        {sortedPaths.map((path) => (
           <button
             type="button"
             key={path.direction.id}
@@ -117,6 +182,11 @@ function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.El
           </button>
         ))}
       </div>
+      <p className="ulam-device-hint">
+        <span className="ulam-device-hint__touch">Toque: selecione uma célula · arraste: navegue · use +/-: zoom</span>
+        <span className="ulam-device-hint__keyboard">Teclado: setas/WASD navegam · Tab percorre controles · +/- ajusta · 0 restaura · Esc limpa</span>
+        <span className="ulam-device-hint__mouse">Mouse: clique seleciona · arraste move · roda ajusta zoom</span>
+      </p>
       <button
         type="button"
         className={`ulam-primary ulam-scan${tutorialStep === 5 ? ' is-tutorial-highlight' : ''}`}
@@ -125,6 +195,7 @@ function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.El
       >
         {phase === 'scanning' ? 'Analisando trajetória…' : 'Analisar trajetória'} <span>⌁</span>
       </button>
+
       <details className="ulam-accessible-map">
         <summary>Leitura tabular das trajetórias</summary>
         <div>
@@ -140,13 +211,26 @@ function MissionConsole({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.El
   )
 }
 
-function Telemetry({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.Element {
+function Telemetry({
+  tutorialStep = 0,
+  viewport,
+  onZoom,
+  onPan,
+  onResetViewport,
+}: {
+  tutorialStep?: number
+  viewport?: UlamViewport
+  onZoom?: (delta: number) => void
+  onPan?: (dx: number, dy: number) => void
+  onResetViewport?: () => void
+}): JSX.Element {
   const mission = useUlamGalaxyStore((state) => state.mission)
   const scannerEnabled = useUlamGalaxyStore((state) => state.scannerEnabled)
   const toggleScanner = useUlamGalaxyStore((state) => state.toggleScanner)
   const score = useUlamGalaxyStore((state) => state.score)
   const mistakes = useUlamGalaxyStore((state) => state.mistakes)
   const elapsed = useMissionClock()
+
   return (
     <aside className={`ulam-telemetry${tutorialStep === 4 ? ' is-tutorial-target' : ''}`}>
       <div className={`ulam-telemetry__stats${tutorialStep === 4 ? ' is-tutorial-highlight' : ''}`}>
@@ -154,6 +238,10 @@ function Telemetry({ tutorialStep = 0 }: { tutorialStep?: number }): JSX.Element
         <div><span>TEMPO</span><strong>{formatTime(elapsed)}</strong></div>
         <div><span>DESVIOS</span><strong>{String(mistakes).padStart(2, '0')}</strong></div>
       </div>
+      {viewport && onZoom && onPan && onResetViewport ? (
+        <ViewportControls viewport={viewport} onZoom={onZoom} onPan={onPan} onReset={onResetViewport} />
+      ) : null}
+
       <button type="button" className={`ulam-scanner${scannerEnabled ? ' enabled' : ''}${tutorialStep === 4 ? ' is-tutorial-highlight' : ''}`} aria-pressed={scannerEnabled} onClick={toggleScanner}>
         <span><i /> SCANNER PRIMO</span><strong>{scannerEnabled ? 'ON' : 'OFF'}</strong>
       </button>
@@ -244,7 +332,22 @@ export function UlamGalaxyHud(props: UlamGalaxyHudProps): JSX.Element {
           onSkip={skipTutorial}
         />
       ) : null}
-      {showMissionHud ? <><Topbar {...props} /><MissionConsole tutorialStep={phase === 'tutorial' ? tutorialStep : 0} /><Telemetry tutorialStep={phase === 'tutorial' ? tutorialStep : 0} /></> : null}
+      {showMissionHud ? (
+        <>
+          <Topbar {...props} />
+          <MissionConsole
+            tutorialStep={phase === 'tutorial' ? tutorialStep : 0}
+            selectedCell={props.selectedCell}
+          />
+          <Telemetry
+            tutorialStep={phase === 'tutorial' ? tutorialStep : 0}
+            viewport={props.viewport}
+            onZoom={props.onZoom}
+            onPan={props.onPan}
+            onResetViewport={props.onResetViewport}
+          />
+        </>
+      ) : null}
       {showMissionHud ? <Feedback /> : null}
       <RoundComplete />
       <Result />

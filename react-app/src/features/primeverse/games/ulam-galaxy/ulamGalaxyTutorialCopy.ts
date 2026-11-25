@@ -36,7 +36,7 @@ export const ULAM_GALAXY_TUTORIAL_COPY: Readonly<
   4: {
     title: "Escaneie os números primos",
     body: "Use o scanner para destacar os pontos da espiral que representam números primos.",
-    hint: "Fique atento em sua pontuação e tempo de jogo!",
+    hint: "Fique de olho também em seu placar e tempo de jogo!",
   },
   5: {
     title: "Marque a diagonal dominante",

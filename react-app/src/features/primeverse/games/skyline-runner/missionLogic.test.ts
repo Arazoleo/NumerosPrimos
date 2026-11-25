@@ -7,15 +7,19 @@ import {
 } from './missionData'
 import {
   activateApexBeacon,
+  activateMission,
+  areAllMissionsComplete,
   canActivateApexBeacon,
   canDeliverPrimeCores,
   canReachApexSpire,
   collectPrimeCore,
   deliverPrimeCores,
+  getMissionStatus,
   getNextSkylineObjective,
   hasAllPrimeCores,
   hasDefeatedAllSentinels,
   INITIAL_SKYLINE_MISSION_PROGRESS,
+  isMissionActive,
   isSkylineMissionComplete,
   reachApexSpire,
   recordNpcConversation,
@@ -41,52 +45,109 @@ function defeatAllSentinels(
   )
 }
 
-describe('Prime Runner mission logic', () => {
-  it('reports every objective in campaign order through victory', () => {
-    let progress = INITIAL_SKYLINE_MISSION_PROGRESS
-    expect(getNextSkylineObjective(progress).id).toBe('talk-to-lia')
+/** Fully plays out the prime-cores contract (activate -> collect -> deliver). */
+function completePrimeCores(
+  progress: SkylineMissionProgress,
+): SkylineMissionProgress {
+  let next = activateMission(progress, 'prime-cores')
+  next = collectAllCores(next)
+  next = recordNpcConversation(next, 'nilo')
+  return deliverPrimeCores(next)
+}
 
-    progress = recordNpcConversation(progress, 'lia')
-    expect(getNextSkylineObjective(progress).id).toBe('collect-prime-cores')
+function completeSentinels(
+  progress: SkylineMissionProgress,
+): SkylineMissionProgress {
+  return defeatAllSentinels(activateMission(progress, 'composite-sentinels'))
+}
 
-    progress = collectPrimeCore(progress, 5)
-    progress = collectPrimeCore(progress, 2)
-    progress = collectPrimeCore(progress, 3)
-    expect(getNextSkylineObjective(progress).id).toBe('deliver-cores-to-nilo')
+function completeApex(
+  progress: SkylineMissionProgress,
+): SkylineMissionProgress {
+  let next = activateMission(progress, 'apex-extraction')
+  next = reachApexSpire(next)
+  return activateApexBeacon(next)
+}
 
-    progress = recordNpcConversation(progress, 'nilo')
-    progress = deliverPrimeCores(progress)
-    expect(getNextSkylineObjective(progress).id).toBe(
-      'defeat-composite-sentinels',
-    )
+function completeTutorial(
+  progress: SkylineMissionProgress,
+): SkylineMissionProgress {
+  return recordNpcConversation(progress, 'lia')
+}
 
-    progress = defeatAllSentinels(progress)
-    expect(getNextSkylineObjective(progress).id).toBe('reach-apex-spire')
-
-    progress = reachApexSpire(progress)
-    expect(getNextSkylineObjective(progress).id).toBe('activate-apex-beacon')
-
-    progress = activateApexBeacon(progress)
-    expect(getNextSkylineObjective(progress).id).toBe('mission-complete')
-    expect(isSkylineMissionComplete(progress)).toBe(true)
+describe('Prime Runner mission activation model', () => {
+  it('seeds the LIA tutorial active and every other contract available', () => {
+    const initial = INITIAL_SKYLINE_MISSION_PROGRESS
+    expect(getMissionStatus(initial, 'lia-tutorial')).toBe('active')
+    expect(getMissionStatus(initial, 'prime-cores')).toBe('available')
+    expect(getMissionStatus(initial, 'composite-sentinels')).toBe('available')
+    expect(getMissionStatus(initial, 'apex-extraction')).toBe('available')
+    expect(getNextSkylineObjective(initial).id).toBe('talk-to-lia')
   })
 
-  it('blocks collection and NILO until LIA starts the protocol', () => {
+  it('transitions available->active only and is an idempotent no-op otherwise', () => {
     const initial = INITIAL_SKYLINE_MISSION_PROGRESS
-    expect(collectPrimeCore(initial, 2)).toBe(initial)
-    expect(recordNpcConversation(initial, 'nilo')).toBe(initial)
-    expect(recordNpcConversation(initial, 'unknown')).toBe(initial)
 
-    const started = recordNpcConversation(initial, 'lia')
-    expect(started).not.toBe(initial)
-    expect(started.spokenNpcIds).toEqual(['lia'])
-    expect(initial.spokenNpcIds).toEqual([])
+    const activated = activateMission(initial, 'prime-cores')
+    expect(activated).not.toBe(initial)
+    expect(isMissionActive(activated, 'prime-cores')).toBe(true)
+
+    expect(activateMission(activated, 'prime-cores')).toBe(activated)
+    expect(activateMission(initial, 'lia-tutorial')).toBe(initial)
+    expect(activateMission(initial, 'unknown-mission')).toBe(initial)
+  })
+
+  it('keeps objective functions inert until the owning contract is active', () => {
+    const started = completeTutorial(INITIAL_SKYLINE_MISSION_PROGRESS)
+
+    expect(collectPrimeCore(started, 2)).toBe(started)
+    expect(recordNpcConversation(started, 'nilo')).toBe(started)
+    expect(recordSentinelDefeat(started, 'sentinel-four')).toBe(started)
+    expect(reachApexSpire(started)).toBe(started)
+    expect(activateApexBeacon(started)).toBe(started)
+
+    const coresActive = activateMission(started, 'prime-cores')
+    expect(collectPrimeCore(coresActive, 2)).not.toBe(coresActive)
+  })
+
+  it('reaches a fully completed state regardless of contract order', () => {
+    const start = completeTutorial(INITIAL_SKYLINE_MISSION_PROGRESS)
+
+    // Ordering A: cores -> sentinels -> apex
+    let orderA = completePrimeCores(start)
+    orderA = completeSentinels(orderA)
+    orderA = completeApex(orderA)
+
+    // Ordering B: sentinels -> apex -> cores
+    let orderB = completeSentinels(start)
+    orderB = completeApex(orderB)
+    orderB = completePrimeCores(orderB)
+
+    for (const final of [orderA, orderB]) {
+      expect(areAllMissionsComplete(final)).toBe(true)
+      expect(isSkylineMissionComplete(final)).toBe(true)
+      expect(getNextSkylineObjective(final).id).toBe('mission-complete')
+      expect(getMissionStatus(final, 'lia-tutorial')).toBe('completed')
+      expect(getMissionStatus(final, 'prime-cores')).toBe('completed')
+      expect(getMissionStatus(final, 'composite-sentinels')).toBe('completed')
+      expect(getMissionStatus(final, 'apex-extraction')).toBe('completed')
+    }
+  })
+
+  it('completes the LIA tutorial as soon as the conversation is recorded', () => {
+    const initial = INITIAL_SKYLINE_MISSION_PROGRESS
+    const talked = completeTutorial(initial)
+    expect(talked).not.toBe(initial)
+    expect(getMissionStatus(talked, 'lia-tutorial')).toBe('completed')
+    expect(talked.spokenNpcIds).toEqual(['lia'])
+    expect(recordNpcConversation(talked, 'lia')).toBe(talked)
+    expect(recordNpcConversation(initial, 'unknown')).toBe(initial)
   })
 
   it('collects only 2, 3 and 5 once without mutating prior state', () => {
-    const started = recordNpcConversation(
+    const started = activateMission(
       INITIAL_SKYLINE_MISSION_PROGRESS,
-      'lia',
+      'prime-cores',
     )
     const withTwo = collectPrimeCore(started, 2)
     expect(withTwo.collectedPrimeCores).toEqual([2])
@@ -99,10 +160,10 @@ describe('Prime Runner mission logic', () => {
     expect(new Set(complete.collectedPrimeCores)).toEqual(new Set([2, 3, 5]))
   })
 
-  it('requires the complete set and a conversation before delivery', () => {
-    const started = recordNpcConversation(
+  it('requires the full set, an active contract and NILO before delivery', () => {
+    const started = activateMission(
       INITIAL_SKYLINE_MISSION_PROGRESS,
-      'lia',
+      'prime-cores',
     )
     const partial = collectPrimeCore(started, 2)
     expect(recordNpcConversation(partial, 'nilo')).toBe(partial)
@@ -114,24 +175,16 @@ describe('Prime Runner mission logic', () => {
     expect(canDeliverPrimeCores(metNilo)).toBe(true)
     const delivered = deliverPrimeCores(metNilo)
     expect(delivered.coresDeliveredToNilo).toBe(true)
+    expect(getMissionStatus(delivered, 'prime-cores')).toBe('completed')
     expect(deliverPrimeCores(delivered)).toBe(delivered)
   })
 
-  it('counts each known sentinel once and only after delivery', () => {
-    const blocked = recordSentinelDefeat(
-      INITIAL_SKYLINE_MISSION_PROGRESS,
-      'sentinel-four',
-    )
-    expect(blocked).toBe(INITIAL_SKYLINE_MISSION_PROGRESS)
+  it('counts each known sentinel once and only while the contract is active', () => {
+    const initial = INITIAL_SKYLINE_MISSION_PROGRESS
+    const blocked = recordSentinelDefeat(initial, 'sentinel-four')
+    expect(blocked).toBe(initial)
 
-    let ready = recordNpcConversation(
-      INITIAL_SKYLINE_MISSION_PROGRESS,
-      'lia',
-    )
-    ready = collectAllCores(ready)
-    ready = recordNpcConversation(ready, 'nilo')
-    ready = deliverPrimeCores(ready)
-
+    const ready = activateMission(initial, 'composite-sentinels')
     const firstKill = recordSentinelDefeat(ready, 'sentinel-four')
     expect(firstKill.defeatedSentinelIds).toEqual(['sentinel-four'])
     expect(recordSentinelDefeat(firstKill, 'sentinel-four')).toBe(firstKill)
@@ -140,6 +193,7 @@ describe('Prime Runner mission logic', () => {
     const cleared = defeatAllSentinels(ready)
     expect(hasDefeatedAllSentinels(cleared)).toBe(true)
     expect(cleared.defeatedSentinelIds).toHaveLength(4)
+    expect(getMissionStatus(cleared, 'composite-sentinels')).toBe('completed')
   })
 
   it('gates the Apex and beacon and treats repeated triggers idempotently', () => {
@@ -150,19 +204,19 @@ describe('Prime Runner mission logic', () => {
     expect(activateApexBeacon(initial)).toBe(initial)
     expect(isSkylineMissionComplete(initial)).toBe(false)
 
-    let ready = recordNpcConversation(initial, 'lia')
-    ready = collectAllCores(ready)
-    ready = recordNpcConversation(ready, 'nilo')
-    ready = deliverPrimeCores(ready)
-    ready = defeatAllSentinels(ready)
-    expect(canReachApexSpire(ready)).toBe(true)
+    const active = activateMission(initial, 'apex-extraction')
+    expect(canReachApexSpire(active)).toBe(true)
+    // Beacon still gated until the spire is reached.
+    expect(canActivateApexBeacon(active)).toBe(false)
+    expect(activateApexBeacon(active)).toBe(active)
 
-    const atApex = reachApexSpire(ready)
+    const atApex = reachApexSpire(active)
     expect(reachApexSpire(atApex)).toBe(atApex)
     expect(canActivateApexBeacon(atApex)).toBe(true)
 
-    const complete = activateApexBeacon(atApex)
-    expect(activateApexBeacon(complete)).toBe(complete)
-    expect(isSkylineMissionComplete(complete)).toBe(true)
+    const done = activateApexBeacon(atApex)
+    expect(done.beaconActivated).toBe(true)
+    expect(getMissionStatus(done, 'apex-extraction')).toBe('completed')
+    expect(activateApexBeacon(done)).toBe(done)
   })
 })

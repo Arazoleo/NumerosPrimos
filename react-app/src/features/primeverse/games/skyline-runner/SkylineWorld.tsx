@@ -1,6 +1,6 @@
 import { Billboard, Sky, Sparkles } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
-import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 import {
@@ -9,25 +9,22 @@ import {
   type QualityProfile,
 } from '../../graphics/useQualitySettings'
 import {
-  SKYLINE_LOCATIONS,
-  SKYLINE_NPCS,
-  SKYLINE_PRIME_CORES,
   SKYLINE_PRIME_CORE_VALUES,
-  SKYLINE_SENTINELS,
   SKYLINE_SENTINEL_IDS,
   type SkylineNpcId,
   type SkylinePrimeCoreValue,
   type SkylineSentinelId,
 } from './missionData'
 import {
-  ROOFTOP_PROPS,
-  SKYLINE_ANCHORS,
-  SKYLINE_BUILDINGS,
   aabbCenter,
   aabbSize,
   type RooftopProp,
   type SkylineBuilding,
 } from './world'
+import {
+  TUTORIAL_WORLD_SNAPSHOT,
+  type ActiveWorldSnapshot,
+} from './activeWorld'
 
 const CYAN = '#66f4ee'
 const AMBER = '#ffbd62'
@@ -41,6 +38,17 @@ const PRIME_FACTOR_COLORS: Readonly<Record<SkylinePrimeCoreValue, string>> = {
 
 const LowDetailContext = createContext(false)
 
+/**
+ * The active world (tutorial constants or generated city) the scene renders.
+ * Defaults to the static tutorial snapshot so any standalone use of these
+ * components (e.g. storybook-style mounts) keeps the Round 1 look.
+ */
+const WorldSnapshotContext = createContext<ActiveWorldSnapshot>(TUTORIAL_WORLD_SNAPSHOT)
+
+function useWorldSnapshot(): ActiveWorldSnapshot {
+  return useContext(WorldSnapshotContext)
+}
+
 type CoreCollection = readonly SkylinePrimeCoreValue[] | ReadonlySet<SkylinePrimeCoreValue>
 type SentinelCollection = readonly SkylineSentinelId[] | ReadonlySet<SkylineSentinelId>
 
@@ -48,6 +56,8 @@ export type SkylineEnemyHealth = Readonly<Partial<Record<SkylineSentinelId, numb
 export type SkylineEnemyFactors = Readonly<Partial<Record<SkylineSentinelId, readonly SkylinePrimeCoreValue[]>>>
 
 export interface SkylineWorldProps {
+  /** Active world to render; defaults to the static tutorial snapshot. */
+  readonly world?: ActiveWorldSnapshot
   readonly profile?: QualityProfile
   readonly quality?: QualityLevel
   readonly reducedMotion?: boolean
@@ -449,77 +459,6 @@ function RooftopPropVisual({
   }
 }
 
-function DistantSkyline({ quality }: { quality: QualityLevel }): JSX.Element {
-  const count = quality === 'low' ? 34 : quality === 'medium' ? 56 : 78
-  const buildingsRef = useRef<THREE.InstancedMesh>(null)
-  const crownsRef = useRef<THREE.InstancedMesh>(null)
-  const transforms = useMemo<readonly InstanceTransform[]>(() => (
-    Array.from({ length: count }, (_, index) => {
-      const side = index % 2 === 0 ? -1 : 1
-      const x = side * (17 + seededNoise(index * 7 + 1) * 70)
-      const z = -105 + seededNoise(index * 11 + 2) * 148
-      const width = 4 + seededNoise(index * 13 + 3) * 9
-      const depth = 4 + seededNoise(index * 17 + 4) * 10
-      const height = 18 + seededNoise(index * 19 + 5) * 52
-      const top = -5 + seededNoise(index * 23 + 6) * 27
-      const hue = 0.52 + seededNoise(index * 29 + 7) * 0.055
-      const light = 0.11 + seededNoise(index * 31 + 8) * 0.08
-      return {
-        position: [x, top - height / 2, z] as const,
-        scale: [width, height, depth] as const,
-        color: new THREE.Color().setHSL(hue, 0.28, light),
-      }
-    })
-  ), [count])
-
-  useLayoutEffect(() => {
-    const buildings = buildingsRef.current
-    const crowns = crownsRef.current
-    if (!buildings || (quality !== 'low' && !crowns)) return
-    const matrix = new THREE.Matrix4()
-    const quaternion = new THREE.Quaternion()
-    const position = new THREE.Vector3()
-    const scale = new THREE.Vector3()
-
-    transforms.forEach((transform, index) => {
-      position.fromArray(transform.position)
-      scale.fromArray(transform.scale)
-      matrix.compose(position, quaternion, scale)
-      buildings.setMatrixAt(index, matrix)
-      buildings.setColorAt(index, transform.color)
-
-      position.set(
-        transform.position[0],
-        transform.position[1] + transform.scale[1] / 2 + 0.13,
-        transform.position[2],
-      )
-      scale.set(transform.scale[0] * 0.64, 0.18, transform.scale[2] * 0.64)
-      matrix.compose(position, quaternion, scale)
-      crowns?.setMatrixAt(index, matrix)
-    })
-    buildings.instanceMatrix.needsUpdate = true
-    if (buildings.instanceColor) buildings.instanceColor.needsUpdate = true
-    if (crowns) crowns.instanceMatrix.needsUpdate = true
-    buildings.computeBoundingSphere()
-    crowns?.computeBoundingSphere()
-  }, [quality, transforms])
-
-  return (
-    <group name="distant-skyline">
-      <instancedMesh ref={buildingsRef} args={[undefined, undefined, transforms.length]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color="#ffffff" metalness={0.36} roughness={0.9} />
-      </instancedMesh>
-      {quality !== 'low' ? (
-        <instancedMesh ref={crownsRef} args={[undefined, undefined, transforms.length]}>
-          <boxGeometry args={[1, 1, 1]} />
-          <meshBasicMaterial color="#79d8d5" transparent opacity={0.22} toneMapped={false} />
-        </instancedMesh>
-      ) : null}
-    </group>
-  )
-}
-
 function CloudSea({ quality, reducedMotion }: { quality: QualityLevel; reducedMotion: boolean }): JSX.Element {
   const count = quality === 'low' ? 18 : quality === 'medium' ? 30 : 44
   const cloudRef = useRef<THREE.InstancedMesh>(null)
@@ -685,20 +624,127 @@ export function SkylineAtmosphere({
   )
 }
 
-export function SkylineCity({
-  profile,
-  quality,
-  reducedMotion,
-}: SharedWorldVisualProps): JSX.Element {
+/**
+ * Distance (in world units) within which a building is drawn at full detail
+ * (RouteBuildingVisual). Beyond it, the building collapses to a cheap batched
+ * instanced box. 'low' keeps the full-detail radius tiny so nearly every
+ * building uses the simple path; 'high' pushes it out across the whole grid.
+ */
+const LOD_FULL_RADIUS: Readonly<Record<QualityLevel, number>> = {
+  low: 10,
+  medium: 42,
+  high: 999,
+}
+
+/** Squared re-evaluation threshold: only rebucket when the camera has moved. */
+const LOD_RECHECK_DISTANCE_SQ = 9
+
+/** Pre-sized reusable scratch objects for the instanced-matrix update. */
+const SIMPLE_MATRIX = new THREE.Matrix4()
+const SIMPLE_POSITION = new THREE.Vector3()
+const SIMPLE_SCALE = new THREE.Vector3()
+const SIMPLE_QUATERNION = new THREE.Quaternion()
+
+function SimpleBuildingBatch({ buildings }: { buildings: readonly SkylineBuilding[] }): JSX.Element | null {
+  const meshRef = useRef<THREE.InstancedMesh>(null)
+
+  useLayoutEffect(() => {
+    const mesh = meshRef.current
+    if (!mesh) return
+    const color = new THREE.Color()
+    buildings.forEach((building, index) => {
+      const [cx, cy, cz] = aabbCenter(building.bounds)
+      const [sx, sy, sz] = aabbSize(building.bounds)
+      SIMPLE_POSITION.set(cx, cy, cz)
+      SIMPLE_SCALE.set(sx, sy, sz)
+      SIMPLE_MATRIX.compose(SIMPLE_POSITION, SIMPLE_QUATERNION, SIMPLE_SCALE)
+      mesh.setMatrixAt(index, SIMPLE_MATRIX)
+      mesh.setColorAt(index, color.set(building.color))
+    })
+    mesh.count = buildings.length
+    mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [buildings])
+
+  if (buildings.length === 0) return null
+
+  return (
+    <instancedMesh
+      key={buildings.length}
+      ref={meshRef}
+      name="skyline-far-buildings"
+      args={[undefined, undefined, buildings.length]}
+    >
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial metalness={0.5} roughness={0.78} />
+    </instancedMesh>
+  )
+}
+
+/**
+ * Renders the whole city with a two-tier LOD on top of the quality profile:
+ * buildings near the camera use the detailed RouteBuildingVisual, far buildings
+ * are merged into one batched instancedMesh of flat colored boxes (no windows,
+ * trim, props or shadows). The split is recomputed only when the camera has
+ * moved far enough, so React re-renders stay rare. Buildings flagged
+ * `detail: 'full'` (the mission landmarks) always stay detailed.
+ */
+function CityBuildings({ profile, quality }: { profile: QualityProfile; quality: QualityLevel }): JSX.Element {
   const windowTexture = useMemo(createWindowTexture, [])
   const lowDetail = quality === 'low'
+  const fullRadiusSq = LOD_FULL_RADIUS[quality] ** 2
+  const lastCamera = useRef<THREE.Vector3 | null>(null)
+  const { camera } = useThree()
+  const buildings = useWorldSnapshot().buildings
+
+  const computeNearIds = useMemo(() => (cameraPosition: THREE.Vector3): ReadonlySet<string> => {
+    const near = new Set<string>()
+    for (const building of buildings) {
+      if (building.detail === 'full') {
+        near.add(building.id)
+        continue
+      }
+      if (lowDetail) continue
+      const [cx, cy, cz] = aabbCenter(building.bounds)
+      const dx = cx - cameraPosition.x
+      const dy = cy - cameraPosition.y
+      const dz = cz - cameraPosition.z
+      if (dx * dx + dy * dy + dz * dz <= fullRadiusSq) near.add(building.id)
+    }
+    return near
+  }, [buildings, fullRadiusSq, lowDetail])
+
+  const [nearIds, setNearIds] = useState<ReadonlySet<string>>(() => computeNearIds(camera.position))
+
+  // Re-bucket when the quality (and thus radius) changes.
+  useEffect(() => {
+    lastCamera.current = null
+    setNearIds(computeNearIds(camera.position))
+  }, [camera, computeNearIds])
+
+  useFrame(({ camera: activeCamera }) => {
+    const previous = lastCamera.current
+    if (previous && previous.distanceToSquared(activeCamera.position) < LOD_RECHECK_DISTANCE_SQ) return
+    if (previous) previous.copy(activeCamera.position)
+    else lastCamera.current = activeCamera.position.clone()
+    const next = computeNearIds(activeCamera.position)
+    setNearIds((current) => {
+      if (current.size === next.size && [...next].every((id) => current.has(id))) return current
+      return next
+    })
+  })
 
   useEffect(() => () => windowTexture.dispose(), [windowTexture])
 
+  const farBuildings = useMemo(
+    () => buildings.filter((building) => !nearIds.has(building.id)),
+    [buildings, nearIds],
+  )
+
   return (
-    <group name="skyline-city">
-      <DistantSkyline quality={quality} />
-      {SKYLINE_BUILDINGS.map((building) => (
+    <group name="skyline-city-buildings">
+      {buildings.map((building) => nearIds.has(building.id) ? (
         <RouteBuildingVisual
           key={building.id}
           building={building}
@@ -706,8 +752,24 @@ export function SkylineCity({
           shadows={profile.shadows}
           lowDetail={lowDetail}
         />
-      ))}
-      {ROOFTOP_PROPS.map((prop) => (
+      ) : null)}
+      <SimpleBuildingBatch buildings={farBuildings} />
+    </group>
+  )
+}
+
+export function SkylineCity({
+  profile,
+  quality,
+  reducedMotion,
+}: SharedWorldVisualProps): JSX.Element {
+  const lowDetail = quality === 'low'
+  const props = useWorldSnapshot().props
+
+  return (
+    <group name="skyline-city">
+      <CityBuildings profile={profile} quality={quality} />
+      {props.map((prop) => (
         <RooftopPropVisual
           key={prop.id}
           prop={prop}
@@ -793,9 +855,10 @@ export function GrappleAnchors({
   reducedMotion = false,
   onAnchorApproach,
 }: GrappleAnchorsProps): JSX.Element {
+  const anchors = useWorldSnapshot().anchors
   return (
     <group name="grapple-anchors">
-      {SKYLINE_ANCHORS.map((anchor) => (
+      {anchors.map((anchor) => (
         <GrappleAnchorVisual
           key={anchor.id}
           id={anchor.id}
@@ -874,7 +937,7 @@ function NpcVisual({
   reducedMotion: boolean
   onApproach?: (id: SkylineNpcId) => void
 }): JSX.Element {
-  const npc = SKYLINE_NPCS[id]
+  const npc = useWorldSnapshot().npcs[id]
   const bodyRef = useRef<THREE.Group>(null)
   const signalRef = useRef<THREE.Group>(null)
   const liaison = id === 'lia'
@@ -968,9 +1031,10 @@ export function SkylineNpcs({
   reducedMotion = false,
   onNpcApproach,
 }: SkylineNpcsProps): JSX.Element {
+  const npcs = useWorldSnapshot().npcs
   return (
     <group name="mission-npcs">
-      {(Object.keys(SKYLINE_NPCS) as SkylineNpcId[]).map((id) => (
+      {(Object.keys(npcs) as SkylineNpcId[]).map((id) => (
         <NpcVisual
           key={id}
           id={id}
@@ -994,7 +1058,7 @@ function PrimeCoreVisual({
   reducedMotion: boolean
   onApproach?: (value: SkylinePrimeCoreValue) => void
 }): JSX.Element {
-  const core = SKYLINE_PRIME_CORES[value]
+  const core = useWorldSnapshot().primeCores[value]
   const lowDetail = useContext(LowDetailContext)
   const coreRef = useRef<THREE.Group>(null)
   const ringRef = useRef<THREE.Group>(null)
@@ -1221,7 +1285,7 @@ function FactorSeals({
 }
 
 function SentinelWreck({ id }: { id: SkylineSentinelId }): JSX.Element {
-  const sentinel = SKYLINE_SENTINELS[id]
+  const sentinel = useWorldSnapshot().sentinels[id]
   return (
     <group name={`sentinel-wreck-${id}`} position={sentinel.position} rotation={[0.12, 0.5, 0.72]}>
       <mesh position={[0, -0.78, 0]} castShadow>
@@ -1253,7 +1317,7 @@ function SentinelVisual({
   reducedMotion: boolean
   onApproach?: (id: SkylineSentinelId) => void
 }): JSX.Element {
-  const sentinel = SKYLINE_SENTINELS[id]
+  const sentinel = useWorldSnapshot().sentinels[id]
   const lowDetail = useContext(LowDetailContext)
   const hoverRef = useRef<THREE.Group>(null)
   const scannerRef = useRef<THREE.Group>(null)
@@ -1349,6 +1413,7 @@ export function CompositeSentinels({
   reducedMotion = false,
   onSentinelApproach,
 }: CompositeSentinelsProps): JSX.Element {
+  const sentinels = useWorldSnapshot().sentinels
   return (
     <group name="composite-sentinels">
       {SKYLINE_SENTINEL_IDS.map((id) => {
@@ -1361,7 +1426,7 @@ export function CompositeSentinels({
               key={id}
               id={id}
               health={health}
-              remainingFactors={remainingEnemyFactors[id] ?? SKYLINE_SENTINELS[id].primeFactors}
+              remainingFactors={remainingEnemyFactors[id] ?? sentinels[id].primeFactors}
               reducedMotion={reducedMotion}
               onApproach={onSentinelApproach}
             />
@@ -1383,6 +1448,7 @@ export function ApexBeacon({
   onApproach,
 }: ApexBeaconProps): JSX.Element {
   const lowDetail = useContext(LowDetailContext)
+  const beaconPosition = useWorldSnapshot().locations.apexBeacon
   const ringsRef = useRef<THREE.Group>(null)
   const beamRef = useRef<THREE.Mesh>(null)
 
@@ -1398,7 +1464,7 @@ export function ApexBeacon({
   return (
     <group
       name="apex-beacon"
-      position={SKYLINE_LOCATIONS.apexBeacon}
+      position={beaconPosition}
       userData={{ kind: 'apex-beacon' }}
       onPointerOver={() => onApproach?.()}
       onClick={() => onApproach?.()}
@@ -1446,6 +1512,7 @@ export function ApexBeacon({
 }
 
 export function SkylineWorld({
+  world = TUTORIAL_WORLD_SNAPSHOT,
   profile: suppliedProfile,
   quality: suppliedQuality,
   reducedMotion = false,
@@ -1466,6 +1533,7 @@ export function SkylineWorld({
   const { profile, quality } = resolveQuality(suppliedProfile, suppliedQuality)
 
   return (
+    <WorldSnapshotContext.Provider value={world}>
     <LowDetailContext.Provider value={quality === 'low'}>
       <SkylineAtmosphere profile={profile} quality={quality} reducedMotion={reducedMotion} />
       <SkylineCity profile={profile} quality={quality} reducedMotion={reducedMotion} />
@@ -1490,6 +1558,7 @@ export function SkylineWorld({
       />
       <ApexBeacon active={beaconActive} reducedMotion={reducedMotion} onApproach={onBeaconApproach} />
     </LowDetailContext.Provider>
+    </WorldSnapshotContext.Provider>
   )
 }
 

@@ -2,20 +2,25 @@ import { create, type StoreApi, type UseBoundStore } from 'zustand'
 
 import {
   SKYLINE_DIALOGUES,
+  SKYLINE_MISSIONS,
   SKYLINE_OBJECTIVES,
   SKYLINE_SENTINEL_IDS,
   SKYLINE_SENTINELS,
   type SkylineDialogueId,
+  type SkylineMissionId,
   type SkylineNpcId,
   type SkylinePrimeCoreValue,
   type SkylineSentinelId,
 } from './missionData'
 import {
   activateApexBeacon,
+  activateMission,
+  areApexPrerequisitesComplete,
   collectPrimeCore,
   deliverPrimeCores,
   getNextSkylineObjective,
   INITIAL_SKYLINE_MISSION_PROGRESS,
+  isMissionActive,
   isSkylineMissionComplete,
   reachApexSpire,
   recordNpcConversation,
@@ -24,6 +29,15 @@ import {
 } from './missionLogic'
 import { calculateParkourScore } from './parkourLogic'
 import { calculatePrimeDamage } from './primeCombat'
+import {
+  TUTORIAL_WORLD_SNAPSHOT,
+  buildWorldSnapshot,
+  resetActiveWorldSnapshot,
+  setActiveWorldSnapshot,
+  type ActiveWorldSnapshot,
+} from './activeWorld'
+import { generateSkylineWorld, type SkylineWorldData } from './worldGen'
+import { placeWorldMissions, type SkylineWorldMissions } from './worldMissions'
 
 export type RunnerMovementState =
   | 'PARADO'
@@ -36,7 +50,11 @@ export type RunnerMovementState =
   | 'SLIDE'
   | 'ESCALADA'
 
-export type RunnerNearby = `npc:${SkylineNpcId}` | 'beacon' | null
+export type RunnerNearby =
+  | `npc:${SkylineNpcId}`
+  | `mission:${SkylineMissionId}`
+  | 'beacon'
+  | null
 
 export interface RunnerDialogueState {
   readonly id: SkylineDialogueId
@@ -77,6 +95,24 @@ export interface SkylineRunnerResult {
 
 export interface SkylineRunnerState {
   readonly runId: number
+  /**
+   * Which play space the run is in. Every run starts in `tutorial` (the static,
+   * hand-authored layout + LIA flow). Finishing the tutorial calls
+   * {@link SkylineRunnerState.enterWorld}, which switches to `world`.
+   */
+  readonly mode: 'tutorial' | 'world'
+  /** Seed of the generated world, or null while still in the tutorial. */
+  readonly worldSeed: string | number | null
+  /** The generated world data once in world mode, else null. */
+  readonly activeWorld: SkylineWorldData | null
+  /** Seeded, reachable mission placement for {@link activeWorld}, else null. */
+  readonly worldMissions: SkylineWorldMissions | null
+  /**
+   * Active-world snapshot the physics loop and renderer read. Resolves to the
+   * static tutorial constants in tutorial mode and the generated world in world
+   * mode. Kept in sync with the {@link activeWorld.ts} module pointer.
+   */
+  readonly worldSnapshot: ActiveWorldSnapshot
   readonly mission: SkylineMissionProgress
   readonly health: number
   readonly falls: number
@@ -96,6 +132,14 @@ export interface SkylineRunnerState {
   readonly result: SkylineRunnerResult | null
   readonly defeated: boolean
   reset: () => void
+  /**
+   * Teleport into the procedural world. Generates the world ONCE per call
+   * (default seed derived from the run so a fresh run uses a fresh seed), moves
+   * the spawn/checkpoint to the generated spawn and resets transient run state.
+   * A no-op (returns the same state) when already in world mode so a respawn
+   * never regenerates the world mid-run.
+   */
+  enterWorld: (seed?: string | number) => void
   setControlsCaptured: (captured: boolean) => void
   setNearby: (nearby: RunnerNearby) => void
   interact: () => boolean
@@ -155,6 +199,61 @@ function nextToast(
   return { id: (current?.id ?? 0) + 1, tone, title, detail }
 }
 
+/**
+ * Builds the partial state that teleports the run into a freshly generated
+ * procedural world. Shared by {@link SkylineRunnerState.enterWorld} and the
+ * tutorial-finale beacon branch in {@link SkylineRunnerState.interact} (lighting
+ * the Apex beacon with the whole static campaign complete), so there is exactly
+ * ONE place that generates and wires the world. Generates the world ONCE per
+ * call; callers guard against re-entry when already in world mode so a respawn
+ * never regenerates. Mission progress is RESET to the hub baseline here so the
+ * open world always starts clean and playable, never inheriting the finished
+ * tutorial campaign.
+ */
+function buildWorldEntryState(
+  state: SkylineRunnerState,
+  seed: string | number | undefined,
+  now: () => number,
+): Partial<SkylineRunnerState> {
+  // Default seed is derived from the run so a fresh run => fresh world.
+  const worldSeed = seed ?? `skyline-${state.runId}-${now()}`
+  const activeWorld = generateSkylineWorld({ seed: worldSeed })
+  const worldMissions = placeWorldMissions(activeWorld)
+  const worldSnapshot = buildWorldSnapshot(activeWorld, worldMissions)
+  setActiveWorldSnapshot(worldSnapshot)
+  const spawnCheckpoint = worldSnapshot.checkpoints[0]
+  return {
+    mode: 'world' as const,
+    worldSeed,
+    activeWorld,
+    worldMissions,
+    worldSnapshot,
+    // Teleport: the new run anchor is the generated spawn / first checkpoint.
+    checkpointId: spawnCheckpoint?.id ?? 'world-spawn',
+    checkpointOrder: spawnCheckpoint?.order ?? 0,
+    // RESET mission progress to the hub baseline so the open world starts clean
+    // and playable. Carrying state.mission forward would land the player in an
+    // already-won city: the tutorial finale completes every contract and lights
+    // the beacon, so the three world contracts (prime-cores,
+    // composite-sentinels, apex-extraction) would arrive 'completed' with the
+    // beacon already activated. Reusing INITIAL_SKYLINE_MISSION_PROGRESS (the
+    // same source reset() uses) re-presents those three contracts as pickable
+    // ('available') with beaconActivated false and no cores/sentinels recorded,
+    // matching the toast "Encontre os três contratos primos". lia-tutorial stays
+    // 'active' but is harmless: the world snapshot omits it, so the player never
+    // encounters its anchor.
+    mission: { ...INITIAL_SKYLINE_MISSION_PROGRESS },
+    health: 100,
+    falls: 0,
+    controlsCaptured: false,
+    nearby: null,
+    activeDialogue: null,
+    damagePulse: 0,
+    telemetry: { ...state.telemetry, sector: 'MUNDO // GERADO' },
+    toast: nextToast(state.toast, 'cyan', 'TELEPORTE CONCLUÍDO', 'Bem-vindo à cidade real. Encontre os três contratos primos.'),
+  }
+}
+
 function completionResult(state: SkylineRunnerState): SkylineRunnerResult {
   const elapsedMs = Math.max(0, Math.round(state.telemetry.elapsedMs))
   const score = calculateParkourScore({
@@ -176,8 +275,15 @@ function completionResult(state: SkylineRunnerState): SkylineRunnerResult {
 }
 
 export function createSkylineRunnerStore(now: () => number = Date.now): SkylineRunnerStore {
+  // Every fresh store starts in the tutorial, so reset the module snapshot too.
+  resetActiveWorldSnapshot()
   return create<SkylineRunnerState>((set, get) => ({
     runId: 1,
+    mode: 'tutorial',
+    worldSeed: null,
+    activeWorld: null,
+    worldMissions: null,
+    worldSnapshot: TUTORIAL_WORLD_SNAPSHOT,
     mission: { ...INITIAL_SKYLINE_MISSION_PROGRESS },
     health: 100,
     falls: 0,
@@ -197,8 +303,18 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
     result: null,
     defeated: false,
 
-    reset: () => set((state) => ({
+    reset: () => set((state) => {
+      // A reset always starts a brand-new run in the tutorial. It must NOT
+      // regenerate a world; enterWorld() (triggered by tutorial completion) is
+      // the only place a world is generated.
+      resetActiveWorldSnapshot()
+      return {
       runId: state.runId + 1,
+      mode: 'tutorial' as const,
+      worldSeed: null,
+      activeWorld: null,
+      worldMissions: null,
+      worldSnapshot: TUTORIAL_WORLD_SNAPSHOT,
       mission: { ...INITIAL_SKYLINE_MISSION_PROGRESS },
       health: 100,
       falls: 0,
@@ -217,7 +333,16 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
       completedAt: null,
       result: null,
       defeated: false,
-    })),
+      }
+    }),
+
+    enterWorld: (seed) => set((state) => {
+      // Generate the world exactly ONCE. A respawn re-invokes nothing here, and
+      // calling enterWorld again while already in world mode is a no-op that
+      // returns the same state reference (so death/respawn never regenerate).
+      if (state.mode === 'world') return state
+      return buildWorldEntryState(state, seed, now)
+    }),
 
     setControlsCaptured: (controlsCaptured) => set({ controlsCaptured }),
     setNearby: (nearby) => set((state) => state.nearby === nearby ? state : { nearby }),
@@ -245,12 +370,48 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
         set({ activeDialogue: { id: 'nilo-delivery', lineIndex: 0 }, controlsCaptured: false })
         return true
       }
+      if (state.nearby.startsWith('mission:')) {
+        const missionId = state.nearby.slice('mission:'.length) as SkylineMissionId
+        const contract = SKYLINE_MISSIONS[missionId]
+        const mission = activateMission(state.mission, missionId)
+        if (mission === state.mission) {
+          const detail = isMissionActive(state.mission, missionId)
+            ? 'Contrato em andamento. Conclua os objetivos marcados.'
+            : 'Contrato já concluído.'
+          set({ toast: nextToast(state.toast, 'cyan', contract.title.toUpperCase(), detail) })
+          return false
+        }
+        set({
+          mission,
+          toast: nextToast(state.toast, 'cyan', 'CONTRATO ATIVADO', `${contract.title}: ${contract.detail}`),
+        })
+        return true
+      }
       if (state.nearby === 'beacon') {
+        // The beacon is the finale: keep it inert until every other contract is
+        // complete so lighting it always yields the victory result. Without this
+        // gate a player who takes apex-extraction first could spend the beacon
+        // with result still null and never reach the victory screen.
+        if (!areApexPrerequisitesComplete(state.mission)) {
+          set({ toast: nextToast(state.toast, 'amber', 'FAROL BLOQUEADO', 'Conclua os outros contratos antes de acender o farol primo.') })
+          return false
+        }
         const mission = activateApexBeacon(state.mission)
         if (mission === state.mission) {
           set({ toast: nextToast(state.toast, 'amber', 'FAROL BLOQUEADO', getNextSkylineObjective(state.mission).detail) })
           return false
         }
+        // Lighting the beacon is the LAST finale action (interact() is gated
+        // while a dialogue is open, so the apex-extraction dialogue has already
+        // ended). In the static tutorial, finishing the whole campaign here is
+        // the single teleport trigger into the procedural world: skip the
+        // victory result and hand straight over to buildWorldEntryState.
+        if (state.mode === 'tutorial' && isSkylineMissionComplete(mission)) {
+          set(buildWorldEntryState({ ...state, mission }, undefined, now))
+          return true
+        }
+        // World mode (or a defensive partial-campaign case): keep the normal
+        // victory end-state.
         const completedAt = now()
         const interim = { ...state, mission } as SkylineRunnerState
         set({
@@ -288,6 +449,11 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
       } else if (active.id === 'apex-extraction') {
         toast = nextToast(toast, 'cyan', 'EXTRAÇÃO PRONTA', 'Aproxime-se do farol e pressione E.')
       }
+
+      // Finishing a dialogue never teleports. The static campaign runs entirely
+      // in tutorial mode; the single teleport into the procedural world fires
+      // only when the Apex beacon is lit with the whole campaign complete (see
+      // the beacon branch of interact()).
       set({ activeDialogue: null, mission, toast })
     },
 
@@ -314,8 +480,8 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
     damageEnemy: (id, amount = 52) => {
       const state = get()
       if (state.defeated || state.result || state.activeDialogue) return 'ignored'
-      if (!state.mission.coresDeliveredToNilo) {
-        set({ toast: nextToast(state.toast, 'amber', 'BLINDAGEM COMPOSTA', 'Entregue a tríade a NILO para armar o pulso.') })
+      if (!isMissionActive(state.mission, 'composite-sentinels')) {
+        set({ toast: nextToast(state.toast, 'amber', 'BLINDAGEM COMPOSTA', 'Ative o contrato das Sentinelas para armar o pulso.') })
         return 'locked'
       }
       if (state.mission.defeatedSentinelIds.includes(id) || amount <= 0) return 'ignored'
@@ -354,8 +520,8 @@ export function createSkylineRunnerStore(now: () => number = Date.now): SkylineR
     castPrimeAtEnemy: (id, prime) => {
       const state = get()
       if (state.defeated || state.result || state.activeDialogue) return 'ignored'
-      if (!state.mission.coresDeliveredToNilo) {
-        set({ toast: nextToast(state.toast, 'amber', 'BLINDAGEM COMPOSTA', 'Entregue a tríade a NILO para armar os poderes primos.') })
+      if (!isMissionActive(state.mission, 'composite-sentinels')) {
+        set({ toast: nextToast(state.toast, 'amber', 'BLINDAGEM COMPOSTA', 'Ative o contrato das Sentinelas para armar os poderes primos.') })
         return 'locked'
       }
       if (state.mission.defeatedSentinelIds.includes(id)) return 'ignored'

@@ -20,6 +20,7 @@ const UlamRiftPage = lazy(() => import('./features/primeverse/games/ulam-rift/Ul
 const EuclidSiegePage = lazy(() => import('./features/primeverse/games/euclid-siege/EuclidSiegePage'))
 const SieveCatacombsPage = lazy(() => import('./features/primeverse/games/sieve-catacombs/SieveCatacombsPage'))
 const Nucleus257Page = lazy(() => import('./features/primeverse/games/nucleus-257/Nucleus257Page'))
+const PrimeWizardPage = lazy(() => import('./features/primeverse/games/prime-wizard/PrimeWizardPage'))
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/jogos/cerco-de-euclides" element={<EuclidSiegePage />} />
         <Route path="/jogos/cripta-do-crivo" element={<SieveCatacombsPage />} />
         <Route path="/jogos/nucleo-257" element={<Nucleus257Page />} />
+        <Route path="/jogos/grimorio-primo" element={<PrimeWizardPage />} />
         <Route path="/jogos/ulam-rift" element={<Navigate to="/jogos/fenda-de-ulam" replace />} />
         <Route path="/jogos/euclid-siege" element={<Navigate to="/jogos/cerco-de-euclides" replace />} />
         <Route path="/jogos/sieve-catacombs" element={<Navigate to="/jogos/cripta-do-crivo" replace />} />

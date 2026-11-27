@@ -10,7 +10,8 @@
   background-size: 48px 48px; content: ''; inset: 0; mask-image: radial-gradient(circle at 50% 55%, black, transparent 76%); pointer-events: none; position: absolute; z-index: 1;
 }
 .prime-defense *, .prime-defense *::before, .prime-defense *::after { box-sizing: border-box; }
-.prime-defense section { padding: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.prime-defense) section { padding: 0; }
 .prime-defense button, .prime-defense input, .prime-defense select { font: inherit; }
 .prime-defense button, .prime-defense a, .prime-defense select { -webkit-tap-highlight-color: transparent; }
 .prime-defense button:focus-visible, .prime-defense a:focus-visible, .prime-defense select:focus-visible { outline: 2px solid var(--pd-gold); outline-offset: 3px; }

@@ -1,11 +1,22 @@
+/*
+ * Tokens compartilhados do Primeverse. Hub, menus e HUDs partem daqui:
+ * quase-preto, uma linha fina para separar, Instrument Sans para texto e
+ * JetBrains Mono para números e rótulos.
+ */
+:root {
+  --pv-font-ui: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --pv-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .primeverse-shell {
-  --pv-bg: #06080d;
-  --pv-panel: rgba(10, 13, 20, .76);
-  --pv-ink: #faf6ec;
-  --pv-muted: #8c96a6;
+  --pv-bg: #0b0b0d;
+  --pv-panel: rgba(14, 14, 18, .82);
+  --pv-ink: #f2f2f0;
+  --pv-muted: #9a9aa2;
+  --pv-dim: #5f5f68;
   --pv-yellow: #ffcc1a;
   --pv-blue: #5fa8ff;
-  --pv-line: rgba(250, 246, 236, .12);
+  --pv-line: rgba(242, 242, 240, .1);
   position: relative;
   isolation: isolate;
   width: 100%;
@@ -14,10 +25,12 @@
   overflow: hidden;
   color: var(--pv-ink);
   background: var(--pv-bg);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: var(--pv-font-ui);
+  -webkit-font-smoothing: antialiased;
 }
 .primeverse-shell *, .primeverse-shell *::before, .primeverse-shell *::after { box-sizing: border-box; }
-.primeverse-shell section { padding: 0; }
+/* Neutraliza o `section { padding: 120px 0 }` do site sem vencer o padding das classes dos jogos. */
+:where(.primeverse-shell) section { padding: 0; }
 .pv-canvas { position: absolute !important; inset: 0; width: 100% !important; height: 100% !important; }
 .pv-hud { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .pv-hud a, .pv-hud button, .pv-hud select, .pv-hud input, .pv-hud label { pointer-events: auto; }
@@ -55,26 +68,15 @@
   color: #08090d;
   background: var(--pv-yellow);
   box-shadow: 0 0 28px rgba(255, 204, 26, .18);
-  font: 800 19px/1 'Space Grotesk', sans-serif;
+  font: 700 19px/1 var(--pv-font-ui);
   clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
 }
 .pv-brand > span:last-child { display: flex; flex-direction: column; gap: 2px; }
-.pv-brand strong { font: 700 13px/1 'Space Grotesk', sans-serif; letter-spacing: .16em; }
+.pv-brand strong { font: 600 13px/1 var(--pv-font-ui); letter-spacing: .12em; }
 .pv-brand small { color: var(--pv-muted); font: 500 8px/1.3 'JetBrains Mono', monospace; letter-spacing: .12em; }
 .pv-topbar__actions { display: flex; align-items: center; gap: clamp(10px, 2vw, 24px); }
 .pv-live { color: #9ba5b4; font: 600 9px/1 'JetBrains Mono', monospace; letter-spacing: .13em; }
 .pv-live i { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: #75e0a7; box-shadow: 0 0 10px #75e0a7; }
-.pv-quality { display: flex; align-items: center; gap: 8px; color: var(--pv-muted); font: 600 9px/1 'JetBrains Mono', monospace; letter-spacing: .09em; text-transform: uppercase; }
-.pv-quality select {
-  min-width: 86px;
-  padding: 7px 25px 7px 9px;
-  border: 1px solid var(--pv-line);
-  border-radius: 2px;
-  color: var(--pv-ink);
-  background: #0d1119;
-  font: 600 10px/1 'JetBrains Mono', monospace;
-  text-transform: uppercase;
-}
 .pv-icon-link {
   width: 36px;
   height: 36px;
@@ -102,6 +104,19 @@
 .pv-webgl-fallback p { max-width: 580px; color: var(--pv-muted); }
 .pv-webgl-fallback div { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .pv-webgl-fallback a { padding: 12px 18px; border: 1px solid rgba(255, 204, 26, .4); color: var(--pv-yellow); }
+
+.pv-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 
 @media (max-width: 720px) {
   .primeverse-shell { min-height: 540px; }

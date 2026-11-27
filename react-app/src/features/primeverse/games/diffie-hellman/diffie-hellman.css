@@ -24,7 +24,8 @@
 .diffie-hellman *::before,
 .diffie-hellman *::after { box-sizing: border-box; }
 
-.diffie-hellman section { max-width: none; padding-block: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.diffie-hellman) section { max-width: none; padding-block: 0; }
 .diffie-hellman button,
 .diffie-hellman input,
 .diffie-hellman select { font: inherit; }

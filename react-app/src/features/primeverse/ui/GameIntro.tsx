@@ -60,6 +60,12 @@ export function GameIntro({
     >
       {mark && <span className="game-intro__mark" aria-hidden="true">{mark}</span>}
 
+      {onBack
+        ? (
+          <button className="game-intro__back" type="button" onClick={onBack}>← {backLabel}</button>
+        )
+        : <Link className="game-intro__back" to={backTo}>← {backLabel}</Link>}
+
       <div className="game-intro__body">
         <h1 className="game-intro__title" id="game-intro-title">
           {before}
@@ -74,15 +80,10 @@ export function GameIntro({
           <i aria-hidden="true" />
         </button>
 
-        {keys && <p className="game-intro__keys">{keys}</p>}
         {children && <div className="game-intro__extra">{children}</div>}
+        {keys && <p className="game-intro__keys">{keys}</p>}
       </div>
 
-      {onBack
-        ? (
-          <button className="game-intro__back" type="button" onClick={onBack}>← {backLabel}</button>
-        )
-        : <Link className="game-intro__back" to={backTo}>← {backLabel}</Link>}
     </section>
   )
 }

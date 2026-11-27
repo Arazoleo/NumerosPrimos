@@ -67,7 +67,8 @@
 }
 
 /* Dialog shells are sections too; keep them out of the global section reset. */
-.crypto-escape section:not(.escape-panel) {
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.crypto-escape) section {
   padding: 0;
 }
 

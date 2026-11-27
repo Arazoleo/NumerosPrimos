@@ -4,7 +4,9 @@
  * as capas são o conteúdo.
  */
 
-.pv-hub {
+/* Dois seletores: vence o `.primeverse-shell { height: 100dvh; overflow: hidden }`
+   mesmo quando o CSS de um jogo (Prime Hunter, Factor Forge…) carrega depois. */
+.primeverse-shell.pv-hub {
   --side-width: clamp(260px, 22vw, 320px);
   height: auto;
   min-height: 100dvh;

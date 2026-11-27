@@ -150,6 +150,12 @@
 }
 
 .game-intro__action:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* Retorno imediato do clique enquanto a cena do jogo é montada. */
+.game-intro__action[data-starting] { cursor: progress; filter: brightness(.92); }
+.game-intro__action[data-starting] i { animation: game-intro-loading .7s ease-in-out infinite alternate; }
+
+@keyframes game-intro-loading { from { width: 10px; } to { width: 30px; } }
 .game-intro__action:hover i { width: 26px; }
 
 .game-intro__action:focus-visible,

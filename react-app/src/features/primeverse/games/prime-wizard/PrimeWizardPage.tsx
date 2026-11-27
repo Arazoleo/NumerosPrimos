@@ -469,7 +469,8 @@ export default function PrimeWizardPage() {
             camera={{ position: [0, 1.4, 7.4], fov: 52, near: 0.1, far: 80 }}
             dpr={profile.dpr}
             gl={{ antialias: profile.antialias, alpha: true, powerPreference: 'high-performance' }}
-            frameloop={phase === 'intro' ? 'never' : 'always'}
+            // 'demand' na entrada desenha um quadro e já compila os shaders antes do clique.
+            frameloop={phase === 'intro' ? 'demand' : 'always'}
           >
             <Suspense fallback={null}>
               <PrimeWizardScene
@@ -571,7 +572,14 @@ export default function PrimeWizardPage() {
           keys="Indicador escreve · mão aberta lança · teclado também funciona"
           onStart={() => startRun('camera')}
         >
-          <button type="button" className="pw-intro-alt" onClick={() => startRun('touch')}>Desenhar na tela</button>
+          <button
+            type="button"
+            className="pw-intro-alt"
+            // Pinta o clique antes de montar a partida (mesma regra do GameIntro, por causa do INP).
+            onClick={() => window.requestAnimationFrame(() => window.setTimeout(() => startRun('touch'), 0))}
+          >
+            Desenhar na tela
+          </button>
           <p className="pw-intro-note">A visão computacional roda no seu aparelho. O vídeo não sai dele.</p>
         </GameIntro>
       )}

@@ -10,6 +10,11 @@ import {
 } from './modularOrbitLogic'
 import GameIntro from '../../ui/GameIntro'
 import { useModularOrbitStore } from './modularOrbitStore'
+import {
+  hasSeenModularOrbitTutorial,
+  markModularOrbitTutorialSeen,
+} from './modularOrbitTutorial'
+import ModularOrbitTutorialView from './ModularOrbitTutorialView'
 import type { OrbitSoundEvent } from './types'
 
 interface ModularOrbitHudProps {
@@ -56,8 +61,36 @@ function OrbitBrand({ compact = false }: { compact?: boolean }): JSX.Element {
 }
 
 function IntroPanel({ quality, onQualityChange }: ModularOrbitHudProps): JSX.Element {
-
   const start = useModularOrbitStore((state) => state.start)
+  const [showTutorial, setShowTutorial] = useState(false)
+
+  // Primeira visita: "Entrar em órbita" abre o tutorial antes da missão.
+  const handleStart = () => {
+    if (hasSeenModularOrbitTutorial()) start()
+    else setShowTutorial(true)
+  }
+
+  // Terminar ou pular salva a escolha e já começa a missão.
+  const startMission = () => {
+    markModularOrbitTutorialSeen()
+    setShowTutorial(false)
+    start()
+  }
+
+  // Fechar (X) só volta para a tela inicial do jogo, sem começar a missão.
+  const backToIntro = () => {
+    setShowTutorial(false)
+  }
+
+  if (showTutorial) {
+    return (
+      <ModularOrbitTutorialView
+        onFinish={startMission}
+        onSkip={startMission}
+        onClose={backToIntro}
+      />
+    )
+  }
 
   return (
     <GameIntro
@@ -67,9 +100,13 @@ function IntroPanel({ quality, onQualityChange }: ModularOrbitHudProps): JSX.Ele
       actionLabel="Entrar em órbita"
       accent="#6ef0d8"
       mark="mod"
-      onStart={() => start()}
+      onStart={handleStart}
     >
       <GameSettings value={quality} onChange={onQualityChange} />
+      {/* Permite rever o tutorial a qualquer momento antes da missão. */}
+      <button type="button" className="orbit-see-tutorial" onClick={() => setShowTutorial(true)}>
+        Ver tutorial
+      </button>
     </GameIntro>
   )
 }

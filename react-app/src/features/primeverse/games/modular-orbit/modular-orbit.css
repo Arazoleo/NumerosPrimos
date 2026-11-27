@@ -514,3 +514,119 @@
 .modular-orbit[data-quality='low'] .orbit-console,
 .modular-orbit[data-quality='low'] .orbit-telemetry,
 .modular-orbit[data-quality='low'] .orbit-topbar { backdrop-filter: none; }
+
+/* ==========================================================================
+   Tutorial (ModularOrbitTutorialView)
+   Regras do guia de tutoriais: fonte mínima de 14px, contraste alto,
+   card centralizado e mesma estrutura em todos os passos.
+   ========================================================================== */
+/* Card preso no topo (e não no centro vertical): assim o conteúdo não "pula"
+   quando um passo é maior ou quando o retorno da prática aparece. */
+.orbit-tutorial-wrap { z-index: 12; align-content: start; padding-top: clamp(16px, 7vh, 72px); background: rgba(2, 5, 10, .78); }
+.orbit-tutorial { width: min(640px, 100%); font-size: 16px; line-height: 1.55; }
+.orbit-tutorial h2 { margin: 10px 0 14px; font-size: clamp(30px, 4.4vw, 44px); }
+.orbit-tutorial h2:focus { outline: none; }
+.orbit-tutorial--welcome .orbit-tutorial__body { margin-bottom: 8px; font-size: 17px; }
+.orbit-tutorial__close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--orbit-line); color: #c3d2d8; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+.orbit-tutorial__close:hover { border-color: var(--orbit-cyan); color: var(--orbit-ink); }
+.orbit-tutorial__actions--center { justify-content: center; }
+
+/* "Ver tutorial" na tela inicial: nítido, como ação secundária clara. */
+.orbit-see-tutorial {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 20px;
+  border: 1px solid var(--orbit-cyan);
+  border-radius: 2px;
+  color: var(--orbit-cyan);
+  background: var(--orbit-cyan-soft);
+  font: 800 11px/1 'JetBrains Mono', monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.orbit-see-tutorial::before { content: '?'; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; line-height: 1; font-weight: 800; text-align: center; }
+.orbit-see-tutorial:hover { color: #03110f; background: var(--orbit-cyan); box-shadow: 0 0 24px rgba(101, 241, 219, .25); }
+
+.orbit-tutorial__progress { margin: 0; color: var(--orbit-cyan); font: 700 14px/1.2 'JetBrains Mono', monospace; letter-spacing: .08em; }
+.orbit-tutorial__dots { display: flex; gap: 6px; margin-top: 10px; }
+.orbit-tutorial__dots i { flex: 1; height: 4px; background: var(--orbit-line); }
+.orbit-tutorial__dots i.is-done { background: var(--orbit-cyan); }
+
+.orbit-tutorial__body { margin: 0 0 16px; color: var(--orbit-ink); }
+.orbit-tutorial__hint { margin: 16px 0 0; color: #c3d2d8; font-size: 14px; }
+.orbit-tutorial__hint::before { content: 'Dica: '; color: var(--orbit-amber); font-weight: 700; }
+
+.orbit-tutorial__math { display: grid; gap: 6px; margin: 0 0 16px; }
+.orbit-tutorial__math code { color: var(--orbit-amber); font: 600 15px/1.4 'JetBrains Mono', monospace; }
+
+/* Rastro da órbita: cada estação é uma bolinha ligada por setas. */
+.orbit-tutorial__trace { margin: 0 0 14px; padding: 12px 14px; border: 1px solid var(--orbit-line); }
+.orbit-tutorial__trace.is-rejected { border-style: dashed; border-color: #ff8a8a; }
+.orbit-tutorial__trace-label { display: block; margin-bottom: 8px; font: 700 14px/1.3 'JetBrains Mono', monospace; }
+.orbit-tutorial__trace.is-accepted .orbit-tutorial__trace-label { color: var(--orbit-cyan); }
+.orbit-tutorial__trace.is-rejected .orbit-tutorial__trace-label { color: #ff9d9d; }
+.orbit-tutorial__trace ol { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.orbit-tutorial__trace li { display: flex; align-items: center; gap: 6px; }
+.orbit-tutorial__trace li i { color: #8ca2ad; font-style: normal; }
+.orbit-tutorial__trace li span { min-width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #4a6270; border-radius: 50%; font: 700 15px/1 'JetBrains Mono', monospace; }
+.orbit-tutorial__trace li span.is-target { border: 2px solid var(--orbit-cyan); color: var(--orbit-cyan); box-shadow: 0 0 14px rgba(101, 241, 219, .25); }
+
+/* Prática guiada. */
+.orbit-tutorial__quiz { margin: 4px 0 0; padding: 14px; border: 1px solid rgba(255, 204, 26, .45); }
+.orbit-tutorial__quiz legend { padding: 0 6px; color: var(--orbit-amber); font-weight: 700; }
+.orbit-tutorial__options { display: flex; flex-wrap: wrap; gap: 10px; }
+.orbit-tutorial__options button { min-height: 44px; padding: 0 18px; border: 1px solid #4a6270; color: var(--orbit-ink); background: transparent; font: 700 15px/1 'JetBrains Mono', monospace; cursor: pointer; }
+.orbit-tutorial__options button:hover,
+.orbit-tutorial__options button[aria-pressed='true'] { border-color: var(--orbit-amber); background: rgba(255, 204, 26, .12); }
+.orbit-tutorial__feedback { margin: 12px 0 0; font-size: 15px; }
+.orbit-tutorial__feedback.is-right { color: var(--orbit-cyan); }
+.orbit-tutorial__feedback.is-wrong { color: #ff9d9d; }
+.orbit-tutorial__feedback p { margin: 0 0 6px; }
+.orbit-tutorial__feedback p:last-child { margin-bottom: 0; }
+.orbit-tutorial__board-answer { color: #c3d2d8; font-size: 14px; }
+.orbit-tutorial__board-answer b { color: var(--orbit-cyan); }
+
+/* Quadro interativo da órbita: mesmo visual do jogo, em SVG 2D. */
+.orbit-tutorial__board { display: grid; grid-template-columns: minmax(180px, 230px) 1fr; gap: 20px; margin: 4px 0 0; align-items: center; }
+.orbit-tutorial__board-figure { margin: 0; }
+.orbit-tutorial__board-figure svg { display: block; width: 100%; height: auto; }
+.orbit-board__ring { fill: none; stroke: #5289a4; stroke-width: 0.6; opacity: .45; }
+.orbit-board__trail { fill: none; stroke: var(--orbit-violet); stroke-width: 1.1; stroke-linejoin: round; stroke-linecap: round; opacity: .85; }
+.orbit-board__station circle { fill: #14222c; stroke: #4c6475; stroke-width: 0.6; transition: fill .2s ease, stroke .2s ease; }
+.orbit-board__station text { fill: #a8bcc8; font: 700 4.2px/1 'JetBrains Mono', monospace; }
+.orbit-board__station.is-visited circle { fill: rgba(154, 140, 255, .3); stroke: var(--orbit-violet); }
+.orbit-board__station.is-start circle { fill: rgba(255, 204, 26, .25); stroke: var(--orbit-amber); }
+.orbit-board__station.is-start text { fill: #fff; }
+.orbit-board__station.is-target circle { fill: rgba(101, 241, 219, .22); stroke: var(--orbit-cyan); stroke-width: 1; }
+.orbit-board__station.is-target text { fill: var(--orbit-cyan); }
+.orbit-board__probe { fill: #f2fffd; stroke: var(--orbit-cyan); stroke-width: 0.8; }
+.orbit-tutorial__board-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; font: 600 11px/1.2 'JetBrains Mono', monospace; }
+.orbit-tutorial__board-legend .is-start { color: var(--orbit-amber); }
+.orbit-tutorial__board-legend .is-target { color: var(--orbit-cyan); }
+.orbit-tutorial__board-legend .is-visited { color: var(--orbit-violet); }
+.orbit-tutorial__board-prompt { margin: 0 0 10px; color: var(--orbit-ink); font-weight: 700; }
+.orbit-tutorial__board-controls .orbit-tutorial__options { margin-bottom: 14px; }
+.orbit-tutorial__launch { margin: 0 0 12px; }
+@media (max-width: 560px) {
+  .orbit-tutorial__board { grid-template-columns: 1fr; }
+  .orbit-tutorial__board-figure { max-width: 240px; margin: 0 auto; }
+}
+
+/* Botões: Pular à esquerda, Voltar/Próximo à direita, sempre na mesma posição. */
+.orbit-tutorial__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.orbit-tutorial__actions .orbit-primary,
+.orbit-tutorial__actions .orbit-secondary { font-size: 14px !important; }
+.orbit-tutorial__actions button:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+.orbit-tutorial__skip { margin-right: auto; padding: 0 20px; min-height: 42px; border: 1px solid var(--orbit-line); color: #c3d2d8; background: transparent; font: 700 14px/1 'JetBrains Mono', monospace; letter-spacing: .04em; cursor: pointer; transition: border-color .15s ease, color .15s ease, background .15s ease; }
+.orbit-tutorial__skip:hover { border-color: var(--orbit-cyan); color: var(--orbit-ink); background: var(--orbit-cyan-soft); }
+
+/* Celular: "Pular" ocupa a linha de cima; Voltar e Próximo dividem a de baixo. */
+@media (max-width: 560px) {
+  .orbit-tutorial__skip { flex-basis: 100%; margin-right: 0; justify-content: center; }
+  .orbit-tutorial__actions .orbit-secondary,
+  .orbit-tutorial__actions .orbit-primary { flex: 1; justify-content: center; }
+}

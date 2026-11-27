@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import './GameIntro.css'
@@ -48,6 +48,36 @@ export function GameIntro({
   onBack,
   children,
 }: GameIntroProps): JSX.Element {
+  const [starting, setStarting] = useState(false)
+  const pendingRef = useRef<{ frame: number; timer: number } | null>(null)
+
+  useEffect(() => () => {
+    if (!pendingRef.current) return
+    window.cancelAnimationFrame(pendingRef.current.frame)
+    window.clearTimeout(pendingRef.current.timer)
+  }, [])
+
+  /*
+   * Começar um jogo monta a cena 3D e compila shaders: trabalho de centenas de
+   * milissegundos. Feito dentro do clique, o navegador só pinta de novo quando
+   * tudo termina — é isso que a Vercel acusa como INP ruim. Aqui o clique só
+   * marca o botão como "carregando", deixa essa pintura sair, e o trabalho
+   * pesado roda na tarefa seguinte, fora da interação.
+   */
+  const handleStart = () => {
+    if (starting) return
+    setStarting(true)
+    const pending = { frame: 0, timer: 0 }
+    pending.frame = window.requestAnimationFrame(() => {
+      pending.timer = window.setTimeout(() => {
+        pendingRef.current = null
+        onStart()
+        setStarting(false)
+      }, 0)
+    })
+    pendingRef.current = pending
+  }
+
   const [before, after] = emphasis && title.includes(emphasis)
     ? [title.slice(0, title.indexOf(emphasis)), title.slice(title.indexOf(emphasis) + emphasis.length)]
     : [title, '']
@@ -75,7 +105,13 @@ export function GameIntro({
 
         <p className="game-intro__instruction">{instruction}</p>
 
-        <button className="game-intro__action" type="button" onClick={onStart}>
+        <button
+          className="game-intro__action"
+          type="button"
+          onClick={handleStart}
+          aria-busy={starting}
+          data-starting={starting || undefined}
+        >
           <span>{actionLabel}</span>
           <i aria-hidden="true" />
         </button>

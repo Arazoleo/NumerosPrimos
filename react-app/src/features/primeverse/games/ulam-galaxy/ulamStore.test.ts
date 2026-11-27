@@ -4,6 +4,35 @@ import { createUlamMissions, ULAM_ROUNDS } from './ulamLogic'
 import { createUlamGalaxyStore } from './ulamStore'
 
 describe('Ulam Galaxy store', () => {
+  it('advances, goes back and closes the tutorial', () => {
+    const store = createUlamGalaxyStore({ missions: createUlamMissions() })
+
+    store.getState().startTutorial()
+    expect(store.getState()).toMatchObject({ phase: 'tutorial', tutorialStep: 1, startedAt: null })
+
+    store.getState().nextTutorialStep()
+    expect(store.getState().tutorialStep).toBe(2)
+    store.getState().previousTutorialStep()
+    expect(store.getState().tutorialStep).toBe(1)
+    store.getState().previousTutorialStep()
+    expect(store.getState().tutorialStep).toBe(1)
+
+    store.getState().skipTutorial()
+    expect(store.getState()).toMatchObject({ phase: 'playing', tutorialStep: 0 })
+  })
+
+  it('restarts directly without starting the tutorial', () => {
+    const store = createUlamGalaxyStore({ missions: createUlamMissions() })
+
+    store.getState().start()
+    store.getState().restart()
+
+    expect(store.getState()).toMatchObject({
+      phase: 'playing',
+      tutorialStep: 0,
+      score: 0,
+    })
+  })
   it('runs all five scans and records a completed map', () => {
     let clock = 1_000
     const recordProgress = vi.fn(() => true)

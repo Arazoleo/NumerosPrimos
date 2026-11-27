@@ -2,6 +2,7 @@ export type UlamDirectionId = 'ne' | 'nw' | 'sw' | 'se'
 
 export type UlamPhase =
   | 'intro'
+  | 'tutorial'
   | 'playing'
   | 'scanning'
   | 'round-complete'

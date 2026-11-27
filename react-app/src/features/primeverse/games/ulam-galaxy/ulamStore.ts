@@ -20,9 +20,14 @@ import type {
   UlamSoundCue,
   UlamSoundEvent,
 } from './types'
+import {
+  ULAM_GALAXY_TUTORIAL_STEPS,
+  type UlamGalaxyTutorialStep,
+} from './ulamGalaxyTutorialCopy'
 
 export interface UlamGalaxyState {
   phase: UlamPhase
+  tutorialStep: UlamGalaxyTutorialStep
   runId: number
   missions: readonly UlamMission[]
   roundIndex: number
@@ -40,6 +45,10 @@ export interface UlamGalaxyState {
   lastSound: UlamSoundCue | null
   result: UlamResult | null
   start: () => void
+  startTutorial: () => void
+  nextTutorialStep: () => void
+  previousTutorialStep: () => void
+  skipTutorial: () => void
   selectDirection: (direction: UlamDirectionId) => boolean
   scan: () => boolean
   scanPath: () => void
@@ -161,6 +170,7 @@ export function createUlamGalaxyStore(
 
   return create<UlamGalaxyState>((set, get) => ({
     phase: 'intro',
+    tutorialStep: 0,
     runId: 0,
     missions,
     roundIndex: 0,
@@ -180,7 +190,46 @@ export function createUlamGalaxyStore(
 
     start: () => {
       const state = get()
-      set(runState(missions, state.runId + 1, now(), state.feedback))
+      set({
+        ...runState(missions, state.runId + 1, now(), state.feedback),
+        tutorialStep: 0,
+      })
+    },
+
+    startTutorial: () => {
+      const state = get()
+      set({
+        ...runState(missions, state.runId, now(), state.feedback),
+        phase: 'tutorial',
+        tutorialStep: ULAM_GALAXY_TUTORIAL_STEPS[0],
+        startedAt: null,
+        feedback: null,
+      })
+    },
+
+    nextTutorialStep: () => {
+      const state = get()
+      if (state.phase !== 'tutorial' || state.tutorialStep === 0) return
+      const stepIndex = ULAM_GALAXY_TUTORIAL_STEPS.indexOf(state.tutorialStep)
+      const nextStep = ULAM_GALAXY_TUTORIAL_STEPS[stepIndex + 1]
+      if (nextStep === undefined) {
+        state.start()
+        return
+      }
+      set({ tutorialStep: nextStep })
+    },
+
+    previousTutorialStep: () => {
+      const state = get()
+      if (state.phase !== 'tutorial' || state.tutorialStep === 0) return
+      const stepIndex = ULAM_GALAXY_TUTORIAL_STEPS.indexOf(state.tutorialStep)
+      const previousStep = ULAM_GALAXY_TUTORIAL_STEPS[stepIndex - 1]
+      if (previousStep !== undefined) set({ tutorialStep: previousStep })
+    },
+
+    skipTutorial: () => {
+      if (get().phase !== 'tutorial') return
+      get().start()
     },
 
     selectDirection: (direction) => {
@@ -334,13 +383,16 @@ export function createUlamGalaxyStore(
 
     toggleScanner: () => {
       const state = get()
-      if (state.phase === 'intro' || state.phase === 'complete') return
+      if (state.phase === 'intro' || state.phase === 'tutorial' || state.phase === 'complete') return
       set({ scannerEnabled: !state.scannerEnabled })
     },
 
     restart: () => {
       const state = get()
-      set(runState(missions, state.runId + 1, now(), state.feedback))
+      set({
+        ...runState(missions, state.runId + 1, now(), state.feedback),
+        tutorialStep: 0,
+      })
     },
 
     resetGame: () => {
@@ -351,6 +403,7 @@ export function createUlamGalaxyStore(
       const state = get()
       set({
         phase: 'intro',
+        tutorialStep: 0,
         runId: state.runId,
         roundIndex: 0,
         mission: missions[0],

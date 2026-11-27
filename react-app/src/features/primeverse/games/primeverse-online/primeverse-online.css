@@ -18,7 +18,8 @@
   font-family: 'Inter', system-ui, sans-serif;
 }
 .pvo-page *, .pvo-page *::before, .pvo-page *::after { box-sizing: border-box; }
-.pvo-page section { padding: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.pvo-page) section { padding: 0; }
 .pvo-page button, .pvo-page input, .pvo-page select { font: inherit; }
 
 .pvo-landing__stars {

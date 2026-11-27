@@ -1,4 +1,5 @@
 import type { QualityLevel } from '../graphics/useQualitySettings'
+import './quality-control.css'
 
 interface QualityControlProps {
   value: QualityLevel

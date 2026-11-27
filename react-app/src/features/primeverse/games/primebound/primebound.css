@@ -20,7 +20,8 @@
 .primebound *,
 .primebound *::before,
 .primebound *::after { box-sizing: border-box; }
-.primebound section { padding: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.primebound) section { padding: 0; }
 .primebound button,
 .primebound a { -webkit-tap-highlight-color: transparent; }
 .primebound button:focus-visible,

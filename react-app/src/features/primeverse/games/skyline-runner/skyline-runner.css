@@ -22,7 +22,8 @@
 .skyline-runner *,
 .skyline-runner *::before,
 .skyline-runner *::after { box-sizing: border-box; }
-.skyline-runner section { padding: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.skyline-runner) section { padding: 0; }
 .skyline-runner button,
 .skyline-runner a { -webkit-tap-highlight-color: transparent; }
 .skyline-runner button:focus-visible,

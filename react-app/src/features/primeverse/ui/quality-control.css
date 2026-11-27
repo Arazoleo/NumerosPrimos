@@ -1,0 +1,37 @@
+/* Seletor de qualidade: o componente traz o próprio estilo, igual em todos os jogos. */
+.pv-quality { display: flex; align-items: center; gap: 8px; color: var(--pv-muted, #9a9aa2); font: 600 9px/1 var(--pv-font-mono, 'JetBrains Mono', monospace); letter-spacing: .09em; text-transform: uppercase; }
+.pv-quality select {
+  min-width: 86px;
+  padding: 7px 25px 7px 9px;
+  border: 1px solid var(--pv-line, rgb(242 242 240 / 14%));
+  border-radius: 2px;
+  color: var(--pv-ink, #f2f2f0);
+  background-color: var(--pv-panel, #0e0e12);
+  font: 500 11px/1 var(--pv-font-mono, 'JetBrains Mono', monospace);
+  text-transform: uppercase;
+}
+.pv-quality { position: relative; }
+.pv-quality select {
+  appearance: none;
+  min-height: 30px;
+  cursor: pointer;
+}
+/* A seta fica no rótulo: jogos que trocam o `background` do select não a apagam. */
+.pv-quality::after {
+  content: '';
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid var(--pv-ink, #f2f2f0);
+  border-bottom: 1.5px solid var(--pv-ink, #f2f2f0);
+  opacity: .7;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .pv-quality > span { display: none; }
+  .pv-quality select { min-width: 74px; }
+}

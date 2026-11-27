@@ -27,6 +27,18 @@ export const PRIMEVERSE_GAMES: readonly PrimeverseGame[] = [
     glyph: '◎',
   },
   {
+    id: 'prime-wizard',
+    title: 'Grimório Primo',
+    label: 'Visão computacional',
+    description: 'Golens compostos avançam pelo portal. Escreva no ar, com o dedo e a câmera, o primo que responde a cada enigma.',
+    mathematicalIdea: 'Propriedades dos primos, desenhadas à mão',
+    path: '/jogos/grimorio-primo',
+    status: 'available',
+    portalPosition: [-6.6, 2.7, -18.4],
+    accent: '#b9a2ff',
+    glyph: '✎',
+  },
+  {
     id: 'prime-hunter',
     title: 'Prime Hunter',
     label: 'Arcade de primalidade',

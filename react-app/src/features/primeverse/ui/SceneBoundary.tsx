@@ -38,6 +38,7 @@ export function WebGLFallback() {
         <Link to="/jogos/crypto-escape">Crypto Liminal</Link>
         <Link to="/jogos/skyline-runner">Prime Runner</Link>
         <Link to="/jogos/nucleo-257">Núcleo 257</Link>
+        <Link to="/jogos/grimorio-primo">Grimório Primo</Link>
         <Link to="/jogos/primeverse-online">Primeverse Online</Link>
       </div>
     </div>

@@ -21,7 +21,8 @@
 }
 
 .ulam-galaxy *, .ulam-galaxy *::before, .ulam-galaxy *::after { box-sizing: border-box; }
-.ulam-galaxy section { padding: 0; }
+/* Só neutraliza o `section` global do site; perde para qualquer classe do jogo. */
+:where(.ulam-galaxy) section { padding: 0; }
 .ulam-galaxy button, .ulam-galaxy input, .ulam-galaxy select { font: inherit; }
 .ulam-galaxy button, .ulam-galaxy a, .ulam-galaxy summary { -webkit-tap-highlight-color: transparent; }
 
